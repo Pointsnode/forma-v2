@@ -1,0 +1,37 @@
+{
+  "name": "forma-v2",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test:db": "node scripts/test-db-local.mjs",
+    "test:logic": "node scripts/test-logic.mjs",
+    "check:service-role": "node scripts/check-service-role.mjs",
+    "check:public-env": "node scripts/check-public-env.mjs",
+    "check:test-scoping": "node scripts/check-test-scoping.mjs"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.45.4",
+    "next": "15.5.4",
+    "next-intl": "^3.20.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.2.12",
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
