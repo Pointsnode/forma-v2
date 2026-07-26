@@ -1,0 +1,49 @@
+{
+  "app": {
+    "name": "Forma",
+    "shell": "Espacio",
+    "signOut": "Cerrar sesion",
+    "loading": "Cargando"
+  },
+  "nav": {
+    "cockpit": "Panel",
+    "weddings": "Bodas",
+    "calendar": "Calendario",
+    "catalog": "Catalogo"
+  },
+  "auth": {
+    "signInTitle": "Iniciar sesion",
+    "signUpTitle": "Crea tu cuenta",
+    "resetTitle": "Restablecer contrasena",
+    "email": "Correo",
+    "password": "Contrasena",
+    "displayName": "Tu nombre",
+    "signIn": "Iniciar sesion",
+    "signUp": "Crear cuenta",
+    "sendReset": "Enviar enlace",
+    "toSignUp": "Necesitas una cuenta? Crea una",
+    "toSignIn": "Ya tienes cuenta? Inicia sesion",
+    "forgot": "Olvidaste tu contrasena?",
+    "resetSent": "Si ese correo existe, te enviamos un enlace para restablecer.",
+    "errors": {
+      "invalid": "Revisa tu correo y contrasena.",
+      "generic": "Algo salio mal. Intenta de nuevo."
+    }
+  },
+  "workspace": {
+    "createTitle": "Nombra tu espacio",
+    "createHint": "Un studio gestiona bodas de clientes; una pareja planea la suya.",
+    "name": "Nombre del espacio",
+    "kindStudio": "Studio",
+    "kindCouple": "Pareja",
+    "create": "Crear espacio",
+    "empty": "Aun no perteneces a un espacio.",
+    "membersOne": "1 miembro",
+    "membersOther": "{count} miembros",
+    "error": "No se pudo crear el espacio. Intenta de nuevo."
+  },
+  "styleguide": {
+    "title": "Sistema de diseno",
+    "subtitle": "Los componentes de Forma v2, en ambos idiomas."
+  }
+}

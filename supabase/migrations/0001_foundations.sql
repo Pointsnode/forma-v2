@@ -98,6 +98,17 @@ returns boolean language sql stable security definer set search_path = public as
   );
 $$;
 
+-- Definer reads for the workspace-members bootstrap policy: the creator is not a
+-- member yet, so a direct RLS read of workspaces would hide their own workspace.
+create or replace function private.workspace_creator(w uuid)
+returns uuid language sql stable security definer set search_path = public as $$
+  select created_by from public.workspaces where id = w;
+$$;
+create or replace function private.workspace_has_member(w uuid)
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (select 1 from public.workspace_members m where m.workspace_id = w);
+$$;
+
 -- Workspace bootstrap is done under RLS (no exposed SECURITY DEFINER RPC): the
 -- creator inserts the workspace (created_by = self) then inserts themselves as
 -- the first owner; the members INSERT policy admits exactly that first-owner
@@ -155,8 +166,8 @@ create policy workspace_members_insert on public.workspace_members for insert to
     private.is_workspace_owner(workspace_id)
     or (
       user_id = (select auth.uid()) and role = 'owner'
-      and exists (select 1 from public.workspaces w where w.id = workspace_id and w.created_by = (select auth.uid()))
-      and not exists (select 1 from public.workspace_members m2 where m2.workspace_id = workspace_id)
+      and private.workspace_creator(workspace_id) = (select auth.uid())
+      and not private.workspace_has_member(workspace_id)
     )
   );
 drop policy if exists workspace_members_update on public.workspace_members;
