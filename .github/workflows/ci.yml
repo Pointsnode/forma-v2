@@ -23,6 +23,7 @@ jobs:
       - run: npm run check:service-role
       - run: npm run check:public-env
       - run: npm run check:test-scoping
+      - run: npm run check:i18n
       - run: npm audit --audit-level=high
 
   build:

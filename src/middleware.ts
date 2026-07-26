@@ -1,6 +1,7 @@
 import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
+import { signInRedirectPath } from "@/lib/auth-redirect.mjs";
 import { updateSession } from "@/lib/supabase/middleware";
 
 const intl = createIntlMiddleware(routing);
@@ -16,7 +17,8 @@ export async function middleware(request: NextRequest) {
   const isPublic = PUBLIC.some((p) => path === p || path.startsWith(`${p}/`));
   if (!isPublic && !user) {
     const url = request.nextUrl.clone();
-    url.pathname = "/sign-in";
+    // Locale-aware bounce: /es/* -> /es/sign-in, unprefixed -> /sign-in.
+    url.pathname = signInRedirectPath(request.nextUrl.pathname, routing.locales, routing.defaultLocale);
     return NextResponse.redirect(url);
   }
   return response;

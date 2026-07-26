@@ -12,7 +12,8 @@
     "test:logic": "node scripts/test-logic.mjs",
     "check:service-role": "node scripts/check-service-role.mjs",
     "check:public-env": "node scripts/check-public-env.mjs",
-    "check:test-scoping": "node scripts/check-test-scoping.mjs"
+    "check:test-scoping": "node scripts/check-test-scoping.mjs",
+    "check:i18n": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
