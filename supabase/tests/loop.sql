@@ -121,6 +121,15 @@ do $$ begin
   exception when sqlstate 'FV221' then null; end;
 end $$;
 
+-- (4b) post_proposal_message wrapper — the private→wrapper hop under the
+-- authenticated role (the shape that broke in production; 0004 fixes it).
+set local request.jwt.claims = '{"sub":"11111111-0000-0000-0000-000000000001","role":"authenticated"}';
+select public.post_proposal_message('aaaa0001-0000-0000-0000-0000000000f1', 'Asked Flor y Canto for a blush-forward revision.');
+do $$ begin
+  if (select count(*) from public.proposal_messages where proposal_id='aaaa0001-0000-0000-0000-0000000000f1') <> 2 then
+    raise exception 'TEST FAIL: post_proposal_message did not append'; end if;
+end $$;
+
 -- ── (5) approve path + withdraw ──────────────────────────────────────────────
 set local request.jwt.claims = '{"sub":"11111111-0000-0000-0000-000000000001","role":"authenticated"}';
 insert into public.proposals (id, wedding_id, title, created_by)
