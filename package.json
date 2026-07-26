@@ -1,0 +1,43 @@
+{
+  "name": "forma-v2",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test:db": "node scripts/test-db-local.mjs",
+    "test:logic": "node scripts/test-logic.mjs",
+    "check:service-role": "node scripts/check-service-role.mjs",
+    "check:public-env": "node scripts/check-public-env.mjs",
+    "check:test-scoping": "node scripts/check-test-scoping.mjs",
+    "check:i18n": "node scripts/check-i18n.mjs"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.45.4",
+    "next": "16.2.12",
+    "next-intl": "^4.13.4",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.2.12",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.12",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  },
+  "overrides": {
+    "brace-expansion": "^5.0.8",
+    "postcss": "^8.5.18",
+    "sharp": "^0.35.0",
+    "minimatch": "^10.0.0"
+  }
+}

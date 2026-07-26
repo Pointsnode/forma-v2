@@ -1,0 +1,49 @@
+{
+  "app": {
+    "name": "Forma",
+    "shell": "Workspace",
+    "signOut": "Sign out",
+    "loading": "Loading"
+  },
+  "nav": {
+    "cockpit": "Cockpit",
+    "weddings": "Weddings",
+    "calendar": "Calendar",
+    "catalog": "Catalog"
+  },
+  "auth": {
+    "signInTitle": "Sign in",
+    "signUpTitle": "Create your account",
+    "resetTitle": "Reset password",
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Your name",
+    "signIn": "Sign in",
+    "signUp": "Create account",
+    "sendReset": "Send reset link",
+    "toSignUp": "Need an account? Create one",
+    "toSignIn": "Have an account? Sign in",
+    "forgot": "Forgot password?",
+    "resetSent": "If that email exists, a reset link is on its way.",
+    "errors": {
+      "invalid": "Check your email and password.",
+      "generic": "Something went wrong. Try again."
+    }
+  },
+  "workspace": {
+    "createTitle": "Name your workspace",
+    "createHint": "A studio manages weddings for clients; a couple plans their own.",
+    "name": "Workspace name",
+    "kindStudio": "Studio",
+    "kindCouple": "Couple",
+    "create": "Create workspace",
+    "empty": "You are not in a workspace yet.",
+    "membersOne": "1 member",
+    "membersOther": "{count} members",
+    "error": "Could not create the workspace. Try again."
+  },
+  "styleguide": {
+    "title": "Design system",
+    "subtitle": "The Forma v2 components, in both languages."
+  }
+}

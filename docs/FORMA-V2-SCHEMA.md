@@ -1,0 +1,261 @@
+# Forma v2 — The Data Contract
+
+**Status:** DRAFT for Gio's review. This is the third leg of the build contract: FORMA-V2-PLAN.md says *what*, the prototype (v1.12) says *how it looks and flows*, this document says *how it connects*. Every migration Antigravity writes is checked against this document at gate. If reality must diverge, this document is amended in the same PR — the doc never drifts from the database.
+
+**Date:** 2026-07-25 · **Database:** `forma-v2-staging` (`mnmiazaclhyxotodjrsx`)
+
+---
+
+## 0. The prime directive: connection is enforced, not promised
+
+v1's disease was entity silos — tables that existed but didn't reference each other, so "add a venue" showed up nowhere. v1 policed what references it *did* have with BEFORE-trigger consistency checks (the 0037/0066/0069 pattern). v2 does better: **composite foreign keys**.
+
+Every wedding-owned parent gets a redundant unique key carrying its wedding:
+
+```sql
+alter table wedding_events add constraint wedding_events_id_wedding_uq unique (id, wedding_id);
+```
+
+Every child that references a sibling references it **together with the wedding**:
+
+```sql
+-- event_guests cannot EVER join a guest to an event of a different wedding:
+foreign key (event_id, wedding_id) references wedding_events (id, wedding_id),
+foreign key (guest_id, wedding_id) references guests        (id, wedding_id)
+```
+
+The database engine itself rejects any cross-wedding link. No trigger to forget, no code path to miss. This pattern applies to **every** sibling edge in this document: event↔guest, engagement↔event, ledger↔contract, menu choice↔menu, proposal↔subject, seat↔guest. A handful of edges that cross scopes on purpose (vendor catalog → engagement; workspace → wedding) are called out explicitly where they occur.
+
+House rules carried from v1, still binding: migrations `NNNN_description.sql`, additive and idempotent, applied in order by CI; RLS on from the first migration of every table; SECURITY DEFINER functions live in `private` with thin `public` wrappers and pinned `search_path`; hermetic PGlite tests (`begin; … rollback;`) for every migration; Supabase advisors at 0 after every merge.
+
+**New rules for v2:** every FK is indexed the day it's born. Every table gets `created_at`/`updated_at timestamptz not null default now()` + the shared `touch_updated_at` trigger. All money is `numeric(12,2)` + `currency char(3) default 'USD'`. All enums are Postgres enums, never text. `on delete` is chosen per edge and stated here — never left to default.
+
+---
+
+## 1. Identity & tenancy (M0 — migration 0001)
+
+```
+profiles           id uuid PK = auth.users.id · display_name · avatar_url · locale ('en'|'es')
+workspaces         id PK · kind ('studio'|'couple') · name · slug UNIQUE · created_by → profiles
+workspace_members  workspace_id → workspaces (CASCADE) · user_id → profiles (CASCADE)
+                   role ('owner'|'planner'|'coordinator') · UNIQUE (workspace_id, user_id)
+```
+
+- `profiles` row created by AFTER-INSERT trigger on `auth.users`. Avatar from day one — the presence bubbles depend on it.
+- "Planner is a role, not a business": a `studio` workspace holds weddings for clients; a `couple` workspace is a self-planning couple wearing the role. Same tables, same everything.
+- RLS: members read their workspaces; owners manage members; profiles self-read/write, plus readable by co-members of any shared workspace/wedding (needed to render avatars).
+- Helper (used by all later policies): `private.is_workspace_member(w uuid)` — SECURITY DEFINER, STABLE.
+
+## 2. Weddings & events — the spine (M1 — 0002)
+
+```
+weddings          id PK · workspace_id → workspaces (RESTRICT) · slug UNIQUE
+                  couple_display ('Priya & Arjun') · partner_a · partner_b
+                  phase enum wedding_phase ('hiring'|'foundations'|'details'|'wedding_days'|'closed') not null default 'foundations'
+                  kind ('city'|'destination') · location_city · location_country
+                  date_start date · date_end date · guest_target int · budget_total numeric
+                  UNIQUE (id, workspace_id)
+wedding_members   wedding_id → weddings (CASCADE) · user_id → profiles · role ('partner'|'family'|'day_of')
+                  UNIQUE (wedding_id, user_id)
+wedding_events    id PK · wedding_id → weddings (CASCADE)
+                  label · kind ('ceremony'|'reception'|'dinner'|'party'|'ritual'|'other')
+                  event_date date · start_time · end_time · order_index int · guest_target int
+                  UNIQUE (id, wedding_id)
+```
+
+- Seed trigger: creating a wedding inserts **one localized default event** — a wedding always has ≥ 1 event (v1's hard-won law).
+- **Phase gates are computed, then recorded.** `phase` is data, but transitions are performed by one function `private.advance_wedding_phase(wedding_id)` that verifies the gate conditions of §9 and writes an `activity` row. No UI writes `phase` directly.
+- `date_start/date_end` are derived from events by trigger (min/max of `event_date`) — never typed twice.
+- RLS: staff (workspace members of the owning workspace) full CRUD; wedding members read + the specific writes named per table below. Helper: `private.is_wedding_staff(w uuid)`, `private.is_wedding_member(w uuid)`.
+- Couple-portal access gate (Phase 1): `wedding_members` rows for the couple are **created by the contract-completion trigger** (§7) when the planner agreement completes and its deposit line is paid — the signature literally creates access. Self-planning couples (workspace kind `couple`) bypass: their membership is created with the wedding.
+
+## 3. The loop — proposals, messages, activity (M2 — 0003)
+
+```
+proposals   id PK · wedding_id → weddings (CASCADE) · UNIQUE (id, wedding_id)
+            status enum proposal_status ('draft'|'sent'|'seen'|'change_requested'|'approved'|'declined'|'withdrawn')
+            title · note · estimate_amount · currency
+            created_by → profiles · responded_by → profiles · responded_at
+            -- the subject: EXACTLY ONE of (all composite-FK'd with wedding_id):
+            engagement_id → wedding_vendors   (a vendor/venue presentation)
+            quote_id      → quotes
+            menu_id       → menus
+            design_item_id→ design_items
+            schedule_ref  → wedding_events    (run-of-show proposals)
+            CHECK (num_nonnulls(engagement_id, quote_id, menu_id, design_item_id, schedule_ref) = 1)
+proposal_events    proposal_id + wedding_id → proposals(id,wedding_id) · event_id + wedding_id → wedding_events(id,wedding_id)
+                   PK (proposal_id, event_id)         -- "presented FOR these events"
+proposal_messages  id PK · proposal_id → proposals (CASCADE) · wedding_id (composite FK)
+                   author_id → profiles · body text (≤ 4000) · created_at
+activity    id PK · wedding_id → weddings (CASCADE) · actor_id → profiles NULL (system = null)
+            verb text · summary text · subject jsonb · created_at        -- feeds "Since you were away"
+```
+
+- The FK-union subject pattern replaces string polymorphism: **every proposal points at a real row, enforced**. Adding a new proposable type later = one nullable column + widening the CHECK, in a migration.
+- `status` transitions via `private.respond_to_proposal(...)` (couple: approve / request change with message) and `private.send_proposal(...)` (staff) — both write `activity`. Couple's RLS write access is **only** through these functions.
+- When a proposal is `approved`, its subject reacts by trigger where mechanical (engagement → `shortlisted`; quote → `accepted`) — the loop moves the mesh.
+- Ball-in-court is **derived**, never stored: `sent/seen → couple`, `change_requested → planner`, `draft → planner`. A view `proposal_court` exposes it so every surface computes it identically.
+
+## 4. People — guests, event_guests, touchpoints (M3 — 0004)
+
+```
+guests        id PK · wedding_id → weddings (CASCADE) · UNIQUE (id, wedding_id)
+              full_name · email · phone · side ('a'|'b'|'both'|'none') · group_label
+              plus_one_allowed bool · plus_one_name · dietary · notes
+              rsvp_code char(16) UNIQUE  CHECK (rsvp_code ~ '^[a-f0-9]{16}$')
+event_guests  PK (event_id, guest_id)
+              event_id + wedding_id → wedding_events (id, wedding_id) (CASCADE)
+              guest_id + wedding_id → guests (id, wedding_id) (CASCADE)
+              invited bool default true · rsvp_status enum ('pending'|'yes'|'no'|'maybe') default 'pending'
+              rsvp_responded_at · menu_choice_id + wedding_id → menu_options (id, wedding_id) SET NULL
+              seat_ref → seats SET NULL (M6)
+touchpoints   id PK · wedding_id → weddings (CASCADE)
+              kind enum ('save_the_date'|'rsvp_invite'|'rsvp_reminder'|'rsvp_close'|'menu_collect'|'travel_info'|'day_of_schedule')
+              scheduled_for date · status ('scheduled'|'sending'|'sent'|'skipped') · audience_rule jsonb
+touchpoint_sends  touchpoint_id → touchpoints (CASCADE) · guest_id + wedding_id → guests (composite, CASCADE)
+                  token char(24) UNIQUE · sent_at · opened_at · answered_at · PK (touchpoint_id, guest_id)
+```
+
+- Auto-population (v1 E2's design, kept): AFTER INSERT on `guests` → one `event_guests` row per event; AFTER INSERT on `wedding_events` → one row per guest; both `on conflict do nothing`; `invited` defaults true, planner prunes subsets (the 80-at-the-mehndi case).
+- Guests never log in. The public surface is v1's **locked security pattern, ported verbatim in structure**: `public.rsvp_lookup(code)` / `public.rsvp_submit(code, responses jsonb, …)` as thin wrappers over `private.*` SECURITY DEFINER functions — regex-gated code, `for update` locks, deadline + enabled checks, per-event responses `[{event_id, status, menu_option_id}]`, error codes FM010–FM014 ('not invited to that event'), activity logged. Touchpoint answer links use `touchpoint_sends.token` through the same private layer, each collecting exactly one thing.
+- Rollups (guest tab progress board, event bars) are **views**, not stored counters: `guest_rsvp_rollup`, `event_guest_counts`. Nothing to drift.
+- Exceptions surface = view: guests with bounced/absent email, missing +1 names, unanswerable sends.
+
+## 5. Partners — catalog, presenting, engagements (M4 — 0005)
+
+```
+vendors        id PK · workspace_id → workspaces (CASCADE) · UNIQUE (id, workspace_id)   -- CATALOG, workspace-private
+               name · kind enum ('venue'|'catering'|'florals'|'music'|'photo_video'|'beauty'|'decor'|'rentals'|'other')
+               description · tags text[] · cities text[] (GIN-indexed — matching depends on it)
+               services text · restrictions text · perks text
+               contact_name · contact_email · contact_phone
+               capacity int NULL · address NULL (venue-kind fields, nullable for others)
+vendor_photos  id PK · vendor_id → vendors (CASCADE) · storage_path · sort · caption
+vendor_files   id PK · vendor_id → vendors (CASCADE) · storage_path · label ('packet'|'rates'|'menu'|'other') · uploaded_at
+wedding_vendors  -- THE ENGAGEMENT: "this vendor, presented onto this wedding"
+               id PK · wedding_id → weddings (CASCADE) · UNIQUE (id, wedding_id)
+               vendor_id → vendors (RESTRICT)      -- deliberate cross-scope edge: catalog → wedding
+               status enum ('presented'|'shortlisted'|'quote_requested'|'quoted'|'booked'|'declined'|'archived')
+               presented_note · presented_estimate · presented_at · UNIQUE (wedding_id, vendor_id)
+event_vendors  engagement_id + wedding_id → wedding_vendors (id, wedding_id) (CASCADE)
+               event_id + wedding_id → wedding_events (id, wedding_id) (CASCADE)
+               role text NULL · PK (engagement_id, event_id)
+quotes         id PK · wedding_id (composite w/ engagement) · engagement_id → wedding_vendors
+               status ('requested'|'received'|'accepted'|'declined'|'expired') · amount · currency
+               valid_until date · note · file storage_path NULL
+```
+
+- **Presenting is one transaction** — `private.present_vendor(vendor_id, wedding_id, event_ids[], estimate, note)` creates the engagement (`presented`), its `event_vendors` rows, **and the proposal** (§3) in one atomic call. The loop's opening move is a single function; there is no path to a "shared" vendor without a proposal.
+- Guard trigger (the one BEFORE trigger v2 keeps, because it crosses scopes): engagement's `vendor.workspace_id` must equal the wedding's `workspace_id` — you can only present out of your own catalog. `vendors` deletion is RESTRICT while engagements exist.
+- The couple's RLS on `vendors` is **none**. They see vendors only through `wedding_vendors` joined views scoped to their wedding — the catalog stays private, structurally.
+- An event's "venue" = its `event_vendors` row whose vendor kind is `venue` and engagement status `booked`. Partial unique index enforces **at most one booked venue per event**.
+- Phase-2 gate reads this table: dates locked + every event has a booked venue (§9).
+
+## 6. Money — one ledger, fully traceable (M5 — 0006)
+
+```
+ledger_lines  id PK · wedding_id → weddings (CASCADE)
+              title · amount numeric(12,2) CHECK (amount <> 0) · currency
+              status enum ('expected'|'scheduled'|'due'|'paid'|'settled'|'void')
+              due_date date NULL · paid_at NULL
+              kind enum ('deposit'|'balance'|'progress'|'planner_fee'|'day_of_extra'|'manual')
+              category text NULL
+              -- traceability (each nullable, each composite-FK'd with wedding_id):
+              engagement_id → wedding_vendors · quote_id → quotes · contract_id → contracts
+              event_id → wedding_events ON DELETE SET NULL      -- the budget slice tag
+fee_payments  id PK · wedding_id · ledger_line_id → ledger_lines (kind='planner_fee' only, trigger-checked)
+              stripe_payment_intent · status · amount · created_at
+```
+
+- **One ledger.** Budget = `weddings.budget_total` vs. views over `ledger_lines`: committed (contract-linked, unpaid), paid, open. The per-event budget slice = lines tagged `event_id`. The money radar = lines with `due_date` within horizon, across a workspace's weddings. Nothing is stored twice; every number in the prototype's Budget, Money radar, and event slices is a query over this one table, and each line's `trace` renders from its FKs.
+- Only `planner_fee` lines ever touch Stripe (`fee_payments`); everything else is tracked (Decision 3 in the plan). The schema keeps in-Forma vendor payments possible later by adding a payments table against the same lines — no rebuild.
+- **Wedding close is computable:** `private.close_wedding(w)` verifies phase = `wedding_days`, all events past, and no line in ('expected','scheduled','due') — "all tabs settled" as a WHERE clause. Day-of extras insert as `due` and therefore block close until resolved.
+
+## 7. Contracts — the D3 suite, mesh-fed (M5 — 0006, same migration)
+
+Ported from v1's merged D1–D3 design (0048–0050), which is proven: `contract_templates` (workspace-scoped: full/partial/day-of/riders), `contracts` (id, wedding_id, engagement_id NULL composite-FK'd — planner agreements have none; kind ('planner_agreement'|'vendor'|'venue'); status ('draft'|'sent'|'partially_signed'|'completed'|'declined'|'voided')), `contract_draft_content`, `contract_fields` (anchored placement, org-immutable, page-fraction coordinate checks), `contract_signers` (sequential order, per-signer tokens), fill/sign via the locked v1 function pattern (`fill_contract_fields_as` / `sign_contract_as`: token→single-signer server-derived, for-update locks, order gate, required-field gate FM025, value caps, values frozen at `signed_at` by immutability trigger, declined ≠ satisfied).
+
+**v2 additions:**
+- **Merge fields resolve from the mesh:** `contract_fields.merge_source` enum ('couple_names'|'event_ref'|'venue_restrictions'|'quote_amount'|'ledger_schedule'|'workspace_profile'|'vendor_contact'|'manual') — resolved server-side at draft render; the contract room's green pills are these.
+- **Contracts fire the gates:** AFTER-UPDATE trigger on completion — `planner_agreement` completed + its deposit `ledger_line` paid → create the couple's `wedding_members` rows + advance phase 1→2 (§2). Venue contract completed → engagement `booked`. Completion also emits the stamped-PDF job and files the artifact to `documents`.
+- **Draft-hold:** a contract whose draft references an unapproved proposal (nullable composite FK `blocking_proposal_id`) cannot be sent — the "why it's still a draft" card is a real constraint, and the send happens automatically (trigger on proposal approval) exactly as the prototype's audit trail promises.
+
+## 8. Operations (M6 — 0007)
+
+```
+schedule_items  id PK · wedding_id · event_id + wedding_id → wedding_events (CASCADE) NOT NULL
+                time · title · detail · sort · done_at NULL · done_by NULL      -- run of show; day-of check-off
+menus           id PK · wedding_id · event_id composite NOT NULL · title · notes
+menu_options    id PK · menu_id + wedding_id → menus · label · diet_tags text[] · UNIQUE (id, wedding_id)
+seating: floor_plans (event-scoped) · seating_tables · seats — seats reference event_guests
+         composite-keyed so a guest can only be seated at their own event
+tasks           id PK · wedding_id NULL · workspace_id NULL (CHECK exactly one) · title · due_date · done_at
+                -- optional links, composite where wedding-scoped: engagement_id · contract_id · event_id · proposal_id
+wedding_goal_overrides  wedding_id · goal_key text · status ('manual_done'|'dismissed') · set_by · note
+                        PK (wedding_id, goal_key)     -- What's-Next: detection auto-wins upward (v1 spec, kept)
+documents       id PK · wedding_id NULL · workspace_id NULL (CHECK exactly one)
+                title · storage_path · source ('upload'|'contract_artifact'|'vendor_file'|'touchpoint')
+                engagement_id · contract_id · event_id (nullable composite links)
+design_boards / design_items  wedding-scoped · items optionally event-tagged (SET NULL)
+```
+
+- **What's Next is computed**, per the v1 spec you approved: goal library in code with `detect(weddingData)` per goal, overrides only for what detection can't see, phase-locking derived. No milestones anywhere.
+- `event_id` on event-owned tables (`schedule_items`, `menus`, seating) is **NOT NULL** in v2 — those things belong to events by nature (the mock's law: an event owns its venue, schedule, menus, guests, seating, slice). Taggable things (`ledger_lines`, `design_items`, `documents`, `tasks`) stay nullable with `SET NULL`.
+
+## 9. The gates, as predicates
+
+| Gate | Computed from |
+|---|---|
+| 1 → 2 | `planner_agreement` contract `completed` **and** its deposit line `paid` (auto for `couple` workspaces) |
+| 2 → 3 | `budget_total > 0` · `guest_target > 0` (or guests > 0) · location set · **every event has a booked venue** · every event dated |
+| 3 → 4 | date-driven (first `event_date` arrives); readiness surfaced by What's-Next, not enforced |
+| 4 → closed | all events past **and** no ledger line in ('expected','scheduled','due') |
+
+One function per transition in `private`, each writing `activity`. The phase line, the planning room, and the couple's view all read the same predicates.
+
+## 10. RLS matrix (summary — each migration ships its rows)
+
+| Table group | Staff (workspace) | Couple (wedding member) | Guest (no auth) |
+|---|---|---|---|
+| workspace, catalog (`vendors`, templates, workspace tasks/docs) | CRUD | **nothing** | — |
+| wedding spine, events, engagements, quotes, ledger, contracts, ops | CRUD (via functions where stated) | SELECT (money views respect visibility) | — |
+| proposals / messages | CRUD | SELECT + respond/message **via functions only** | — |
+| guests / event_guests / touchpoints | CRUD | SELECT | tokenized SECURITY-DEFINER RPCs only |
+| activity | SELECT + system writes | SELECT (filtered: no money verbs if restricted) | — |
+
+## 11. Migration ↔ milestone map & the verification harness
+
+```
+0001 M0 identity/tenancy      0002 M1 weddings+events+phase fns
+0003 M2 loop                  0004 M3 guests+touchpoints+RSVP RPCs
+0005 M4 catalog+presenting    0006 M5 ledger+contracts suite
+0007 M6 operations
+```
+
+Every migration PR must ship, and I gate on:
+1. **Cross-wedding rejection tests** — for every composite FK, a hermetic test that inserts wedding A's child pointing at wedding B's parent and asserts the FK (not a trigger, not app code) rejects it.
+2. **RLS matrix tests** — every role × table × verb from §10, PGlite, `begin; … rollback;`.
+3. **Function-path tests** — proposals respond, present_vendor atomicity, phase transitions (each gate's positive and negative case), contract fill/sign ports (v1's 35-test suite pattern), RSVP flow, wedding close blocked by one unsettled line.
+4. **Advisors 0** · `typecheck && lint && build` · guard suite (`check:service-role`, `check:public-env`, `check:test-scoping`) green.
+5. **Doc parity** — the PR updates this document if and only if the schema changed; I diff both.
+
+## 12. Connection checklist — prototype surface → query path
+
+Every surface in v1.12, traced to its data. This is the "everything links" audit, run at every gate:
+
+| Surface | Reads |
+|---|---|
+| Cockpit: Since you were away | `activity` (workspace's weddings, since last seen) |
+| Cockpit: chase list | `proposal_court` = couple/vendor + age; quotes `requested` past `valid_until` |
+| Cockpit: money radar | `ledger_lines` due within 60d across workspace + `planner_fee` lines |
+| Cockpit: under management / Weddings bento | `weddings` ordered by `date_start` |
+| Calendar | touchpoints ∪ ledger due dates ∪ event dates ∪ external calendar |
+| Venue/Vendor bento + profile | `vendors` (+photos/files) · engagement badges via `wedding_vendors` |
+| Present modal | `private.present_vendor(...)` → engagement + event_vendors + proposal, atomically |
+| Wedding overview: waiting on a decision | `proposals` not terminal, with court + thread |
+| What's Next | goal detectors over the mesh + `wedding_goal_overrides` |
+| Event page facts (invited/confirmed, venue, slice) | `event_guest_counts` · booked `event_vendors` · event-tagged `ledger_lines` |
+| Guest progress board + touchpoint timeline | rollup views + `touchpoints`/`touchpoint_sends` |
+| Contract room (fields, ceremony, audit, draft-hold) | contracts suite + `merge_source` resolution + `blocking_proposal_id` |
+| Day-of run of show + extras + close | `schedule_items.done_at` · `day_of_extra` lines · `close_wedding` predicate |
+```

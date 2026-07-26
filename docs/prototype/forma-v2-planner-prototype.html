@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>forma — planner portal · clickable prototype v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#121212; --ink-soft:#2A2A2A; --bone:#F7F4EE; --paper:#FFFDF9;
+  --hairline:#EAE6DC; --hairline-dark:#2C2C2C;
+  --sand:#D8C7B0; --sand-soft:#EFE7D9; --taupe:#7A6A50; --wine:#7E3B41; --wine-soft:#F1E4E4;
+  --maroon:#3A1A20; --sage:#8FA487; --sage-soft:#E7ECE2; --sage-ink:#4E6147;
+  --muted:#8A867E;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bone);color:var(--ink);font-family:'Inter',sans-serif;font-weight:400;font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3,.serif{font-family:'Playfair Display',serif;font-weight:500;letter-spacing:.005em}
+.accent{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500}
+a{color:inherit}
+button{font-family:'Inter',sans-serif;cursor:pointer;border:none;background:none;font-size:13px}
+
+/* ---------- chrome ---------- */
+.topbar{background:var(--ink);color:var(--bone);display:flex;align-items:center;gap:28px;padding:0 32px;height:62px;position:sticky;top:0;z-index:50}
+.logo{font-family:'Playfair Display',serif;font-weight:400;font-size:26px;letter-spacing:.04em;color:var(--bone)}
+.logo small{display:block;font-family:'Inter',sans-serif;font-size:7.5px;letter-spacing:.42em;text-transform:uppercase;color:#B8AFA2;margin-top:-3px}
+.topbar .ws{font-size:12px;color:#B8AFA2;border-left:1px solid var(--hairline-dark);padding-left:20px}
+.topbar .ws b{display:block;color:var(--bone);font-weight:500;font-size:13px}
+.topbar .spacer{flex:1}
+.wsel{position:relative}
+.wsel-btn{border-radius:99px;padding:8px 18px;color:var(--bone);font-size:12.5px;display:flex;gap:10px;align-items:center;background:#1E1E1E;cursor:pointer}
+.wsel-btn .car{font-size:9px;color:#948C7F}
+.wmenu{position:absolute;top:46px;right:0;background:var(--paper);color:var(--ink);border-radius:14px;min-width:310px;box-shadow:0 14px 44px rgba(21,18,16,.22);display:none;z-index:80;overflow:hidden}
+.wmenu.open{display:block}
+.wmi{display:flex;gap:11px;padding:12px 16px;border-bottom:1px solid var(--hairline);cursor:pointer;align-items:center;font-size:12.5px}
+.wmi:last-child{border-bottom:none}
+.wmi:hover{background:var(--bone)}
+.wmi.dim{opacity:.5}
+.wmi .n{font-weight:500}
+.wmi .m{color:var(--muted);font-size:11px}
+.wmi .who-b{width:26px;height:26px;font-size:9px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--sand);color:var(--ink);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px}
+
+/* ---------- hero ---------- */
+.hero{background:var(--ink);color:var(--bone);padding:34px 40px 0 40px}
+.hero .kicker{font-size:10.5px;letter-spacing:.34em;text-transform:uppercase;color:#B8AFA2;margin-bottom:10px}
+.hero h1{font-size:40px;font-weight:500;line-height:1.08}
+.hero .meta{margin-top:8px;color:#CFC7B9;font-size:13.5px}
+.hero .meta .accent{font-size:16px;color:var(--sand)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0 0 0;padding-bottom:18px}
+.chip{background:#1E1E1E;color:#D9D2C6;border-radius:99px;padding:7px 16px;font-size:12.5px;transition:.15s}
+.chip small{display:block;font-size:10px;color:#948C7F;letter-spacing:.02em}
+.chip:hover{background:#2A2A2A}
+.chip.on{background:var(--bone);color:var(--ink)}
+.chip.on small{color:var(--taupe)}
+
+/* ---------- phase rail ---------- */
+.phase-rail{background:var(--ink);border-top:1px solid var(--hairline-dark);padding:0 40px;display:flex;gap:0}
+.phase{flex:1;padding:16px 18px 18px 0;border-right:1px solid var(--hairline-dark);margin-right:18px;color:#948C7F;cursor:pointer}
+.phase:last-child{border-right:none;margin-right:0}
+.phase .p-num{font-size:10px;letter-spacing:.3em;text-transform:uppercase}
+.phase .p-name{font-family:'Playfair Display',serif;font-size:17px;margin:2px 0 3px 0;color:#CFC7B9}
+.phase .p-state{font-size:11.5px}
+.phase.done .p-state{color:var(--sage)}
+.phase.now{color:var(--bone)}
+.phase.now .p-name{color:var(--bone)}
+.phase.now .p-state{color:var(--sand)}
+.phase.on .p-name{text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:1px}
+
+/* ---------- phase line & planning room ---------- */
+.phase-line{background:var(--ink);border-top:1px solid var(--hairline-dark);padding:11px 40px;display:flex;gap:14px;align-items:baseline;cursor:pointer;font-size:12px;color:#948C7F}
+.phase-line:hover .pl-go{color:var(--bone)}
+.pl-k{letter-spacing:.3em;text-transform:uppercase;font-size:9.5px}
+.pl-t{font-family:'Playfair Display',serif;color:var(--bone);font-size:14.5px}
+.pl-go{margin-left:auto;color:var(--sand);letter-spacing:.04em}
+.psteps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.pstep{background:var(--paper);border-radius:12px;padding:14px 16px;cursor:pointer;transition:.15s;box-shadow:0 1px 2px rgba(18,18,18,.04),0 12px 32px rgba(18,18,18,.05);}
+.pstep:hover{box-shadow:0 2px 6px rgba(18,18,18,.08),0 16px 38px rgba(18,18,18,.09)}
+.pstep .p-num{font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+.pstep .p-name{font-family:'Playfair Display',serif;font-size:17px;margin:2px 0}
+.pstep .p-state{font-size:11.5px;color:var(--muted)}
+.pstep.done .p-state{color:var(--sage-ink)}
+.pstep.on{background:var(--ink);border-color:var(--ink)}
+.pstep.on .p-name{color:var(--bone)}
+.pstep.on .p-num,.pstep.on .p-state{color:#B8AFA2}
+.psec{display:none}
+.psec.on{display:block}
+.psec .section-title{margin-top:0}
+
+/* ---------- nav ---------- */
+.wnav{background:var(--paper);border-bottom:1px solid var(--hairline);padding:0 40px;display:flex;gap:26px;overflow-x:auto;position:sticky;top:62px;z-index:40}
+.wnav button{padding:15px 2px 13px 2px;font-size:13px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;letter-spacing:.01em}
+.wnav button.on{color:var(--ink);border-bottom-color:var(--ink);font-weight:500}
+.wnav button .n{background:var(--wine);color:var(--bone);font-size:10px;border-radius:99px;padding:1px 6px;margin-left:6px;font-weight:600}
+
+/* ---------- layout ---------- */
+.view{display:none;padding:32px 40px 80px 40px;max-width:1240px;margin:0 auto}
+.view.on{display:block}
+.grid{display:grid;gap:18px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}.g32{grid-template-columns:1.6fr 1fr}
+.card{background:var(--paper);border-radius:14px;box-shadow:0 1px 2px rgba(18,18,18,.04),0 12px 32px rgba(18,18,18,.05);padding:22px 24px}
+.card h3{font-size:19px;margin-bottom:4px}
+.card .sub{color:var(--muted);font-size:12.5px;margin-bottom:14px}
+.section-title{display:flex;align-items:baseline;justify-content:space-between;margin:34px 0 14px 0}
+.section-title h2{font-size:24px}
+.section-title .accent{color:var(--taupe);font-size:16px}
+.hr{border:none;border-top:1px solid var(--hairline);margin:16px 0}
+
+/* ---------- badges / status ---------- */
+.badge{display:inline-block;border-radius:99px;padding:3px 10px;font-size:11px;font-weight:500;letter-spacing:.02em}
+.b-awaiting{background:var(--wine-soft);color:var(--wine)}
+.b-approved{background:var(--sage-soft);color:var(--sage-ink)}
+.b-change{background:var(--maroon);color:var(--bone)}
+.b-scheduled{background:var(--sand-soft);color:var(--taupe)}
+.b-paid{background:var(--sage-soft);color:var(--sage-ink)}
+.b-due{background:var(--wine-soft);color:var(--wine)}
+.b-expected{background:var(--sand-soft);color:var(--taupe)}
+.b-signed{background:var(--sage-soft);color:var(--sage-ink)}
+.b-draft{background:var(--sand-soft);color:var(--taupe)}
+.b-booked{background:var(--ink);color:var(--bone)}
+.b-quoting{background:var(--wine-soft);color:var(--wine)}
+.b-general{background:var(--sand-soft);color:var(--taupe)}
+
+/* ---------- lists & rows ---------- */
+.row{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--hairline)}
+.row:last-child{border-bottom:none}
+.row .grow{flex:1;min-width:0}
+.row .t{font-weight:500;font-size:13.5px}
+.row .d{color:var(--muted);font-size:12px;margin-top:1px}
+.row .amt{font-weight:500;font-size:13.5px;white-space:nowrap}
+.row .trace{font-size:11px;color:var(--taupe);margin-top:2px}
+.row .trace b{color:var(--wine);font-weight:500}
+.icon{width:36px;height:36px;border-radius:50%;background:transparent;border:1px solid var(--hairline);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;color:var(--taupe);flex-shrink:0}
+
+/* ---------- stats ---------- */
+.stats{display:flex;gap:0;background:var(--paper);border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(18,18,18,.04),0 12px 32px rgba(18,18,18,.05);}
+.stat{flex:1;padding:18px 22px;border-right:1px solid var(--hairline)}
+.stat:last-child{border-right:none}
+.stat .v{font-family:'Playfair Display',serif;font-size:26px}
+.stat .l{color:var(--muted);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+.stat .s{font-size:11.5px;color:var(--taupe);margin-top:4px}
+
+/* ---------- loop / proposals ---------- */
+.prop{border-radius:12px;padding:16px 18px;margin-bottom:12px;background:var(--paper);cursor:pointer;transition:.15s;box-shadow:0 1px 2px rgba(18,18,18,.04),0 12px 32px rgba(18,18,18,.05);}
+.prop:hover{box-shadow:0 2px 6px rgba(18,18,18,.08),0 16px 38px rgba(18,18,18,.09)}
+.prop .head{display:flex;align-items:center;gap:12px}
+.prop .t{font-weight:500;font-size:14px;flex:1}
+.prop .meta{font-size:11.5px;color:var(--muted);margin-top:3px}
+.thread{display:none;margin-top:14px;border-top:1px solid var(--hairline);padding-top:12px}
+.prop.open .thread{display:block}
+.msg{display:flex;gap:10px;margin-bottom:10px}
+.msg .who{width:26px;height:26px;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0}
+.msg.couple .who{background:var(--wine);color:var(--bone)}
+.msg .bubble{background:#F1EEE7;border-radius:10px;padding:8px 12px;font-size:12.5px}
+.msg .bubble .n{font-weight:600;font-size:11px;margin-bottom:2px}
+.msg .bubble .accent{color:var(--taupe)}
+.prop .actions{display:flex;gap:8px;margin-top:10px}
+.btn{border:1px solid var(--ink);border-radius:99px;padding:7px 16px;font-size:12px;font-weight:500;background:var(--ink);color:var(--bone)}
+.btn.ghost{background:none;color:var(--ink)}
+.btn.wine{background:var(--wine);border-color:var(--wine);color:var(--bone)}
+
+/* ---------- gate card ---------- */
+.gate{background:var(--ink);color:var(--bone);border-radius:14px;padding:22px 24px}
+.gate h3{color:var(--bone);font-size:19px}
+.gate .sub{color:#B8AFA2;font-size:12.5px;margin-bottom:14px}
+.gate .row{border-bottom-color:var(--hairline-dark)}
+.gate .row .t{color:var(--bone);font-weight:400}
+.gate .row .d{color:#948C7F}
+.check{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.check.ok{background:var(--sage);color:var(--ink)}
+.check.no{border:1px solid var(--hairline-dark);color:#948C7F}
+
+/* ---------- ledger ---------- */
+.bar{height:8px;border-radius:99px;background:var(--sand-soft);overflow:hidden;display:flex}
+.bar i{display:block;height:100%}
+.bar .paid{background:var(--sage)}
+.bar .committed{background:var(--sand)}
+.legend{display:flex;gap:18px;font-size:11.5px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px}
+
+/* ---------- guests ---------- */
+.gbar{height:10px;border-radius:99px;overflow:hidden;display:flex;background:var(--sand-soft)}
+.gbar .yes{background:var(--sage)}.gbar .no{background:var(--maroon)}.gbar .maybe{background:var(--sand)}
+.tl{position:relative;padding-left:24px}
+.tl::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:1px;background:var(--hairline)}
+.tl .tp{position:relative;padding:0 0 18px 0}
+.tl .tp::before{content:"";position:absolute;left:-21px;top:5px;width:9px;height:9px;border-radius:50%;background:var(--sage);border:2px solid var(--paper)}
+.tl .tp.next::before{background:var(--wine)}
+.tl .tp.future::before{background:var(--sand)}
+.tl .t{font-weight:500;font-size:13px}
+.tl .d{font-size:12px;color:var(--muted)}
+
+/* ---------- event page ---------- */
+.crumb{display:flex;align-items:center;gap:10px;margin-bottom:18px;font-size:12.5px}
+.crumb button{color:var(--muted);letter-spacing:.02em}
+.crumb button:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.crumb .sep{color:var(--hairline)}
+.crumb .here{font-family:'Playfair Display',serif;font-size:15px;color:var(--ink)}
+.esub{display:flex;gap:22px;border-bottom:1px solid var(--hairline);margin-bottom:26px}
+.esub button{padding:12px 2px;font-size:13px;color:var(--muted);border-bottom:2px solid transparent}
+.esub button.on{color:var(--ink);border-bottom-color:var(--wine);font-weight:500}
+.facts{display:flex;gap:26px;flex-wrap:wrap;margin:6px 0 0 0}
+.fact .v{font-family:'Playfair Display',serif;font-size:20px}
+.fact .l{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+/* ---------- run of show ---------- */
+.ros .row .time{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;width:74px;color:var(--taupe);flex-shrink:0}
+.ros .row.done .t{text-decoration:line-through;color:var(--muted)}
+.tick{width:22px;height:22px;border-radius:50%;border:1px solid var(--hairline);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px}
+.tick.ok{background:var(--sage);border-color:var(--sage);color:var(--ink)}
+
+/* ---------- misc ---------- */
+.note{background:#EFECE4;border-radius:12px;padding:14px 18px;font-size:12.5px;color:var(--taupe)}
+.note b{color:var(--ink)}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.sw{width:84px;height:84px;border-radius:12px;border:1px solid var(--hairline)}
+.simple-note{display:none;background:var(--sage-soft);border-radius:12px;padding:14px 18px;font-size:12.5px;color:var(--sage-ink);margin-bottom:18px}
+body.simple .simple-note{display:block}
+body.simple .multi-only{display:none !important}
+.protobar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#B8AFA2;border-radius:99px;padding:8px 20px;font-size:11px;letter-spacing:.08em;z-index:60;box-shadow:0 8px 24px rgba(18,18,18,.3)}
+.protobar b{color:var(--sand);font-weight:500}
+/* ---------- contract room ---------- */
+.doc{background:#FFFEFB;border-radius:14px;box-shadow:0 1px 2px rgba(18,18,18,.04),0 12px 32px rgba(18,18,18,.05);padding:38px 44px;font-size:13px;line-height:1.7}
+.doc h4{font-family:'Playfair Display',serif;font-size:24px;font-weight:500;margin-bottom:2px}
+.doc .dsub{font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--taupe);font-size:15px;margin-bottom:20px}
+.doc h5{font-family:'Playfair Display',serif;font-size:15px;margin:18px 0 6px 0}
+.doc p{margin-bottom:10px;color:var(--ink-soft)}
+.mf{background:var(--sage-soft);border-bottom:1px solid var(--sage);border-radius:4px;padding:0 4px;font-weight:500;white-space:nowrap;cursor:default}
+.mf[title]{position:relative}
+.sigblock{border:1.5px dashed var(--taupe);border-radius:10px;padding:10px 14px;display:inline-block;min-width:200px;margin:6px 14px 6px 0;vertical-align:top}
+.sigblock .sl{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.sigblock .sv{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:21px}
+.sigblock.done{border-style:solid;border-color:var(--sage);background:var(--sage-soft)}
+.sigblock.pending .sv{color:var(--hairline)}
+.signer{display:flex;gap:11px;align-items:center;padding:11px 0;border-bottom:1px solid var(--hairline)}
+.signer:last-child{border-bottom:none}
+.signer .ord{font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--taupe);width:16px}
+.audit .tp .d{font-size:11.5px}
+
+/* ---------- present modal ---------- */
+.overlay{position:fixed;inset:0;background:rgba(21,18,16,.55);display:none;z-index:90;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.mbox{background:var(--paper);border-radius:18px;max-width:530px;width:92%;padding:28px 30px;box-shadow:0 24px 70px rgba(18,18,18,.3)}
+.mbox h3{font-size:23px}
+.mbox .msub{font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--taupe);font-size:15px;margin:2px 0 16px 0}
+.mlbl{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:16px}
+.fld{width:100%;border:1px solid var(--hairline);border-radius:10px;padding:10px 12px;font-family:'Inter',sans-serif;font-size:13px;background:var(--bone);margin-top:6px;color:var(--ink)}
+textarea.fld{resize:vertical;min-height:64px}
+.echips{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+.echip{background:#EFECE4;border-radius:99px;padding:6px 14px;font-size:12px;cursor:pointer;color:var(--ink-soft)}
+.echip.on{background:var(--ink);color:var(--bone)}
+.mact{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}
+.toast{position:fixed;bottom:66px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bone);padding:13px 24px;border-radius:99px;font-size:12.5px;z-index:95;display:none;box-shadow:0 10px 30px rgba(18,18,18,.35)}
+.toast b{color:var(--sand)}
+
+/* ---------- bento, calendar, what's next ---------- */
+.bento{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.bcard{background:var(--paper);border-radius:14px;box-shadow:0 1px 2px rgba(18,18,18,.04),0 12px 32px rgba(18,18,18,.05);overflow:hidden;display:flex;flex-direction:column}
+.bcard.wide{grid-column:span 2}
+.bhero{height:118px;display:flex;align-items:flex-end;justify-content:space-between;padding:12px 14px;color:rgba(255,253,249,.95);font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px}
+.bhero .big{font-family:'Playfair Display',serif;font-style:normal;font-size:26px}
+.bbody{padding:14px 16px 16px 16px;display:flex;flex-direction:column;flex:1}
+.bbody .t{font-family:'Playfair Display',serif;font-size:17px}
+.bbody .d{color:var(--muted);font-size:12px;margin:3px 0 4px 0}
+.bfoot{display:flex;align-items:center;gap:12px;margin-top:auto;padding-top:12px}
+.blink{font-size:11.5px;color:var(--wine);letter-spacing:.03em;cursor:pointer}
+.blink:hover{text-decoration:underline;text-underline-offset:3px}
+.calhead{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.calhead h3{font-size:22px;min-width:200px}
+.calnav{border:none;border-radius:99px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:var(--paper);box-shadow:0 1px 4px rgba(18,18,18,.1)}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);border-left:1px solid var(--hairline);border-top:1px solid var(--hairline);border-radius:12px;overflow:hidden;background:var(--paper)}
+.caldow{padding:8px 10px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border-right:1px solid var(--hairline);border-bottom:1px solid var(--hairline);background:var(--sand-soft)}
+.calday{min-height:88px;padding:7px 7px;border-right:1px solid var(--hairline);border-bottom:1px solid var(--hairline)}
+.calday .dn{font-size:11.5px;color:var(--muted);margin-bottom:5px}
+.calday.today{background:var(--sand-soft)}
+.calday.today .dn{color:var(--wine);font-weight:600}
+.cpill{display:block;border-radius:6px;padding:2px 6px;margin-bottom:3px;font-size:10.2px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cpill.meet{background:var(--ink);color:var(--bone)}
+.cpill.auto{background:var(--sage-soft);color:var(--sage-ink)}
+.cpill.wed{background:var(--wine);color:var(--bone)}
+.cpill.tent{background:var(--sand-soft);color:var(--taupe)}
+.callegend{display:flex;gap:16px;font-size:11px;color:var(--muted);margin-top:10px}
+.gphase{background:var(--paper);border-radius:14px;box-shadow:0 1px 2px rgba(18,18,18,.04),0 12px 32px rgba(18,18,18,.05);padding:20px 24px;margin-bottom:16px}
+.gphase h3{font-size:19px;display:flex;gap:12px;align-items:baseline}
+.gprog{font-size:11.5px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:400}
+.goal{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid var(--hairline);align-items:flex-start}
+.goal:last-child{border-bottom:none;padding-bottom:2px}
+.goal .gt{font-weight:500;font-size:13.5px}
+.goal .gs{font-size:12px;color:var(--muted);margin-top:2px}
+.goal .gs b{color:var(--taupe);font-weight:500}
+.subs{margin-top:7px;display:flex;flex-wrap:wrap;gap:6px}
+.gsub{font-size:10.8px;background:#EFECE4;border-radius:99px;padding:2px 10px;color:var(--muted)}
+.gsub.ok{background:var(--sage-soft);color:var(--sage-ink)}
+.gsub.todo{background:var(--wine-soft);color:var(--wine)}
+.golink{margin-left:auto;color:var(--wine);font-size:12px;white-space:nowrap;cursor:pointer;padding-top:2px}
+.gphase.locked{opacity:.45}
+.locktag{font-size:11px;color:var(--muted);letter-spacing:.04em;margin-left:auto}
+@media(max-width:900px){.bento{grid-template-columns:1fr}.bcard.wide{grid-column:span 1}}
+
+/* ---------- studio floor ---------- */
+.snav{display:none}
+body.studio .snav{display:flex}
+body.studio .wnav:not(.snav){display:none !important}
+body.studio .hero,body.studio .phase-line{display:none}
+.ws{cursor:pointer}
+.ws:hover b{text-decoration:underline;text-underline-offset:3px}
+.pdots{display:inline-flex;gap:3px;margin-left:8px;vertical-align:middle}
+.pdots i{width:6px;height:6px;border-radius:50%;display:inline-block}
+.srow{cursor:pointer}
+.srow:hover .t{text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- presence & vendor catalog ---------- */
+.who-b{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:600;letter-spacing:.02em;flex-shrink:0}
+.wb-planner{background:var(--sand);color:var(--ink)}
+.wb-couple{background:var(--wine);color:var(--bone)}
+.wb-vendor{background:var(--sage);color:var(--ink)}
+.court{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;color:var(--muted);margin-left:10px}
+.vphoto{width:44px;height:44px;border-radius:10px;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-style:italic;color:rgba(255,253,249,.92);font-size:16px}
+.photostrip{display:flex;gap:8px;margin:12px 0 4px 0}
+.photostrip .vphoto{width:96px;height:68px;border-radius:10px;font-size:13px}
+.tag{background:#EFECE4;border-radius:99px;padding:2px 9px;font-size:10.5px;color:var(--taupe);display:inline-block;margin:3px 4px 0 0}
+.b-shared{background:var(--sage-soft);color:var(--sage-ink)}
+.b-private{background:var(--sand-soft);color:var(--taupe)}
+.pl-dots{display:inline-flex;gap:4px;align-items:center}
+.pl-dots i{width:7px;height:7px;border-radius:50%;display:inline-block}
+.pstep{border-left:3px solid var(--sand-soft)}
+.pstep.done{border-left-color:var(--sage)}
+.pstep.now-c{border-left-color:var(--wine)}
+.kv{display:grid;grid-template-columns:130px 1fr;gap:6px 14px;font-size:12.5px;margin-top:8px}
+.kv .k{color:var(--muted);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding-top:2px}
+@media(max-width:900px){.g2,.g3,.g32{grid-template-columns:1fr}.stats{flex-wrap:wrap}.stat{min-width:45%}}
+</style>
+</head>
+<body class="studio">
+
+<!-- ============ CHROME ============ -->
+<div class="topbar">
+  <div class="logo">forma<small>planning, refined.</small></div>
+  <div class="ws" onclick="goStudio()" title="Studio home"><b>Atelier Mignon</b>Planner studio — all weddings</div>
+  <div class="spacer"></div>
+  <div class="wsel">
+    <button class="wsel-btn" onclick="document.getElementById('wmenu').classList.toggle('open')"><span id="wselLabel">All weddings</span><span class="car">▼</span></button>
+    <div class="wmenu" id="wmenu">
+      <div class="wmi" onclick="wPick('studio')"><span class="who-b" style="background:var(--ink);color:var(--bone)">AM</span><div><div class="n">Studio — all weddings</div><div class="m">Overview, catalog, calendar, tasks</div></div></div>
+      <div class="wmi" onclick="wPick('simple')"><span class="who-b" style="background:#4E5C47;color:#F7F4EE">E·L</span><div><div class="n">Emma &amp; Lucas</div><div class="m">Oct 10 · 77 days · Phase 3</div></div></div>
+      <div class="wmi" onclick="wPick('multi')"><span class="who-b" style="background:#5C2B35;color:#F7F4EE">P·A</span><div><div class="n">Priya &amp; Arjun</div><div class="m">Jan 15 – 17 · 174 days · Phase 3</div></div></div>
+      <div class="wmi dim" title="Not built in this prototype"><span class="who-b" style="background:#8A7355;color:#3A342E">S·M</span><div><div class="n">Sofía &amp; Marco</div><div class="m">Jun 2027 · Phase 2 · prototype: not built</div></div></div>
+      <div class="wmi dim" title="Not built in this prototype"><span class="who-b" style="background:#1E1E1E;color:#F7F4EE">D·R</span><div><div class="n">Daniela &amp; Rob</div><div class="m">Settling · Phase 4 · prototype: not built</div></div></div>
+    </div>
+  </div>
+  <div class="avatar">GM</div>
+</div>
+
+<!-- ============ HERO ============ -->
+<div class="hero">
+  <div class="kicker" id="heroKicker">Destination wedding · San Miguel de Allende, MX</div>
+  <h1 id="heroTitle">Priya &amp; Arjun</h1>
+  <div class="meta" id="heroMeta"><span class="accent">January 15 – 17, 2027</span> &nbsp;·&nbsp; 3 days · 5 events · 3 venues &nbsp;·&nbsp; 312 guests &nbsp;·&nbsp; $480,000</div>
+  <div class="chips" id="eventChips">
+    <button class="chip on" onclick="goWedding(this)">Whole wedding</button>
+    <button class="chip multi-only" onclick="goEvent(0,this)">Mehndi<small>Day 1 · Jan 15 · 80 guests</small></button>
+    <button class="chip multi-only" onclick="goEvent(1,this)">Welcome dinner<small>Day 1 · Jan 15 · 120 guests</small></button>
+    <button class="chip multi-only" onclick="goEvent(2,this)">Sangeet<small>Day 2 · Jan 16 · 220 guests</small></button>
+    <button class="chip multi-only" onclick="goEvent(3,this)">Ceremony<small>Day 3 · Jan 17 · 312 guests</small></button>
+    <button class="chip multi-only" onclick="goEvent(4,this)">Reception<small>Day 3 · Jan 17 · 312 guests</small></button>
+  </div>
+</div>
+
+<!-- ============ PHASE LINE ============ -->
+<div class="phase-line" onclick="openPlanning()">
+  <span class="pl-dots"><i style="background:var(--sage)"></i><i style="background:var(--sage)"></i><i style="background:var(--wine)"></i><i style="background:var(--hairline-dark)"></i></span>
+  <span class="pl-k">Planning</span>
+  <span class="pl-t">Phase 3 · The details</span>
+  <span>— 12 of 18 bookings confirmed · 4 items to the next gate</span>
+  <span class="pl-go">Open planning →</span>
+</div>
+
+<!-- ============ WEDDING NAV ============ -->
+<div class="wnav" id="wnav">
+  <button class="on" onclick="goView('overview',this)">Overview</button>
+  <button onclick="goView('tasks',this)">What's next<span class="n">3</span></button>
+  <button onclick="goView('guests',this)">Guest list</button>
+  <button onclick="goView('vendors',this)">Vendors</button>
+  <button onclick="goView('budget',this)">Budget &amp; quotes<span class="n">2</span></button>
+  <button onclick="goView('contracts',this)">Contracts</button>
+  <button onclick="goView('design',this)">Design</button>
+  <button onclick="goView('documents',this)">Documents</button>
+</div>
+<div class="wnav snav" id="snav">
+  <button class="on" onclick="sGo('overview',this)">Overview</button>
+  <button onclick="sGo('weddings',this)">Weddings</button>
+  <button onclick="sGo('venues',this)">Venues</button>
+  <button onclick="sGo('vendors',this)">Vendors</button>
+  <button onclick="sGo('contracts',this)">Contracts</button>
+  <button onclick="sGo('tasks',this)">Tasks</button>
+  <button onclick="sGo('profile',this)">Planner profile</button>
+  <button onclick="sGo('calendar',this)">Calendar</button>
+  <button onclick="sGo('admin',this)">Admin</button>
+</div>
+
+<!-- ============ STUDIO: OVERVIEW ============ -->
+<div class="view on" id="v-s-overview">
+  <div class="section-title" style="margin-top:6px"><h2 style="font-size:30px">Good morning, Gio</h2><span class="accent">Saturday, July 25 — the studio at a glance</span></div>
+
+  <div class="stats">
+    <div class="stat"><div class="v">4</div><div class="l">Weddings under management</div><div class="s">2 in Phase 3 · 1 in Phase 2 · 1 closing</div></div>
+    <div class="stat"><div class="v">2</div><div class="l">Appointments today</div><div class="s">Discovery call · menu tasting</div></div>
+    <div class="stat"><div class="v" style="color:var(--wine)">4</div><div class="l">To chase</div><div class="s">Oldest is 12 days in a vendor's court</div></div>
+    <div class="stat"><div class="v">$62.7k</div><div class="l">Due in 60 days</div><div class="s">5 deadlines · 1 is your fee</div></div>
+  </div>
+
+  <div class="grid g32" style="margin-top:18px">
+    <div>
+      <div class="card">
+        <h3>Since you were away</h3><div class="sub">What moved overnight, across every wedding</div>
+        <div class="row"><span class="who-b wb-couple">A</span><div class="grow"><div class="t">Arjun requested a change — first-dance song <span class="tag" style="margin-left:6px">P·A</span></div><div class="d">10:48pm · "something slower for the first minute"</div></div><span class="badge b-change">Change requested</span></div>
+        <div class="row"><span class="who-b wb-couple">S·M</span><div class="grow"><div class="t">Sofía shortlisted Viñedo Santa Elena <span class="tag" style="margin-left:6px">S·M</span></div><div class="d">9:31pm · the venue loop moved without you</div></div><span class="badge b-approved">Progress</span></div>
+        <div class="row"><div class="icon">R</div><div class="grow"><div class="t">6 RSVPs landed overnight <span class="tag" style="margin-left:6px">P·A</span></div><div class="d">5 yes · 1 no · guest list is at 79%</div></div><span class="badge b-scheduled">Automated</span></div>
+        <div class="row"><div class="icon">V</div><div class="grow"><div class="t">Viñedo Santa Elena updated their packet</div><div class="d">New 2027 rates PDF in your catalog</div></div></div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h3>Today</h3><div class="sub">From your calendar — Calendly connected</div>
+        <div class="row"><div class="icon">10</div><div class="grow"><div class="t">Discovery call — Danielle &amp; Cruz</div><div class="d">10:00 · video · new lead, destination winter 2028</div></div><span class="badge b-scheduled">Phase 1</span></div>
+        <div class="row"><div class="icon">16</div><div class="grow"><div class="t">Menu tasting follow-up — Cocina de Humo</div><div class="d">16:00 · Priya &amp; Arjun · reception menu v2</div></div><span class="tag">P·A</span></div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h3>The chase list</h3><div class="sub">In someone else's court, oldest first — who to nudge today</div>
+        <div class="row"><span class="who-b wb-vendor">V</span><div class="grow"><div class="t">Final venue quote <span class="tag" style="margin-left:6px">S·M</span></div><div class="d">With the vendor · deadline was Apr 30 — chase or drop</div></div><span class="badge b-due">12 days</span></div>
+        <div class="row"><span class="who-b wb-couple">D·R</span><div class="grow"><div class="t">Photographer overtime, $450 <span class="tag" style="margin-left:6px">D·R</span></div><div class="d">With the couple · last open tab before close</div></div><span class="badge b-due">8 days</span></div>
+        <div class="row"><span class="who-b wb-couple">P·A</span><div class="grow"><div class="t">Mariachi quote, $5,600 <span class="tag" style="margin-left:6px">P·A</span></div><div class="d">With the couple · hold expires Aug 2 · nudge scheduled Mon</div></div><span class="badge b-awaiting">4 days</span></div>
+        <div class="row"><span class="who-b wb-couple">P·A</span><div class="grow"><div class="t">Menu v2 — plated or family-style <span class="tag" style="margin-left:6px">P·A</span></div><div class="d">With the couple · today's tasting follow-up may resolve it</div></div><span class="badge b-awaiting">2 days</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h3>Money radar</h3><div class="sub">Every deadline in the next 60 days — theirs and yours</div>
+        <div class="row"><div style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--taupe);width:56px;flex-shrink:0;font-size:15px">Aug 1</div><div class="grow"><div class="t">Luz Films — milestone 2 <span class="tag" style="margin-left:6px">P·A</span></div></div><div class="amt">$13,000</div></div>
+        <div class="row"><div style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--taupe);width:56px;flex-shrink:0;font-size:15px">Aug 20</div><div class="grow"><div class="t">Museo del Carmen — final <span class="tag" style="margin-left:6px">E·L</span></div></div><div class="amt">$9,800</div></div>
+        <div class="row"><div style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--taupe);width:56px;flex-shrink:0;font-size:15px">Sep 15</div><div class="grow"><div class="t">Cocina de Humo — progress <span class="tag" style="margin-left:6px">P·A</span></div></div><div class="amt">$26,000</div></div>
+        <div class="row"><div style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--taupe);width:56px;flex-shrink:0;font-size:15px">Sep 22</div><div class="grow"><div class="t">Rentals — on signing <span class="tag" style="margin-left:6px">E·L</span></div></div><div class="amt">$4,400</div></div>
+        <div class="row" style="background:var(--sand-soft);border-radius:10px;padding-left:10px;padding-right:10px"><div style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--wine);width:56px;flex-shrink:0;font-size:15px">Nov 16</div><div class="grow"><div class="t">Your fee — milestone 3 <span class="tag" style="margin-left:6px">P·A</span></div><div class="d">Via forma · Stripe</div></div><div class="amt">$9,500</div></div>
+        <div class="hr"></div>
+        <div class="d" style="color:var(--muted);font-size:11.5px">Computed from the ledgers — nothing here is typed twice.</div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h3>Urgent</h3><div class="sub">Yours, due now or blocking a gate</div>
+        <div class="row"><div class="grow"><div class="t">Send blush floral revision <span class="tag" style="margin-left:6px">P·A</span></div><div class="d">Due today · blocks contract #C-106</div></div><span class="who-b wb-planner">GM</span></div>
+        <div class="row"><div class="grow"><div class="t">Confirm mehndi artist count <span class="tag" style="margin-left:6px">P·A</span></div><div class="d">Vendor needs 60-day notice</div></div><span class="who-b wb-planner">GM</span></div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h3>Under management</h3><div class="sub">Sage done · wine current · sand ahead</div>
+        <div class="row srow" onclick="enterWedding('simple')"><div class="vphoto" style="width:34px;height:34px;background:#4E5C47;font-size:11px">E·L</div><div class="grow"><div class="t">Emma &amp; Lucas <span class="pdots"><i style="background:var(--sage)"></i><i style="background:var(--sage)"></i><i style="background:var(--wine)"></i><i style="background:var(--hairline)"></i></span></div><div class="d">Phase 3 · 77 days</div></div></div>
+        <div class="row srow" onclick="enterWedding('multi')"><div class="vphoto" style="width:34px;height:34px;background:#5C2B35;font-size:11px">P·A</div><div class="grow"><div class="t">Priya &amp; Arjun <span class="pdots"><i style="background:var(--sage)"></i><i style="background:var(--sage)"></i><i style="background:var(--wine)"></i><i style="background:var(--hairline)"></i></span></div><div class="d">Phase 3 · 174 days</div></div></div>
+        <div class="row"><div class="vphoto" style="width:34px;height:34px;background:#8A7355;font-size:11px">S·M</div><div class="grow"><div class="t">Sofía &amp; Marco <span class="pdots"><i style="background:var(--sage)"></i><i style="background:var(--wine)"></i><i style="background:var(--hairline)"></i><i style="background:var(--hairline)"></i></span></div><div class="d">Phase 2 · venue loop</div></div></div>
+        <div class="row"><div class="vphoto" style="width:34px;height:34px;background:#1E1E1E;font-size:11px">D·R</div><div class="grow"><div class="t">Daniela &amp; Rob <span class="pdots"><i style="background:var(--sage)"></i><i style="background:var(--sage)"></i><i style="background:var(--sage)"></i><i style="background:var(--wine)"></i></span></div><div class="d">Phase 4 · settlement</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STUDIO: WEDDINGS ============ -->
+<div class="view" id="v-s-weddings">
+  <div class="section-title"><h2>Weddings</h2><span class="accent">closest first — each opens its own floor</span></div>
+  <div class="bento">
+    <div class="bcard srow" onclick="enterWedding('simple')">
+      <div class="bhero" style="background:#4E5C47"><span>Museo del Carmen, CDMX</span><span class="big">77<span style="font-size:12px;font-family:Inter"> days</span></span></div>
+      <div class="bbody"><div class="t">Emma &amp; Lucas <span class="pdots"><i style="background:var(--sage)"></i><i style="background:var(--sage)"></i><i style="background:var(--wine)"></i><i style="background:var(--hairline)"></i></span></div>
+        <div class="d">October 10, 2026 · 1 event · 96 guests · $85,000</div>
+        <div class="bfoot"><span class="badge b-scheduled">Phase 3 · on track</span><span class="blink">Open wedding →</span></div></div>
+    </div>
+    <div class="bcard srow" onclick="enterWedding('multi')">
+      <div class="bhero" style="background:#5C2B35"><span>San Miguel de Allende</span><span class="big">174<span style="font-size:12px;font-family:Inter"> days</span></span></div>
+      <div class="bbody"><div class="t">Priya &amp; Arjun <span class="pdots"><i style="background:var(--sage)"></i><i style="background:var(--sage)"></i><i style="background:var(--wine)"></i><i style="background:var(--hairline)"></i></span></div>
+        <div class="d">January 15 – 17, 2027 · 5 events · 312 guests · $480,000</div>
+        <div class="bfoot"><span class="badge b-awaiting">3 with couple</span><span class="blink">Open wedding →</span></div></div>
+    </div>
+    <div class="bcard">
+      <div class="bhero" style="background:#8A7355"><span>Valle de Guadalupe</span><span class="big">318<span style="font-size:12px;font-family:Inter"> days</span></span></div>
+      <div class="bbody"><div class="t">Sofía &amp; Marco <span class="pdots"><i style="background:var(--sage)"></i><i style="background:var(--wine)"></i><i style="background:var(--hairline)"></i><i style="background:var(--hairline)"></i></span></div>
+        <div class="d">June 2027 · Phase 2 — venue loop, 3 quotes out</div>
+        <div class="bfoot"><span class="badge b-awaiting">Shortlist with couple</span></div></div>
+    </div>
+    <div class="bcard">
+      <div class="bhero" style="background:#1E1E1E"><span>Married June 21</span><span class="big" style="font-size:16px">settling</span></div>
+      <div class="bbody"><div class="t">Daniela &amp; Rob <span class="pdots"><i style="background:var(--sage)"></i><i style="background:var(--sage)"></i><i style="background:var(--sage)"></i><i style="background:var(--wine)"></i></span></div>
+        <div class="d">Phase 4 — 2 tabs open · closes when every line settles</div>
+        <div class="bfoot"><span class="badge b-due">Closing</span></div></div>
+    </div>
+    <div class="bcard">
+      <div class="bhero" style="background:#E9E2D4;color:var(--taupe)"><span>Inquiry · Jul 22</span><span class="big" style="font-size:16px">lead</span></div>
+      <div class="bbody"><div class="t">Danielle &amp; Cruz</div>
+        <div class="d">Destination, winter 2028 · discovery call today 10:00</div>
+        <div class="bfoot"><span class="badge b-scheduled">Phase 1</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STUDIO: VENUES ============ -->
+<div class="view" id="v-s-venues">
+  <div class="section-title"><h2>Venues</h2><span class="accent">your catalog of places to offer — the Phase-2 loop draws from here</span></div>
+  <div class="bento">
+    <div class="bcard wide">
+      <div class="bhero" style="background:#8A7355"><span>gardens · ballroom · east lawn · 22 suites</span><span class="big" style="font-size:20px">Hacienda San Gabriel</span></div>
+      <div class="bbody">
+        <div class="d">Historic estate for 300+ · the flagship destination venue · <b style="color:var(--taupe)">San Miguel de Allende</b> · Querétaro · León</div>
+        <div><span class="tag">hacienda</span><span class="tag">historic</span><span class="tag">gardens</span><span class="tag">300+ capacity</span><span class="tag">on-site lodging</span></div>
+        <div class="kv" style="margin-top:10px">
+          <div class="k">Restrictions</div><div>Sound curfew 2:00 · no rice or confetti · open flame with permit only</div>
+          <div class="k">Perks</div><div>Bridal suite night included · staff meals comped · rehearsal hour free</div>
+          <div class="k">Contact</div><div style="display:flex;align-items:center;gap:8px"><span class="who-b wb-vendor">MD</span> Mariana Duarte · mariana@hsgabriel.mx · +52 415 ··· ··22 · 2027 packet (PDF)</div>
+        </div>
+        <div class="bfoot"><span class="badge b-booked">Booked · P·A</span><span class="blink">Edit profile</span><span class="blink" onclick="presentOpen(this)">Present to a wedding →</span></div>
+      </div>
+    </div>
+    <div class="bcard">
+      <div class="bhero" style="background:#8A7355"><span class="big" style="font-size:18px">Casa Alma</span></div>
+      <div class="bbody"><div class="d">Private villa, courtyard for 120 · San Miguel de Allende</div>
+        <div><span class="tag">villa</span><span class="tag">courtyard</span><span class="tag">intimate</span></div>
+        <div class="bfoot"><span class="badge b-booked">Booked · P·A</span><span class="blink">Edit</span><span class="blink" onclick="presentOpen(this)">Present →</span></div></div>
+    </div>
+    <div class="bcard">
+      <div class="bhero" style="background:#5C2B35"><span class="big" style="font-size:18px">Terraza Vista</span></div>
+      <div class="bbody"><div class="d">Rooftop over Centro, 260 · San Miguel de Allende</div>
+        <div><span class="tag">rooftop</span><span class="tag">views</span><span class="tag">late curfew</span></div>
+        <div class="bfoot"><span class="badge b-booked">Booked · P·A</span><span class="blink">Edit</span><span class="blink" onclick="presentOpen(this)">Present →</span></div></div>
+    </div>
+    <div class="bcard">
+      <div class="bhero" style="background:#4E5C47"><span class="big" style="font-size:18px">Museo del Carmen</span></div>
+      <div class="bbody"><div class="d">Historic museum courtyard, 140 · Mexico City</div>
+        <div><span class="tag">historic</span><span class="tag">city</span><span class="tag">art</span></div>
+        <div class="bfoot"><span class="badge b-booked">Booked · E·L</span><span class="blink">Edit</span><span class="blink" onclick="presentOpen(this)">Present →</span></div></div>
+    </div>
+    <div class="bcard">
+      <div class="bhero" style="background:#8A7355"><span class="big" style="font-size:18px">Viñedo Santa Elena</span></div>
+      <div class="bbody"><div class="d">Vineyard at sunset, 220 · Valle de Guadalupe</div>
+        <div><span class="tag">vineyard</span><span class="tag">sunset</span><span class="tag">wine country</span></div>
+        <div class="bfoot"><span class="badge b-quoting">Quoting · S·M</span><span class="blink">Edit</span><span class="blink" onclick="presentOpen(this)">Present →</span></div></div>
+    </div>
+    <div class="bcard">
+      <div class="bhero" style="background:#6B5A41"><span class="big" style="font-size:18px">Finca La Palma</span></div>
+      <div class="bbody"><div class="d">Garden estate, 180 · San Miguel de Allende</div>
+        <div><span class="tag">gardens</span><span class="tag">tented</span></div>
+        <div class="bfoot"><span class="badge b-private">In catalog</span><span class="blink">Edit</span><span class="blink" onclick="presentOpen(this)">Present →</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STUDIO: VENDORS ============ -->
+<div class="view" id="v-s-vendors">
+  <div class="section-title"><h2>Vendors</h2><span class="accent">your private catalog — presenting a vendor, to a wedding, for an event, is how the loop starts</span></div>
+  <div class="bento">
+    <div class="bcard wide">
+      <div class="bhero" style="background:#6B5A41"><span>open-fire kitchen · tasting room</span><span class="big" style="font-size:20px">Cocina de Humo</span></div>
+      <div class="bbody"><div class="d">Wood-fire catering for 40 – 400 covers · tasting menu culture · <b style="color:var(--taupe)">SMA · CDMX</b></div>
+        <div><span class="tag">catering</span><span class="tag">open fire</span><span class="tag">late-night service</span><span class="tag">bar program</span></div>
+        <div class="kv" style="margin-top:10px">
+          <div class="k">Contact</div><div style="display:flex;align-items:center;gap:8px"><span class="who-b wb-vendor">JC</span> Chef Julián Cruz · julian@cocinadehumo.mx · menu book (PDF)</div>
+        </div>
+        <div class="bfoot"><span class="badge b-shared">Presented · P·A</span><span class="blink">Edit profile</span><span class="blink" onclick="presentOpen(this)">Present →</span></div></div>
+    </div>
+    <div class="bcard">
+      <div class="bhero" style="background:#4E5C47"><span class="big" style="font-size:18px">Flor y Canto</span></div>
+      <div class="bbody"><div class="d">Floral installations &amp; mandaps · SMA · GDL</div>
+        <div><span class="tag">florals</span><span class="tag">installations</span></div>
+        <div class="bfoot"><span class="badge b-shared">Presented · P·A</span><span class="blink">Edit</span><span class="blink" onclick="presentOpen(this)">Present →</span></div></div>
+    </div>
+    <div class="bcard">
+      <div class="bhero" style="background:#1E1E1E"><span class="big" style="font-size:18px">Luz Films</span></div>
+      <div class="bbody"><div class="d">Photo, film &amp; drone · nationwide</div>
+        <div><span class="tag">photo</span><span class="tag">film</span><span class="tag">drone</span></div>
+        <div class="bfoot"><span class="badge b-shared">Presented · P·A</span><span class="blink">Edit</span><span class="blink" onclick="presentOpen(this)">Present →</span></div></div>
+    </div>
+    <div class="bcard">
+      <div class="bhero" style="background:#1E1E1E"><span class="big" style="font-size:18px">DJ Selva</span></div>
+      <div class="bbody"><div class="d">DJ, dhol &amp; production · CDMX</div>
+        <div><span class="tag">DJ</span><span class="tag">dhol</span><span class="tag">production</span></div>
+        <div class="bfoot"><span class="badge b-shared">Presented · P·A · E·L</span><span class="blink">Edit</span><span class="blink" onclick="presentOpen(this)">Present →</span></div></div>
+    </div>
+    <div class="bcard">
+      <div class="bhero" style="background:#8A7355"><span class="big" style="font-size:18px">Mariachi Los Reyes</span></div>
+      <div class="bbody"><div class="d">12-piece mariachi · GDL · travels nationwide</div>
+        <div><span class="tag">mariachi</span><span class="tag">12 piece</span></div>
+        <div class="bfoot"><span class="badge b-shared">Presented · P·A</span><span class="blink">Edit</span><span class="blink" onclick="presentOpen(this)">Present →</span></div></div>
+    </div>
+    <div class="bcard">
+      <div class="bhero" style="background:#8A7355"><span class="big" style="font-size:18px">Glow by Ana</span></div>
+      <div class="bbody"><div class="d">Hair &amp; makeup, on-site teams · SMA · QRO</div>
+        <div><span class="tag">hair</span><span class="tag">makeup</span></div>
+        <div class="bfoot"><span class="badge b-private">Private</span><span class="blink">Edit</span><span class="blink" onclick="presentOpen(this)">Present →</span></div></div>
+    </div>
+    <div class="bcard">
+      <div class="bhero" style="background:#4E5C47"><span class="big" style="font-size:18px">Mandap Works MX</span></div>
+      <div class="bbody"><div class="d">Mandap &amp; decor builds · CDMX · travels</div>
+        <div><span class="tag">mandap</span><span class="tag">decor build</span></div>
+        <div class="bfoot"><span class="badge b-private">Private</span><span class="blink">Edit</span><span class="blink" onclick="presentOpen(this)">Present →</span></div></div>
+    </div>
+    <div class="bcard">
+      <div class="bhero" style="background:#5C2B35"><span class="big" style="font-size:18px">Vino &amp; Verso</span></div>
+      <div class="bbody"><div class="d">Sommelier, pairings &amp; tastings · QRO</div>
+        <div><span class="tag">wine pairing</span><span class="tag">tastings</span></div>
+        <div class="bfoot"><span class="badge b-private">Private</span><span class="blink">Edit</span><span class="blink" onclick="presentOpen(this)">Present →</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STUDIO: CONTRACTS ============ -->
+<div class="view" id="v-s-contracts">
+  <div class="section-title"><h2>Contracts</h2><span class="accent">your templates — each wedding's signed contracts live on that wedding's floor</span></div>
+  <div class="grid g2">
+    <div class="card">
+      <h3>Templates</h3><div class="sub">What new engagements start from</div>
+      <div class="row"><div class="icon">A</div><div class="grow"><div class="t">Full planning agreement</div><div class="d">Used by 3 active weddings · fee schedule in four parts</div></div><span class="badge b-signed">Current · v4</span></div>
+      <div class="row"><div class="icon">P</div><div class="grow"><div class="t">Partial planning agreement</div><div class="d">From Phase 2 onward</div></div><span class="badge b-signed">Current · v2</span></div>
+      <div class="row"><div class="icon">D</div><div class="grow"><div class="t">Day-of coordination</div><div class="d">Phase 4 only</div></div><span class="badge b-signed">Current · v2</span></div>
+      <div class="row"><div class="icon">R</div><div class="grow"><div class="t">Destination rider</div><div class="d">Travel, lodging, per-diem terms</div></div><span class="badge b-draft">Draft</span></div>
+    </div>
+    <div class="card">
+      <h3>Active, across clients</h3><div class="sub">The health of every signature you're party to</div>
+      <div class="row"><div class="grow"><div class="t">14 signed &amp; current</div><div class="d">Across 4 weddings</div></div><span class="badge b-signed">Healthy</span></div>
+      <div class="row"><div class="grow"><div class="t">#C-106 Flor y Canto <span class="tag" style="margin-left:6px">P·A</span></div><div class="d">Draft — waiting on couple's concept approval</div></div><span class="who-b wb-couple">P·A</span></div>
+      <div class="row"><div class="grow"><div class="t">Danielle &amp; Cruz agreement</div><div class="d">Goes out if today's discovery call lands</div></div><span class="badge b-scheduled">Ready</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STUDIO: TASKS ============ -->
+<div class="view" id="v-s-tasks">
+  <div class="section-title"><h2>Tasks</h2><span class="accent">the next moves, pulled from every wedding's What's next — not a list you maintain</span></div>
+  <div class="bento">
+    <div class="bcard">
+      <div class="bhero" style="height:64px;background:#4E5C47"><span class="big" style="font-size:16px">Emma &amp; Lucas</span><span>77 days</span></div>
+      <div class="bbody">
+        <div class="goal"><div class="grow"><div class="gt">Final walkthrough at Museo</div><div class="gs">Aug 6 · with catering lead</div></div><span class="who-b wb-planner">GM</span></div>
+        <div class="goal"><div class="grow"><div class="gt">Close rentals order</div><div class="gs">Quote approved · sign this week</div></div><span class="who-b wb-planner">GM</span></div>
+      </div>
+    </div>
+    <div class="bcard">
+      <div class="bhero" style="height:64px;background:#5C2B35"><span class="big" style="font-size:16px">Priya &amp; Arjun</span><span>174 days</span></div>
+      <div class="bbody">
+        <div class="goal"><div class="grow"><div class="gt">Send blush floral revision</div><div class="gs">Due today · unblocks #C-106</div></div><span class="who-b wb-planner">GM</span></div>
+        <div class="goal"><div class="grow"><div class="gt">Menu v2 — plated or family-style</div><div class="gs">Nudge scheduled Monday</div></div><span class="who-b wb-couple">P·A</span></div>
+        <div class="goal"><div class="grow"><div class="gt">Confirm mehndi artist count</div><div class="gs">60-day vendor notice</div></div><span class="who-b wb-planner">GM</span></div>
+      </div>
+    </div>
+    <div class="bcard">
+      <div class="bhero" style="height:64px;background:#8A7355"><span class="big" style="font-size:16px">Sofía &amp; Marco</span><span>Phase 2</span></div>
+      <div class="bbody">
+        <div class="goal"><div class="grow"><div class="gt">Venue shortlist decision</div><div class="gs">3 quotes with the couple</div></div><span class="who-b wb-couple">S·M</span></div>
+        <div class="goal"><div class="grow"><div class="gt">Chase the silent quote</div><div class="gs">Past Apr 30 — chase or drop</div></div><span class="who-b wb-vendor">V</span></div>
+      </div>
+    </div>
+    <div class="bcard">
+      <div class="bhero" style="height:64px;background:#1E1E1E"><span class="big" style="font-size:16px">Daniela &amp; Rob</span><span>settling</span></div>
+      <div class="bbody">
+        <div class="goal"><div class="grow"><div class="gt">Photographer overtime — $450</div><div class="gs">Last open tab before close</div></div><span class="who-b wb-couple">D·R</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STUDIO: PLANNER PROFILE ============ -->
+<div class="view" id="v-s-profile">
+  <div class="section-title"><h2>Planner profile</h2><span class="accent">your public offering — what couples see in the forma planner directory, Phase 1</span></div>
+  <div class="grid g32">
+    <div class="card">
+      <div class="row" style="border-bottom:none">
+        <div class="vphoto" style="width:64px;height:64px;background:#1E1E1E;font-size:20px">AM</div>
+        <div class="grow"><div class="t" style="font-family:'Playfair Display',serif;font-size:22px">Atelier Mignon</div>
+        <div class="d accent" style="font-size:15px">Planning, refined — destination weddings across Mexico</div></div>
+      </div>
+      <div class="photostrip">
+        <div class="vphoto" style="background:#5C2B35">portfolio</div>
+        <div class="vphoto" style="background:#8A7355">portfolio</div>
+        <div class="vphoto" style="background:#4E5C47">portfolio</div>
+        <div class="vphoto" style="background:#8A7355">portfolio</div>
+      </div>
+      <div class="kv">
+        <div class="k">Services</div><div>Full planning · partial planning · day-of coordination · destination logistics</div>
+        <div class="k">Cities</div><div>San Miguel de Allende · CDMX · Valle de Guadalupe · Querétaro</div>
+        <div class="k">Specialty</div><div><span class="tag">destination</span><span class="tag">multi-day</span><span class="tag">multicultural</span><span class="tag">200+ guests</span></div>
+        <div class="k">From</div><div>Full planning from $38,000 · inquire for scope</div>
+        <div class="k">Book a call</div><div>Calendly — 30-min discovery, synced to your calendar</div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Directory status</h3><div class="sub">How leads find you</div>
+        <div class="row"><div class="grow"><div class="t">Listed — forma planner directory</div><div class="d">Profile complete · 4 portfolio sets</div></div><span class="badge b-approved">Live</span></div>
+        <div class="row"><div class="grow"><div class="t">3 inquiries this month</div><div class="d">1 became today's discovery call</div></div></div>
+      </div>
+      <div class="note" style="margin-top:18px"><b>This is Phase 1's front door.</b> Couples interviewing planners see this profile; choosing you triggers contract + deposit — and that signature opens their wedding portal.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STUDIO: CALENDAR ============ -->
+<div class="view" id="v-s-calendar">
+  <div class="section-title"><h2>Calendar</h2><span class="accent">Calendly connected — meetings, automations and wedding days on one grid</span></div>
+  <div class="calhead">
+    <h3 id="calTitle">July 2026</h3>
+    <button class="calnav" onclick="calNav(-1)">←</button>
+    <button class="calnav" onclick="calNav(1)">→</button>
+    <span class="accent" style="color:var(--taupe);margin-left:6px">tip: page forward to October and January to see the wedding days</span>
+  </div>
+  <div class="calgrid" id="calGrid"></div>
+  <div class="callegend"><span><i class="cpill meet" style="display:inline-block;width:10px;height:10px;padding:0;border-radius:3px"></i> meeting</span><span><i class="cpill auto" style="display:inline-block;width:10px;height:10px;padding:0;border-radius:3px"></i> forma automation</span><span><i class="cpill wed" style="display:inline-block;width:10px;height:10px;padding:0;border-radius:3px"></i> wedding day</span><span><i class="cpill tent" style="display:inline-block;width:10px;height:10px;padding:0;border-radius:3px"></i> tentative</span></div>
+</div>
+
+<!-- ============ STUDIO: ADMIN ============ -->
+<div class="view" id="v-s-admin">
+  <div class="section-title"><h2>Admin &amp; settings</h2><span class="accent">the studio behind the studio</span></div>
+  <div class="grid g2">
+    <div class="card">
+      <h3>Team</h3><div class="sub">Who works at Atelier Mignon</div>
+      <div class="row"><span class="who-b wb-planner">GM</span><div class="grow"><div class="t">Gio M.</div><div class="d">Owner · all weddings</div></div></div>
+      <div class="row"><span class="who-b wb-planner">NK</span><div class="grow"><div class="t">Niki</div><div class="d">Planner · P·A, E·L</div></div></div>
+      <div class="row"><span class="who-b wb-planner">RD</span><div class="grow"><div class="t">Day-of coordinator (contract)</div><div class="d">Phase 4 only</div></div></div>
+    </div>
+    <div class="card">
+      <h3>Studio settings</h3><div class="sub">Billing, branding, defaults</div>
+      <div class="row"><div class="grow"><div class="t">forma Studio plan</div><div class="d">$149 / month</div></div><span class="badge b-paid">Active</span></div>
+      <div class="row"><div class="grow"><div class="t">Client portal branding</div><div class="d">Your logo &amp; palette on what couples see</div></div></div>
+      <div class="row"><div class="grow"><div class="t">Default touchpoint timeline</div><div class="d">Your house rhythm for guest outreach</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VIEW: OVERVIEW ============ -->
+<div class="view" id="v-overview">
+  <div class="simple-note"><b>Single-event wedding.</b> Notice what's gone: no event chips, no per-event sections, no slices. Same components, none of the machinery. The event layer appears only when a second event exists.</div>
+
+  <div class="stats">
+    <div class="stat"><div class="v" id="stGuests">312</div><div class="l">Guests invited</div><div class="s" id="stGuestsS">248 answered · 41 nudge scheduled</div></div>
+    <div class="stat"><div class="v" id="stBudget">$480k</div><div class="l">Budget</div><div class="s" id="stBudgetS">$136k committed · $188k paid</div></div>
+    <div class="stat"><div class="v" id="stVendors">12<span style="font-size:16px;color:var(--muted)">/18</span></div><div class="l">Bookings confirmed</div><div class="s">3 proposals with the couple</div></div>
+    <div class="stat"><div class="v" id="stDays">174</div><div class="l">Days to day one</div><div class="s accent" style="font-size:14px">Phase 3 · the details</div></div>
+  </div>
+
+  <div class="grid g32" style="margin-top:18px">
+    <div>
+      <div class="section-title"><h2>Waiting on a decision</h2><span class="accent">the loop — planner ↔ couple</span></div>
+
+      <div class="prop" onclick="this.classList.toggle('open')">
+        <div class="head"><div class="icon">F</div>
+          <div class="grow"><div class="t">Floral concept — “Bougainvillea &amp; brass”</div>
+          <div class="meta">Flor y Canto · Sangeet + Ceremony · $37,000</div></div>
+          <span class="badge b-change">Change requested</span><span class="court"><span class="who-b wb-planner" title="With you">GM</span></span></div>
+        <div class="thread">
+          <div class="msg couple"><div class="who">P</div><div class="bubble"><div class="n">Priya — 2 days ago</div>Love the brass and the structure. Can we go <span class="accent">less orange, more blush</span>? Thinking of the mandap photos at golden hour.</div></div>
+          <div class="msg"><div class="who">GM</div><div class="bubble"><div class="n">You — yesterday</div>Absolutely — asking Flor y Canto for a blush-forward revision with bougainvillea kept to the aisle only. New boards by Friday.</div></div>
+          <div class="actions"><button class="btn">Send revised concept</button><button class="btn ghost">Open vendor</button></div>
+        </div>
+      </div>
+
+      <div class="prop" onclick="this.classList.toggle('open')">
+        <div class="head"><div class="icon">M</div>
+          <div class="grow"><div class="t">Reception menu, v2 — tasting confirmed</div>
+          <div class="meta">Cocina de Humo · Reception · sent 2 days ago</div></div>
+          <span class="badge b-awaiting">Awaiting couple</span><span class="court"><span class="who-b wb-couple" title="With Priya &amp; Arjun">P·A</span></span></div>
+        <div class="thread">
+          <div class="msg"><div class="who">GM</div><div class="bubble"><div class="n">You — 2 days ago</div>v2 folds in the tasting notes: lamb barbacoa stays, sea bass replaces the short rib, and the late-night taco bar moves to 11pm. One decision left: <span class="accent">plated or family-style</span> for the first course.</div></div>
+          <div class="actions"><button class="btn ghost">Nudge gently</button><button class="btn ghost">Open menu</button></div>
+        </div>
+      </div>
+
+      <div class="prop" onclick="this.classList.toggle('open')">
+        <div class="head"><div class="icon">B</div>
+          <div class="grow"><div class="t">Mariachi Los Reyes — final quote</div>
+          <div class="meta">Welcome dinner · 45 min set · $5,600</div></div>
+          <span class="badge b-awaiting">Awaiting couple</span><span class="court"><span class="who-b wb-couple" title="With Priya &amp; Arjun">P·A</span></span></div>
+        <div class="thread">
+          <div class="msg"><div class="who">GM</div><div class="bubble"><div class="n">You — 4 days ago</div>Quote is in, $5,600 including travel from GDL. They hold the date until <b>Aug 2</b>.</div></div>
+          <div class="actions"><button class="btn ghost">Nudge gently</button><button class="btn ghost">See quote</button></div>
+        </div>
+      </div>
+
+      <div class="prop" onclick="this.classList.toggle('open')">
+        <div class="head"><div class="icon">D</div>
+          <div class="grow"><div class="t">Sangeet DJ set list &amp; sound rider</div>
+          <div class="meta">DJ Selva · Sangeet</div></div>
+          <span class="badge b-approved">Approved</span></div>
+        <div class="thread">
+          <div class="msg couple"><div class="who">A</div><div class="bubble"><div class="n">Arjun — yesterday</div>Perfect. The bhangra block at midnight is non-negotiable</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-title"><h2>The next gate</h2><span class="accent">phase 3 → 4</span></div>
+      <div class="gate">
+        <h3>Ready for the wedding days</h3>
+        <div class="sub">What Phase 4 needs before Jan 15</div>
+        <div class="row"><span class="check ok">✓</span><div class="grow"><div class="t">Venues &amp; dates locked</div><div class="d">3 venues · signed May 20</div></div></div>
+        <div class="row"><span class="check ok">✓</span><div class="grow"><div class="t">Catering contracted, 4 events</div><div class="d">Cocina de Humo</div></div></div>
+        <div class="row"><span class="check no">·</span><div class="grow"><div class="t">Florals contracted</div><div class="d">Blocked by concept approval — with couple</div></div></div>
+        <div class="row"><span class="check no">·</span><div class="grow"><div class="t">RSVPs closed &amp; menus collected</div><div class="d">Closes Sep 1 · menu emails go out after</div></div></div>
+        <div class="row"><span class="check no">·</span><div class="grow"><div class="t">Run of show, all 5 events</div><div class="d">Drafted for 3 of 5</div></div></div>
+        <div class="row"><span class="check no">·</span><div class="grow"><div class="t">Payment schedule fully mapped</div><div class="d">2 lines due before day one</div></div></div>
+      </div>
+      <div class="note" style="margin-top:14px"><b>Forma keeps the phase visible.</b> Everyone — planner and couple — always sees what's blocking the next gate. Right communication, right time, right place.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VIEW: GUESTS ============ -->
+<div class="view" id="v-guests">
+  <div class="simple-note"><b>Single-event wedding.</b> One list, one RSVP, no per-event invitations. The touchpoint engine works exactly the same.</div>
+  <div class="section-title"><h2>Guest list</h2><span class="accent">uploaded once by the couple — then forma runs the touchpoints</span></div>
+
+  <div class="stats">
+    <div class="stat"><div class="v">312</div><div class="l">Invited</div><div class="s">Uploaded by Priya · May 2 · CSV</div></div>
+    <div class="stat"><div class="v" style="color:var(--sage-ink)">248</div><div class="l">Answered</div><div class="s">231 yes · 12 no · 5 maybe</div></div>
+    <div class="stat"><div class="v" style="color:var(--taupe)">41</div><div class="l">Nudge scheduled</div><div class="s">Reminder email goes out Aug 1</div></div>
+    <div class="stat"><div class="v" style="color:var(--wine)">23</div><div class="l">Need a human</div><div class="s">Bounced email or no address</div></div>
+  </div>
+
+  <div class="grid g32" style="margin-top:18px">
+    <div class="card">
+      <h3>Per event</h3><div class="sub multi-only">Each event invites its own subset — 312 people, but only 80 at the mehndi</div>
+      <div class="multi-only">
+        <div class="row"><div class="grow"><div class="t">Mehndi <span class="badge b-general" style="margin-left:6px">80 invited</span></div><div class="gbar" style="margin-top:8px"><i class="yes" style="width:88%"></i><i class="maybe" style="width:4%"></i></div><div class="d" style="margin-top:5px">70 yes · 3 maybe · 7 pending</div></div></div>
+        <div class="row"><div class="grow"><div class="t">Welcome dinner <span class="badge b-general" style="margin-left:6px">120 invited</span></div><div class="gbar" style="margin-top:8px"><i class="yes" style="width:79%"></i><i class="maybe" style="width:3%"></i></div><div class="d" style="margin-top:5px">95 yes · 4 maybe · 21 pending</div></div></div>
+        <div class="row"><div class="grow"><div class="t">Sangeet <span class="badge b-general" style="margin-left:6px">220 invited</span></div><div class="gbar" style="margin-top:8px"><i class="yes" style="width:74%"></i><i class="no" style="width:4%"></i></div><div class="d" style="margin-top:5px">163 yes · 9 no · 48 pending</div></div></div>
+        <div class="row"><div class="grow"><div class="t">Ceremony <span class="badge b-general" style="margin-left:6px">312 invited</span></div><div class="gbar" style="margin-top:8px"><i class="yes" style="width:74%"></i><i class="no" style="width:4%"></i></div><div class="d" style="margin-top:5px">231 yes · 12 no · 64 pending</div></div></div>
+        <div class="row"><div class="grow"><div class="t">Reception <span class="badge b-general" style="margin-left:6px">312 invited</span></div><div class="gbar" style="margin-top:8px"><i class="yes" style="width:74%"></i><i class="no" style="width:4%"></i></div><div class="d" style="margin-top:5px">231 yes · 12 no · 64 pending</div></div></div>
+      </div>
+      <div class="hr multi-only"></div>
+      <h3 style="margin-top:4px">Exceptions <span class="badge b-due" style="margin-left:6px">23</span></h3>
+      <div class="sub">The only guests who need anyone's attention</div>
+      <div class="row"><div class="icon">!</div><div class="grow"><div class="t">Auntie Meera Sharma</div><div class="d">Email bounced twice — has phone only</div></div><button class="btn ghost">Resolve</button></div>
+      <div class="row"><div class="icon">!</div><div class="grow"><div class="t">The Kapoor grandparents (4)</div><div class="d">No email on file — Arjun said he'll call</div></div><button class="btn ghost">Resolve</button></div>
+      <div class="row"><div class="icon">!</div><div class="grow"><div class="t">Dr. Nair +1</div><div class="d">RSVP'd yes, +1 name still missing</div></div><button class="btn ghost">Resolve</button></div>
+    </div>
+
+    <div class="card">
+      <h3>Touchpoint timeline</h3>
+      <div class="sub">Right email · right date · collects one thing. Then we forget about them.</div>
+      <div class="tl">
+        <div class="tp"><div class="t">Save the date</div><div class="d">Sent May 2 · 312 delivered · 289 opened</div></div>
+        <div class="tp"><div class="t">RSVP invitation</div><div class="d">Sent Jul 1 · per-event responses · 248 answered</div></div>
+        <div class="tp next"><div class="t">RSVP reminder</div><div class="d">Scheduled Aug 1 · goes to the 41 silent ones only</div></div>
+        <div class="tp future"><div class="t">RSVP closes</div><div class="d">Sep 1 · then rooms &amp; counts lock</div></div>
+        <div class="tp future"><div class="t">Menu selection</div><div class="d">Sep 3 · only guests attending dinner events</div></div>
+        <div class="tp future"><div class="t">Travel &amp; stay details</div><div class="d">Oct 1 · destination logistics, hotel blocks</div></div>
+        <div class="tp future"><div class="t">Your days, your schedule</div><div class="d">Jan 8 · each guest gets only their events, times &amp; seats</div></div>
+      </div>
+      <div class="note" style="margin-top:6px"><b>Tokenized links, no logins.</b> Each email asks exactly one thing; the answer lands straight in the wedding.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VIEW: VENDORS (WEDDING) ============ -->
+<div class="view" id="v-vendors">
+  <div class="section-title"><h2>Vendors</h2><span class="accent">presented onto this wedding — the full catalog lives up in your studio</span></div>
+  <div class="grid g2">
+    <div class="card">
+      <h3>Presented onto this wedding</h3><div class="sub">What Priya &amp; Arjun can see — every entry arrived as a proposal</div>
+      <div class="row"><div class="vphoto" style="background:#8A7355">H</div><div class="grow"><div class="t">Hacienda San Gabriel</div><div class="d"><span class="tag">venue</span><span class="tag">300+ cap</span> · Ceremony + Reception · #C-102</div></div><span class="badge b-booked">Booked</span></div>
+      <div class="row"><div class="vphoto" style="background:#8A7355">C</div><div class="grow"><div class="t">Casa Alma</div><div class="d"><span class="tag">venue</span><span class="tag">villa</span> · Mehndi + Welcome · #C-101</div></div><span class="badge b-booked">Booked</span></div>
+      <div class="row"><div class="vphoto" style="background:#5C2B35">T</div><div class="grow"><div class="t">Terraza Vista</div><div class="d"><span class="tag">venue</span><span class="tag">rooftop</span> · Sangeet · #C-103</div></div><span class="badge b-booked">Booked</span></div>
+      <div class="row"><div class="vphoto" style="background:#6B5A41">K</div><div class="grow"><div class="t">Cocina de Humo</div><div class="d"><span class="tag">catering</span> · 4 events · #C-104</div></div><span class="badge b-booked">Booked</span></div>
+      <div class="row"><div class="vphoto" style="background:#1E1E1E">L</div><div class="grow"><div class="t">Luz Films</div><div class="d"><span class="tag">photo</span><span class="tag">film</span> · all events · #C-105</div></div><span class="badge b-booked">Booked</span></div>
+      <div class="row"><div class="vphoto" style="background:#1E1E1E">D</div><div class="grow"><div class="t">DJ Selva</div><div class="d"><span class="tag">music</span> · Sangeet + Reception</div></div><span class="badge b-booked">Booked</span></div>
+    </div>
+    <div class="card">
+      <h3>In the loop</h3><div class="sub">Shared, not yet locked</div>
+      <div class="row"><div class="vphoto" style="background:#4E5C47">F</div><div class="grow"><div class="t">Flor y Canto</div><div class="d">Concept — blush revision due Friday</div></div><span class="who-b wb-planner" title="With you">GM</span><span class="badge b-quoting">In the loop</span></div>
+      <div class="row"><div class="vphoto" style="background:#8A7355">B</div><div class="grow"><div class="t">Mariachi Los Reyes</div><div class="d">Quote $5,600 — holds date to Aug 2</div></div><span class="who-b wb-couple" title="With couple">P·A</span><span class="badge b-quoting">In the loop</span></div>
+      <div class="hr"></div>
+      <div class="note"><b>The couple sees exactly this list — nothing more.</b> Your full catalog, with private candidates like Glow by Ana and Mandap Works, lives up in the studio until you present them here — to this wedding, for a specific event.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VIEW: BUDGET ============ -->
+<div class="view" id="v-budget">
+  <div class="simple-note"><b>Single-event wedding.</b> Same ledger — no event tags, no slices.</div>
+  <div class="section-title"><h2>Budget &amp; quotes</h2><span class="accent">one wedding, one ledger — every line traceable</span></div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:baseline"><h3>$480,000 <span style="font-size:13px;color:var(--muted);font-family:Inter">total budget</span></h3><div style="font-size:12.5px;color:var(--muted)">$188,000 paid · $136,000 committed · $156,000 open</div></div>
+    <div class="bar" style="margin-top:12px"><i class="paid" style="width:39%"></i><i class="committed" style="width:28%"></i></div>
+    <div class="legend"><span><i style="background:var(--sage)"></i>Paid</span><span><i style="background:var(--sand)"></i>Committed</span><span><i style="background:var(--sand-soft)"></i>Open</span></div>
+  </div>
+
+  <div class="grid g32" style="margin-top:18px">
+    <div class="card">
+      <h3>The ledger</h3><div class="sub">Payments happen outside Forma — the ledger is the record of truth</div>
+      <div class="row"><div class="grow"><div class="t">Hacienda San Gabriel — deposit</div><div class="trace">Venue · <b>Contract #C-102</b> · Ceremony + Reception</div></div><div class="amt">$68,000</div><span class="badge b-paid">Paid May 22</span></div>
+      <div class="row"><div class="grow"><div class="t">Hacienda San Gabriel — balance 1 of 2</div><div class="trace">Venue · <b>Contract #C-102</b></div></div><div class="amt">$34,000</div><span class="badge b-due">Due Oct 15</span></div>
+      <div class="row"><div class="grow"><div class="t">Casa Alma — full</div><div class="trace">Venue · <b>Contract #C-101</b> · Mehndi + Welcome</div></div><div class="amt">$42,000</div><span class="badge b-paid">Paid Jun 3</span></div>
+      <div class="row"><div class="grow"><div class="t">Cocina de Humo — deposit</div><div class="trace">Catering · <b>Contract #C-104</b> · 4 events</div></div><div class="amt">$52,000</div><span class="badge b-paid">Paid Jun 20</span></div>
+      <div class="row"><div class="grow"><div class="t">Luz Films — deposit</div><div class="trace">Photo &amp; video · <b>Contract #C-105</b></div></div><div class="amt">$26,000</div><span class="badge b-paid">Paid Jul 2</span></div>
+      <div class="row"><div class="grow"><div class="t">Terraza Vista — balance</div><div class="trace">Venue · <b>Contract #C-103</b> · Sangeet</div></div><div class="amt">$14,500</div><span class="badge b-due">Due Nov 1</span></div>
+      <div class="row"><div class="grow"><div class="t">Flor y Canto — estimate</div><div class="trace">Florals · <b>proposal in the loop</b> · Sangeet + Ceremony</div></div><div class="amt">$37,000</div><span class="badge b-expected">Expected</span></div>
+      <div class="row"><div class="grow"><div class="t">Mariachi Los Reyes — quote</div><div class="trace">Music · <b>quote awaiting couple</b> · Welcome dinner</div></div><div class="amt">$5,600</div><span class="badge b-expected">Expected</span></div>
+      <div class="hr"></div>
+      <div class="note"><b>Phase 4 adds day-of extras here.</b> The wedding can't close while any line is unsettled — “all tabs settled” is a condition the ledger computes, not a feeling.</div>
+    </div>
+    <div>
+      <div class="card multi-only">
+        <h3>By event</h3><div class="sub">Slices of the one budget — never a second budget</div>
+        <div class="row"><div class="grow"><div class="t">Ceremony</div></div><div class="amt">$122,400</div></div>
+        <div class="row"><div class="grow"><div class="t">Reception</div></div><div class="amt">$119,600</div></div>
+        <div class="row"><div class="grow"><div class="t">Sangeet</div></div><div class="amt">$72,800</div></div>
+        <div class="row"><div class="grow"><div class="t">Welcome dinner</div></div><div class="amt">$35,200</div></div>
+        <div class="row"><div class="grow"><div class="t">Mehndi</div></div><div class="amt">$23,600</div></div>
+        <div class="row"><div class="grow"><div class="t">Wedding-general</div><div class="d">Photo, planning, stationery…</div></div><div class="amt">$106,400</div></div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <h3>Open quotes</h3><div class="sub">Quotes become contracts; contracts become payments</div>
+        <div class="row"><div class="grow"><div class="t">Glow by Ana</div><div class="d">Hair &amp; makeup · requested Jul 20</div></div><span class="badge b-scheduled">Waiting</span></div>
+        <div class="row"><div class="grow"><div class="t">Mandap Works MX</div><div class="d">Quotes with florals as one build</div></div><span class="badge b-scheduled">Waiting</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VIEW: CONTRACTS ============ -->
+<div class="view" id="v-contracts">
+  <div class="section-title"><h2>Contracts</h2><span class="accent">each one lives on its engagement — visible from the wedding, the vendor, and its events</span></div>
+  <div class="card">
+    <div class="row"><div class="icon">✎</div><div class="grow"><div class="t">Planner agreement — Atelier Mignon</div><div class="trace">Phase 1 · signed Feb 2 · <b>deposit paid via forma</b> — this signature opened the couple's portal</div></div><span class="badge b-signed">Signed</span></div>
+    <div class="row"><div class="icon">H</div><div class="grow"><div class="t">#C-102 · Hacienda San Gabriel</div><div class="trace">Ceremony + Reception · $136,000 · 2 payments remaining</div></div><span class="badge b-signed">Signed</span></div>
+    <div class="row"><div class="icon">C</div><div class="grow"><div class="t">#C-101 · Casa Alma</div><div class="trace">Mehndi + Welcome dinner · $42,000 · settled</div></div><span class="badge b-signed">Signed</span></div>
+    <div class="row"><div class="icon">T</div><div class="grow"><div class="t">#C-103 · Terraza Vista</div><div class="trace">Sangeet · $29,000 · balance Nov 1</div></div><span class="badge b-signed">Signed</span></div>
+    <div class="row"><div class="icon">K</div><div class="grow"><div class="t">#C-104 · Cocina de Humo</div><div class="trace">4 events · per-event headcounts locked at RSVP close</div></div><span class="badge b-signed">Signed</span></div>
+    <div class="row"><div class="icon">L</div><div class="grow"><div class="t">#C-105 · Luz Films</div><div class="trace">All events · delivery 8 weeks after</div></div><span class="badge b-signed">Signed</span></div>
+    <div class="row srow" onclick="goContract()"><div class="icon">F</div><div class="grow"><div class="t">#C-106 · Flor y Canto</div><div class="trace">Draft — <b>unlocks when the couple approves the concept</b> · open the contract room →</div></div><span class="badge b-draft">Draft</span></div>
+  </div>
+</div>
+<!-- ============ VIEW: WHATS NEXT ============ -->
+<div class="view" id="v-tasks">
+  <div class="section-title"><h2>What's next</h2><span class="accent">state-aware — goals complete themselves from real wedding data. No checkbox theater.</span></div>
+
+  <div class="gphase">
+    <h3><span class="check ok">✓</span> Foundations <span class="gprog">3 of 3 · completed itself May 20</span></h3>
+    <div class="goal"><span class="check ok">✓</span><div class="grow"><div class="gt">Set the date</div><div class="subs"><span class="gsub ok">Mehndi · Jan 15</span><span class="gsub ok">Welcome · Jan 15</span><span class="gsub ok">Sangeet · Jan 16</span><span class="gsub ok">Ceremony · Jan 17</span><span class="gsub ok">Reception · Jan 17</span></div></div></div>
+    <div class="goal"><span class="check ok">✓</span><div class="grow"><div class="gt">Lock the venue</div><div class="subs"><span class="gsub ok">Casa Alma · 2 events</span><span class="gsub ok">Terraza Vista · Sangeet</span><span class="gsub ok">Hacienda · 2 events</span></div></div></div>
+    <div class="goal"><span class="check ok">✓</span><div class="grow"><div class="gt">Set the budget</div><div class="gs">$480,000 · detected from the ledger</div></div></div>
+  </div>
+
+  <div class="gphase">
+    <h3><span class="check no">·</span> The team <span class="gprog">4 of 6 booked</span></h3>
+    <div class="goal"><span class="check ok">✓</span><div class="grow"><div class="gt">Photography &amp; film</div><div class="gs">Luz Films · contracted — <b>detected</b></div></div></div>
+    <div class="goal"><span class="check ok">✓</span><div class="grow"><div class="gt">Catering</div><div class="gs">Cocina de Humo · 4 events — <b>detected</b></div></div></div>
+    <div class="goal"><span class="check ok">✓</span><div class="grow"><div class="gt">Music</div><div class="gs">DJ Selva · set list approved — <b>detected</b></div></div></div>
+    <div class="goal"><span class="check no">·</span><div class="grow"><div class="gt">Florals</div><div class="gs">Concept in the loop — blush revision due Friday</div></div><span class="who-b wb-planner" title="With you">GM</span><span class="golink">Open proposal →</span></div>
+    <div class="goal"><span class="check no">·</span><div class="grow"><div class="gt">Hair &amp; makeup</div><div class="gs">Glow by Ana quoting</div></div><span class="who-b wb-vendor" title="With vendor">GA</span><span class="golink">Open vendor →</span></div>
+    <div class="goal"><span class="check no">·</span><div class="grow"><div class="gt">Mandap build</div><div class="gs">Quotes with florals as one build</div></div><span class="golink">Open vendor →</span></div>
+  </div>
+
+  <div class="gphase">
+    <h3><span class="check no">·</span> Guests <span class="gprog">2 of 3 · RSVPs live at 79%</span></h3>
+    <div class="goal"><span class="check ok">✓</span><div class="grow"><div class="gt">Guest list in</div><div class="gs">312 uploaded by Priya · May 2 — <b>detected</b></div></div></div>
+    <div class="goal"><span class="check ok">✓</span><div class="grow"><div class="gt">Invitations out</div><div class="gs">RSVP touchpoint sent Jul 1 — <b>detected</b></div></div></div>
+    <div class="goal"><span class="check no">·</span><div class="grow"><div class="gt">RSVPs in</div><div class="gs">248 of 312 — completes at 100% or deadline Sep 1</div><div class="subs"><span class="gsub ok">Reminder Aug 1 · automated</span><span class="gsub todo">23 need a human</span></div></div><span class="golink">Guest list →</span></div>
+  </div>
+
+  <div class="gphase">
+    <h3><span class="check no">·</span> The details <span class="gprog">1 of 4</span></h3>
+    <div class="goal"><span class="check no">·</span><div class="grow"><div class="gt">Menus defined</div><div class="subs"><span class="gsub ok">Sangeet ✓</span><span class="gsub ok">Mehndi ✓</span><span class="gsub todo">Reception — with couple</span><span class="gsub todo">Welcome — pending mariachi</span></div></div><span class="who-b wb-couple" title="With couple">P·A</span><span class="golink">Menus →</span></div>
+    <div class="goal"><span class="check no">·</span><div class="grow"><div class="gt">Seating started</div><div class="gs">Opens when RSVP closes Sep 1</div></div></div>
+    <div class="goal"><span class="check no">·</span><div class="grow"><div class="gt">Run of show drafted, all events</div><div class="subs"><span class="gsub ok">Sangeet ✓</span><span class="gsub ok">Ceremony ✓</span><span class="gsub ok">Reception ✓</span><span class="gsub todo">Mehndi</span><span class="gsub todo">Welcome dinner</span></div></div><span class="who-b wb-planner" title="With you">GM</span><span class="golink">Schedules →</span></div>
+    <div class="goal"><span class="check ok">✓</span><div class="grow"><div class="gt">Contracts signed</div><div class="gs">6 of 7 — #C-106 counts when florals resolve</div></div></div>
+  </div>
+
+  <div class="gphase locked">
+    <h3><span class="check no">·</span> Final stretch <span class="locktag">Unlocks after The details</span></h3>
+    <div class="goal"><span class="check no">·</span><div class="grow"><div class="gt">Deposits paid · balances scheduled · day-of final</div><div class="gs">Visible so you see the road — never clickable-fake</div></div></div>
+  </div>
+</div>
+
+<!-- ============ VIEW: CONTRACT ROOM ============ -->
+<div class="view" id="v-contract">
+  <div class="crumb"><button onclick="goView('contracts',document.querySelectorAll('.wnav:not(.snav) button')[5])">Contracts</button><span class="sep">/</span><span class="here">#C-106 · Flor y Canto</span></div>
+  <div class="grid g32">
+    <div>
+      <div class="doc">
+        <h4>Floral Services Agreement</h4>
+        <div class="dsub">Draft · from your "Vendor engagement v2" template · every green field filled from the wedding — nothing typed twice</div>
+        <h5>1. Parties</h5>
+        <p>This agreement is between <span class="mf" title="From the vendor record">Flor y Canto S.A. de C.V.</span> ("Vendor"), <span class="mf" title="From your studio profile">Atelier Mignon</span> ("Planner"), on behalf of <span class="mf" title="From the wedding">Priya Sharma &amp; Arjun Kapoor</span> ("Clients").</p>
+        <h5>2. Events &amp; scope</h5>
+        <p>Vendor will design, deliver and install floral work for the <span class="mf" title="From event_vendors">Sangeet — January 16, 2027, Terraza Vista</span> and the <span class="mf" title="From event_vendors">Ceremony — January 17, 2027, Hacienda San Gabriel</span>, per the approved concept <span class="mf" title="From the proposal loop — pending">"Bougainvillea &amp; brass, blush revision" (pending approval)</span>.</p>
+        <h5>3. Price &amp; schedule</h5>
+        <p>Total fee <span class="mf" title="From the accepted quote">$37,000 USD</span>: deposit <span class="mf" title="Computed — 40%">$14,800</span> on signing; balance <span class="mf" title="From the ledger schedule">$22,200 due December 15, 2026</span>. All payments recorded on the wedding ledger.</p>
+        <h5>4. Site conditions</h5>
+        <p>Vendor acknowledges the venues' conditions, including <span class="mf" title="From the venue profile — restrictions">no rice or confetti; open flame with permit only (Hacienda San Gabriel)</span> and load-in from <span class="mf" title="From the venue profile">14:00 (Terraza Vista)</span>.</p>
+        <h5>5. Signatures</h5>
+        <p>
+          <span class="sigblock done"><span class="sl">Planner — signed</span><br><span class="sv">Gio M.</span><br><span class="sl">Jul 24, 2026 · 18:22</span></span>
+          <span class="sigblock pending"><span class="sl">Vendor — awaiting</span><br><span class="sv">sign here</span></span>
+          <span class="sigblock pending"><span class="sl">Clients — awaiting</span><br><span class="sv">sign here</span></span>
+        </p>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Signing ceremony</h3><div class="sub">Sequential — each signer walks their fields in order</div>
+        <div class="signer"><span class="ord">1</span><span class="who-b wb-planner">GM</span><div class="grow"><div class="t">Gio M. — Atelier Mignon</div><div class="d">Signed Jul 24 · 6 fields</div></div><span class="badge b-signed">Signed</span></div>
+        <div class="signer"><span class="ord">2</span><span class="who-b wb-vendor">FC</span><div class="grow"><div class="t">Rosa Cantú — Flor y Canto</div><div class="d">Goes out when the concept is approved</div></div><span class="badge b-draft">Queued</span></div>
+        <div class="signer"><span class="ord">3</span><span class="who-b wb-couple">P·A</span><div class="grow"><div class="t">Priya &amp; Arjun</div><div class="d">Sign in their portal · field-walk, then deposit</div></div><span class="badge b-draft">Queued</span></div>
+        <div class="hr"></div>
+        <div class="d" style="font-size:11.5px;color:var(--muted)">On completion: stamped PDF + certificate page, filed to this wedding's Documents. Values freeze at signature.</div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <h3>Why it's still a draft</h3><div class="sub">The mesh is holding it, correctly</div>
+        <div class="row"><span class="check no">·</span><div class="grow"><div class="t">Concept approval pending</div><div class="d">§2 references the proposal — with the couple</div></div><span class="who-b wb-couple">P·A</span></div>
+        <div class="row"><span class="check ok">✓</span><div class="grow"><div class="t">Quote accepted</div><div class="d">$37,000 · feeds §3 automatically</div></div></div>
+        <div class="row"><span class="check ok">✓</span><div class="grow"><div class="t">Events &amp; venues locked</div><div class="d">§2 and §4 fill themselves</div></div></div>
+      </div>
+      <div class="card audit" style="margin-top:18px">
+        <h3>Audit trail</h3><div class="sub">Every touch, recorded</div>
+        <div class="tl" style="margin-top:4px">
+          <div class="tp"><div class="t">Drafted from template</div><div class="d">Jul 22 · merge fields resolved from the wedding</div></div>
+          <div class="tp"><div class="t">Planner signed</div><div class="d">Jul 24 · 18:22 · IP recorded</div></div>
+          <div class="tp next"><div class="t">Waiting — concept approval</div><div class="d">Sends to Rosa automatically on approval</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VIEW: DESIGN ============ -->
+<div class="view" id="v-design">
+  <div class="section-title"><h2>Design</h2><span class="accent">the wedding's look — wedding-wide, referenced by every event</span></div>
+  <div class="grid g2">
+    <div class="card"><h3>Palette — “Blush &amp; brass”</h3><div class="sub">v2 pending floral revision</div>
+      <div class="swatches">
+        <div class="sw" style="background:#E8C9C0"></div><div class="sw" style="background:#B98A5E"></div><div class="sw" style="background:#F3EDE2"></div><div class="sw" style="background:#7E3B41"></div><div class="sw" style="background:#8FA487"></div>
+      </div></div>
+    <div class="card"><h3>Boards</h3><div class="sub">Mandap · tablescapes · stationery · lighting</div>
+      <div class="row"><div class="icon">M</div><div class="grow"><div class="t">Mandap concept</div><div class="d">12 pins · shared with Mandap Works MX</div></div></div>
+      <div class="row"><div class="icon">T</div><div class="grow"><div class="t">Reception tablescape</div><div class="d">18 pins · brass candlesticks sourced</div></div></div>
+      <div class="row"><div class="icon">S</div><div class="grow"><div class="t">Stationery suite</div><div class="d">Proofs due Aug 15</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VIEW: DOCUMENTS ============ -->
+<div class="view" id="v-documents">
+  <div class="section-title"><h2>Documents</h2><span class="accent">wedding-wide — contracts file themselves here too</span></div>
+  <div class="card">
+    <div class="row"><div class="icon">D</div><div class="grow"><div class="t">Venue site visit notes — May 18</div><div class="d">Linked to Hacienda San Gabriel</div></div></div>
+    <div class="row"><div class="icon">D</div><div class="grow"><div class="t">Insurance — event liability</div><div class="d">All 5 events · expires Feb 2027</div></div></div>
+    <div class="row"><div class="icon">D</div><div class="grow"><div class="t">Guest visa &amp; travel FAQ</div><div class="d">Sent in the Oct 1 touchpoint</div></div></div>
+    <div class="row"><div class="icon">D</div><div class="grow"><div class="t">Meeting notes — couple check-in #7</div><div class="d">Jul 18 · 4 decisions captured into the loop</div></div></div>
+  </div>
+</div>
+
+<!-- ============ VIEW: EVENT PAGE ============ -->
+<div class="view" id="v-event">
+  <div class="crumb"><button onclick="goWedding(document.querySelector('.chips .chip'))">Whole wedding</button><span class="sep">/</span><span class="here" id="crumbEvent">Sangeet</span></div>
+  <div class="esub">
+    <button class="on" onclick="eSub('e-overview',this)">Overview</button>
+    <button onclick="eSub('e-venue',this)">Venue</button>
+    <button onclick="eSub('e-schedule',this)">Schedule</button>
+    <button onclick="eSub('e-menus',this)">Menus</button>
+    <button onclick="eSub('e-guests',this)">Guests</button>
+    <button onclick="eSub('e-budget',this)">Budget slice</button>
+  </div>
+
+  <div class="esec" id="e-overview">
+    <div class="stats">
+      <div class="stat"><div class="v" id="eInv">220</div><div class="l">Invited</div><div class="s" id="eConf">163 confirmed</div></div>
+      <div class="stat"><div class="v" id="eVenue">Terraza Vista</div><div class="l">Venue</div><div class="s" id="eVenueS">Booked · #C-103</div></div>
+      <div class="stat"><div class="v" id="eSlice">$72,800</div><div class="l">Budget slice</div><div class="s">of the one wedding budget</div></div>
+      <div class="stat"><div class="v" id="eDate">Jan 16</div><div class="l" id="eDay">Day 2 · 19:00 – 01:00</div><div class="s" id="eRos">Run of show drafted</div></div>
+    </div>
+    <div class="grid g2" style="margin-top:18px">
+      <div class="card"><h3>This event owns</h3><div class="sub">Only what an event owns — venue, schedule, menus, its guests, its seating, its slice. No “tasks of a dinner.”</div>
+        <div class="row"><div class="icon">T</div><div class="grow"><div class="t" id="eOwnVenue">Terraza Vista — rooftop, rain plan: interior salon</div><div class="d">Load-in 14:00 · sound curfew 01:30</div></div></div>
+        <div class="row"><div class="icon">D</div><div class="grow"><div class="t">DJ Selva + dhol player</div><div class="d">Set list approved by Arjun</div></div></div>
+        <div class="row"><div class="icon">M</div><div class="grow"><div class="t">Live chaat stations + plated mains</div><div class="d">Cocina de Humo · menu locked</div></div></div>
+      </div>
+      <div class="card"><h3>Vendors serving this event</h3><div class="sub">Read through the mesh — engagements → events</div>
+        <div class="row"><div class="grow"><div class="t">Terraza Vista</div><div class="d">Venue · #C-103</div></div><span class="badge b-booked">Booked</span></div>
+        <div class="row"><div class="grow"><div class="t">Cocina de Humo</div><div class="d">Catering · #C-104</div></div><span class="badge b-booked">Booked</span></div>
+        <div class="row"><div class="grow"><div class="t">DJ Selva</div><div class="d">Music</div></div><span class="badge b-booked">Booked</span></div>
+        <div class="row"><div class="grow"><div class="t">Flor y Canto</div><div class="d">Florals — concept in the loop</div></div><span class="badge b-quoting">In the loop</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="esec" id="e-venue" style="display:none">
+    <div class="card"><h3 id="evName">Terraza Vista</h3><div class="sub">Rooftop terrace · Centro, San Miguel de Allende · capacity 260</div>
+      <div class="facts"><div class="fact"><div class="v">260</div><div class="l">Capacity</div></div><div class="fact"><div class="v">14:00</div><div class="l">Load-in</div></div><div class="fact"><div class="v">01:30</div><div class="l">Sound curfew</div></div><div class="fact"><div class="v">$29,000</div><div class="l">Contract #C-103</div></div></div>
+      <div class="hr"></div>
+      <div class="note"><b>The Phase-2 loop on this venue:</b> suggested Jun 2 with estimate → couple asked for final quote → date availability confirmed for Jan 16 → chosen over two alternates → contract signed, deposit on the ledger.</div>
+    </div>
+  </div>
+
+  <div class="esec" id="e-schedule" style="display:none">
+    <div class="card ros"><h3>Run of show</h3><div class="sub">Drafted · becomes live check-off in Phase 4</div>
+      <div class="row"><div class="time">14:00</div><div class="grow"><div class="t">Vendor load-in · sound check</div></div></div>
+      <div class="row"><div class="time">19:00</div><div class="grow"><div class="t">Doors · welcome cocktails</div></div></div>
+      <div class="row"><div class="time">20:00</div><div class="grow"><div class="t">Family performances (7 acts, order locked)</div></div></div>
+      <div class="row"><div class="time">21:30</div><div class="grow"><div class="t">Dinner — live stations open</div></div></div>
+      <div class="row"><div class="time">23:00</div><div class="grow"><div class="t">Couple's surprise number</div></div></div>
+      <div class="row"><div class="time">00:00</div><div class="grow"><div class="t">Bhangra block — non-negotiable</div></div></div>
+    </div>
+  </div>
+
+  <div class="esec" id="e-menus" style="display:none">
+    <div class="card"><h3>Menus</h3><div class="sub">Guest choices collected by the Sep 3 touchpoint — only from guests attending this event</div>
+      <div class="row"><div class="grow"><div class="t">Live chaat stations</div><div class="d">No selection needed</div></div></div>
+      <div class="row"><div class="grow"><div class="t">Plated main — paneer khada masala</div><div class="d">Vegetarian</div></div><div class="amt">awaiting RSVP close</div></div>
+      <div class="row"><div class="grow"><div class="t">Plated main — lamb rogan josh</div><div class="d"></div></div><div class="amt">awaiting RSVP close</div></div>
+    </div>
+  </div>
+
+  <div class="esec" id="e-guests" style="display:none">
+    <div class="card"><h3 id="egTitle">Guests — 220 invited</h3><div class="sub">This event's subset of the wedding list</div>
+      <div class="gbar"><i class="yes" style="width:74%"></i><i class="no" style="width:4%"></i></div>
+      <div class="legend"><span><i style="background:var(--sage)"></i>163 yes</span><span><i style="background:var(--maroon)"></i>9 no</span><span><i style="background:var(--sand-soft)"></i>48 pending</span></div>
+      <div class="hr"></div>
+      <div class="row"><div class="grow"><div class="t">Dietary flags</div><div class="d">31 vegetarian · 6 vegan · 4 gluten-free · 2 nut allergies</div></div></div>
+      <div class="row"><div class="grow"><div class="t">Seating</div><div class="d">Opens at RSVP close · 22 tables planned</div></div></div>
+    </div>
+  </div>
+
+  <div class="esec" id="e-budget" style="display:none">
+    <div class="card"><h3>Budget slice</h3><div class="sub">Lines of the one wedding ledger tagged to this event</div>
+      <div class="row"><div class="grow"><div class="t">Terraza Vista</div><div class="trace">#C-103</div></div><div class="amt">$29,000</div></div>
+      <div class="row"><div class="grow"><div class="t">Catering share</div><div class="trace">#C-104 · by headcount</div></div><div class="amt">$26,400</div></div>
+      <div class="row"><div class="grow"><div class="t">Florals share (estimate)</div><div class="trace">in the loop</div></div><div class="amt">$12,400</div></div>
+      <div class="row"><div class="grow"><div class="t">Music</div><div class="trace">DJ Selva + dhol</div></div><div class="amt">$5,000</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VIEW: PLANNING ROOM ============ -->
+<div class="view" id="v-planning">
+  <div class="section-title"><h2>Planning</h2><span class="accent">the process gear — four phases, each with a gate. The wedding lives in the header; the work lives here.</span></div>
+  <div class="psteps">
+    <div class="pstep done" onclick="pGo(1,this)"><div class="p-num">Phase 1</div><div class="p-name">Hiring</div><div class="p-state">✓ Crossed Feb 2</div></div>
+    <div class="pstep done" onclick="pGo(2,this)"><div class="p-num">Phase 2</div><div class="p-name">Foundations</div><div class="p-state">✓ Crossed May 20</div></div>
+    <div class="pstep now-c" onclick="pGo(3,this)"><div class="p-num">Phase 3</div><div class="p-name">The details</div><div class="p-state" style="color:var(--wine)">● In progress</div></div>
+    <div class="pstep" onclick="pGo(4,this)"><div class="p-num">Phase 4</div><div class="p-name">The wedding</div><div class="p-state">Jan 15 – 17 · then settlement</div></div>
+  </div>
+
+  <div class="psec" id="p-3">
+    <div class="section-title"><h2>Phase 3 — The details</h2><span class="accent">in progress · the mesh at full flow</span></div>
+    <div class="grid g32">
+      <div class="card">
+        <h3>In motion</h3><div class="sub">Where the work is, right now</div>
+        <div class="row"><div class="icon">L</div><div class="grow"><div class="t">3 proposals in the loop with the couple</div><div class="d">Florals · reception menu · mariachi — see Overview</div></div><span class="badge b-awaiting">Waiting</span></div>
+        <div class="row"><div class="icon">B</div><div class="grow"><div class="t">12 of 18 bookings confirmed</div><div class="d">Hair &amp; makeup and mandap build still quoting</div></div><span class="badge b-scheduled">On track</span></div>
+        <div class="row"><div class="icon">G</div><div class="grow"><div class="t">RSVPs at 248 of 312</div><div class="d">Reminder touchpoint fires Aug 1 · closes Sep 1</div></div><span class="badge b-scheduled">Automated</span></div>
+        <div class="row"><div class="icon">R</div><div class="grow"><div class="t">Run of show drafted for 3 of 5 events</div><div class="d">Mehndi and welcome dinner this week</div></div><span class="badge b-scheduled">This week</span></div>
+      </div>
+      <div class="gate">
+        <h3>The gate to Phase 4</h3>
+        <div class="sub">What the wedding days need before Jan 15</div>
+        <div class="row"><span class="check ok">✓</span><div class="grow"><div class="t">Venues &amp; dates locked</div><div class="d">3 venues · signed May 20</div></div></div>
+        <div class="row"><span class="check ok">✓</span><div class="grow"><div class="t">Catering contracted, 4 events</div><div class="d">Cocina de Humo</div></div></div>
+        <div class="row"><span class="check no">·</span><div class="grow"><div class="t">Florals contracted</div><div class="d">Blocked by concept approval — with couple</div></div></div>
+        <div class="row"><span class="check no">·</span><div class="grow"><div class="t">RSVPs closed &amp; menus collected</div><div class="d">Closes Sep 1</div></div></div>
+        <div class="row"><span class="check no">·</span><div class="grow"><div class="t">Run of show, all 5 events</div><div class="d">3 of 5 drafted</div></div></div>
+        <div class="row"><span class="check no">·</span><div class="grow"><div class="t">Payment schedule fully mapped</div><div class="d">2 lines due before day one</div></div></div>
+      </div>
+    </div>
+  </div>
+
+<!-- ============ SECTION: PHASE 1 ============ -->
+<div class="psec" id="p-1">
+  <div class="section-title"><h2>Phase 1 — Hiring</h2><span class="accent">complete · the signature that opened this portal</span></div>
+  <div class="grid g32">
+    <div class="card">
+      <h3>How it happened</h3><div class="sub">The record of the engagement</div>
+      <div class="tl" style="margin-top:6px">
+        <div class="tp"><div class="t">Inquiry received</div><div class="d">Jan 12 · Priya found Atelier Mignon on forma · destination wedding, winter 2027</div></div>
+        <div class="tp"><div class="t">Discovery call</div><div class="d">Jan 16 · 45 min · notes captured to Documents</div></div>
+        <div class="tp"><div class="t">Proposal sent</div><div class="d">Jan 24 · full planning · destination scope · fee $38,000</div></div>
+        <div class="tp"><div class="t">Proposal accepted</div><div class="d">Jan 30 · one revision — payment schedule split in four</div></div>
+        <div class="tp"><div class="t">Agreement signed · deposit paid</div><div class="d">Feb 2 · $9,500 via forma — receipt on file</div></div>
+        <div class="tp"><div class="t">Portal unlocked</div><div class="d">Feb 2 · Priya &amp; Arjun invited · Phase 2 opened the same day</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="gate">
+        <h3>The gate</h3><div class="sub">Crossed Feb 2</div>
+        <div class="row"><span class="check ok">✓</span><div class="grow"><div class="t">Planner agreement signed</div><div class="d">On file, both parties</div></div></div>
+        <div class="row"><span class="check ok">✓</span><div class="grow"><div class="t">Deposit paid — via forma</div><div class="d">$9,500 of $38,000 · balance on schedule</div></div></div>
+        <div class="row"><span class="check ok">✓</span><div class="grow"><div class="t">Couple portal opened</div><div class="d">This is the event that created their access</div></div></div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <h3>Planner fee schedule</h3><div class="sub">The only money that moves through forma</div>
+        <div class="row"><div class="grow"><div class="t">Deposit</div></div><div class="amt">$9,500</div><span class="badge b-paid">Paid Feb 2</span></div>
+        <div class="row"><div class="grow"><div class="t">Milestone — venue locked</div></div><div class="amt">$9,500</div><span class="badge b-paid">Paid May 22</span></div>
+        <div class="row"><div class="grow"><div class="t">Milestone — 60 days out</div></div><div class="amt">$9,500</div><span class="badge b-due">Due Nov 16</span></div>
+        <div class="row"><div class="grow"><div class="t">Final — at settlement</div></div><div class="amt">$9,500</div><span class="badge b-expected">At close</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VIEW: PHASE 2 ============ -->
+<div class="psec" id="p-2">
+  <div class="section-title"><h2>Phase 2 — Foundations</h2><span class="accent">complete · venue, date, location, budget, guest count</span></div>
+  <div class="stats">
+    <div class="stat"><div class="v">$480,000</div><div class="l">Budget set</div><div class="s">Mar 4 · with the couple</div></div>
+    <div class="stat"><div class="v">312</div><div class="l">Guest count</div><div class="s">List uploaded May 2</div></div>
+    <div class="stat"><div class="v">San Miguel</div><div class="l">Location</div><div class="s">Destination · 190 traveling</div></div>
+    <div class="stat"><div class="v">Jan 15 – 17</div><div class="l">Dates locked</div><div class="s">May 20 · 3 venues signed</div></div>
+  </div>
+  <div class="grid g32" style="margin-top:18px">
+    <div class="card">
+      <h3>The venue loop</h3><div class="sub">Suggest → shortlist → final quotes → chosen on date availability → signed</div>
+      <div class="row"><div class="icon">1</div><div class="grow"><div class="t">Six venues suggested, with estimates</div><div class="d">Apr 2 · San Miguel, plus two Valle de Guadalupe options</div></div></div>
+      <div class="row"><div class="icon">2</div><div class="grow"><div class="t">Couple shortlisted three for final quotes</div><div class="d">Apr 9 · Hacienda San Gabriel · Casa Alma · Terraza Vista</div></div></div>
+      <div class="row"><div class="icon">3</div><div class="grow"><div class="t">Quotes returned with date availability</div><div class="d">Apr 30 · only Jan 15 – 17 worked across all three</div></div></div>
+      <div class="row"><div class="icon">4</div><div class="grow"><div class="t">Couple chose · site visit</div><div class="d">May 18 · visit notes in Documents</div></div></div>
+      <div class="row"><div class="icon">5</div><div class="grow"><div class="t">Contracts signed · deposits on the ledger</div><div class="d">May 20 – 22 · #C-101 · #C-102 · #C-103</div></div></div>
+      <div class="hr"></div>
+      <div class="note"><b>Every step lives on the venue records.</b> Open any of the three in Vendors and the whole loop is there — nothing retyped, nothing lost.</div>
+    </div>
+    <div class="gate">
+      <h3>The gate</h3><div class="sub">Crossed May 20 — Phase 3 unlocked</div>
+      <div class="row"><span class="check ok">✓</span><div class="grow"><div class="t">Budget established</div><div class="d">$480,000</div></div></div>
+      <div class="row"><span class="check ok">✓</span><div class="grow"><div class="t">Guest count established</div><div class="d">312 · list uploaded by Priya</div></div></div>
+      <div class="row"><span class="check ok">✓</span><div class="grow"><div class="t">Location chosen</div><div class="d">San Miguel de Allende — destination</div></div></div>
+      <div class="row"><span class="check ok">✓</span><div class="grow"><div class="t">Venues signed, deposits sent</div><div class="d">3 venues · 5 events placed</div></div></div>
+      <div class="row"><span class="check ok">✓</span><div class="grow"><div class="t">Dates locked</div><div class="d">January 15 – 17, 2027</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VIEW: DAY-OF (PHASE 4) ============ -->
+<div class="psec" id="p-4">
+  <div class="section-title"><h2>The wedding days</h2><span class="accent">phase 4 — execution, then settlement. Preview: this is Jan 15 – 17.</span></div>
+  <div class="grid g32">
+    <div class="card ros">
+      <h3>Day 1 · Jan 15 — live</h3><div class="sub">Mehndi, then Welcome dinner · tap to check off</div>
+      <div class="row done"><span class="tick ok" onclick="tick(this)">✓</span><div class="time">09:00</div><div class="grow"><div class="t">Casa Alma — florals &amp; lounge set</div><div class="d">Flor y Canto on site</div></div></div>
+      <div class="row done"><span class="tick ok" onclick="tick(this)">✓</span><div class="time">11:00</div><div class="grow"><div class="t">Mehndi artists arrive (6)</div></div></div>
+      <div class="row"><span class="tick" onclick="tick(this)"></span><div class="time">13:00</div><div class="grow"><div class="t">Guests arrive — 80 expected</div><div class="d">Shuttle from Hotel Matilda running</div></div></div>
+      <div class="row"><span class="tick" onclick="tick(this)"></span><div class="time">17:30</div><div class="grow"><div class="t">Flip courtyard → welcome dinner</div><div class="d">Crew of 12 · 90 minutes</div></div></div>
+      <div class="row"><span class="tick" onclick="tick(this)"></span><div class="time">19:30</div><div class="grow"><div class="t">Mariachi set</div><div class="d">If the couple approves by Aug 2…</div></div></div>
+      <div class="row"><span class="tick" onclick="tick(this)"></span><div class="time">20:00</div><div class="grow"><div class="t">Dinner service — 120 covers</div></div></div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Day-of extras</h3><div class="sub">They always happen — they land on the ledger as they do</div>
+        <div class="row"><div class="grow"><div class="t">Extra heaters ×4 — cold snap</div><div class="trace">Casa Alma · added to ledger</div></div><div class="amt">$1,350</div><span class="badge b-due">Unsettled</span></div>
+        <div class="row"><div class="grow"><div class="t">Late-night taquero, 40 extra covers</div><div class="trace">Cocina de Humo</div></div><div class="amt">$1,800</div><span class="badge b-due">Unsettled</span></div>
+      </div>
+      <div class="gate" style="margin-top:18px">
+        <h3>Closing the wedding</h3><div class="sub">Not done until every event is celebrated and every tab is settled</div>
+        <div class="row"><span class="check no">·</span><div class="grow"><div class="t">5 events celebrated</div><div class="d">0 of 5</div></div></div>
+        <div class="row"><span class="check no">·</span><div class="grow"><div class="t">All ledger lines settled</div><div class="d">2 balances + day-of extras open</div></div></div>
+        <div class="row"><span class="check no">·</span><div class="grow"><div class="t">Vendor deliverables received</div><div class="d">Photo/video due 8 weeks after</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="overlay" id="pModal">
+  <div class="mbox">
+    <h3 id="pTitle">Present Flor y Canto</h3>
+    <div class="msub">to a wedding, for an event — this opens the loop</div>
+    <div class="mlbl">To wedding</div>
+    <select class="fld" id="pWed" onchange="pEvents()">
+      <option value="pa">Priya &amp; Arjun — San Miguel · Jan 15 – 17</option>
+      <option value="el">Emma &amp; Lucas — CDMX · Oct 10</option>
+      <option value="sm">Sofía &amp; Marco — Valle · Jun 2027</option>
+    </select>
+    <div class="mlbl">For event</div>
+    <div class="echips" id="pChips"></div>
+    <div class="mlbl">Estimated price <span style="text-transform:none;letter-spacing:0">(the couple sees this)</span></div>
+    <input class="fld" id="pEst" placeholder="$ —">
+    <div class="mlbl">Your note to the couple</div>
+    <textarea class="fld" id="pNote" placeholder="Why this one — in your voice."></textarea>
+    <div class="mact"><button class="btn ghost" onclick="document.getElementById('pModal').classList.remove('open')">Cancel</button><button class="btn wine" onclick="presentSend()">Present to couple</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<div class="protobar">forma v2 · <b>clickable prototype</b> · fake data · the contract for what gets built</div>
+<script>
+/* ---------- data ---------- */
+const EV = [
+ {name:"Mehndi", inv:80, conf:"70 confirmed", venue:"Casa Alma", venueS:"Booked · #C-101", slice:"$23,600", date:"Jan 15", day:"Day 1 · 13:00 – 17:00", yes:88, no:0,
+  legend:"70 yes · 3 maybe · 7 pending", diet:"9 vegetarian · 1 vegan",
+  own:[["C","Casa Alma courtyard — lounge & low tables","Load-in 09:00"],["A","6 mehndi artists","Confirmed count due — task open"],["B","Chaat & agua fresca bar","Cocina de Humo"]],
+  vendors:[["Casa Alma","Venue · #C-101","b-booked","Booked"],["Cocina de Humo","Catering · #C-104","b-booked","Booked"],["Mehndi by Rani","Artists (6)","b-booked","Booked"]],
+  ros:[["09:00","Florals & lounge set"],["11:00","Mehndi artists arrive"],["13:00","Guests arrive — 80 expected"],["16:30","Family photos, golden hour"],["17:30","Flip courtyard → welcome dinner"]],
+  menus:[["Live chaat stations","No selection needed"],["Agua fresca & lassi bar","No selection needed"]],
+  slice_rows:[["Casa Alma share","#C-101 · by day","$14,000"],["Catering share","#C-104 · by headcount","$6,800"],["Mehndi artists","booked","$2,800"]]},
+ {name:"Welcome dinner", inv:120, conf:"95 confirmed", venue:"Casa Alma", venueS:"Booked · #C-101", slice:"$35,200", date:"Jan 15", day:"Day 1 · 19:30 – 23:00", yes:79, no:0,
+  legend:"95 yes · 4 maybe · 21 pending", diet:"14 vegetarian · 2 vegan · 1 gluten-free",
+  own:[["C","Casa Alma courtyard, dinner flip","Crew of 12 · 90-minute flip"],["B","Mariachi set — if approved by Aug 2","Quote with the couple"],["M","Family-style Oaxacan dinner","120 covers"]],
+  vendors:[["Casa Alma","Venue · #C-101","b-booked","Booked"],["Cocina de Humo","Catering · #C-104","b-booked","Booked"],["Mariachi Los Reyes","Music · quote out","b-quoting","In the loop"]],
+  ros:[["17:30","Courtyard flip begins"],["19:30","Guests seated · mariachi (pending)"],["20:00","Dinner service — 120 covers"],["21:30","Toasts — 4 speakers, order set"],["23:00","Shuttles back to hotels"]],
+  menus:[["Family-style Oaxacan","No selection needed"],["Mole tasting trio","Chef's welcome course"]],
+  slice_rows:[["Casa Alma share","#C-101 · by day","$14,000"],["Catering share","#C-104 · by headcount","$15,600"],["Mariachi (expected)","quote with couple","$5,600"]]},
+ {name:"Sangeet", inv:220, conf:"163 confirmed", venue:"Terraza Vista", venueS:"Booked · #C-103", slice:"$72,800", date:"Jan 16", day:"Day 2 · 19:00 – 01:00", yes:74, no:4,
+  legend:"163 yes · 9 no · 48 pending", diet:"31 vegetarian · 6 vegan · 4 gluten-free · 2 nut allergies",
+  own:[["T","Terraza Vista — rooftop, rain plan: interior salon","Load-in 14:00 · sound curfew 01:30"],["D","DJ Selva + dhol player","Set list approved by Arjun"],["M","Live chaat stations + plated mains","Menu locked"]],
+  vendors:[["Terraza Vista","Venue · #C-103","b-booked","Booked"],["Cocina de Humo","Catering · #C-104","b-booked","Booked"],["DJ Selva","Music","b-booked","Booked"],["Flor y Canto","Florals — in the loop","b-quoting","In the loop"]],
+  ros:[["14:00","Vendor load-in · sound check"],["19:00","Doors · welcome cocktails"],["20:00","Family performances — 7 acts"],["21:30","Dinner — live stations open"],["23:00","Couple's surprise number"],["00:00","Bhangra block — non-negotiable"]],
+  menus:[["Live chaat stations","No selection needed"],["Plated — paneer khada masala","Vegetarian · awaiting RSVP close"],["Plated — lamb rogan josh","awaiting RSVP close"]],
+  slice_rows:[["Terraza Vista","#C-103","$29,000"],["Catering share","#C-104 · by headcount","$26,400"],["Florals share (estimate)","in the loop","$12,400"],["Music","DJ Selva + dhol","$5,000"]]},
+ {name:"Ceremony", inv:312, conf:"231 confirmed", venue:"Hacienda San Gabriel", venueS:"Booked · #C-102", slice:"$122,400", date:"Jan 17", day:"Day 3 · 10:00 – 13:30", yes:74, no:4,
+  legend:"231 yes · 12 no · 64 pending", diet:"see wedding list",
+  own:[["H","Hacienda gardens — mandap on the east lawn","Build starts Jan 15"],["B","Baraat — horse or vintage car","Decision with Arjun"],["F","Mandap florals — blush revision pending","Flor y Canto + Mandap Works as one build"]],
+  vendors:[["Hacienda San Gabriel","Venue · #C-102","b-booked","Booked"],["Mandap Works MX","Mandap build — quoting","b-quoting","Quoting"],["Flor y Canto","Florals — in the loop","b-quoting","In the loop"],["Luz Films","Photo & video · #C-105","b-booked","Booked"]],
+  ros:[["07:00","Mandap final dress & florals"],["09:00","Baraat staging"],["10:00","Baraat procession"],["11:00","Ceremony — 90 min"],["13:00","Lunch service on the lawn"]],
+  menus:[["Garden lunch buffet","No selection needed"]],
+  slice_rows:[["Hacienda share","#C-102 · by day","$68,000"],["Mandap build (expected)","quoting","$24,000"],["Florals share (estimate)","in the loop","$24,600"],["Catering share","#C-104","$5,800"]]},
+ {name:"Reception", inv:312, conf:"231 confirmed", venue:"Hacienda San Gabriel", venueS:"Booked · #C-102", slice:"$119,600", date:"Jan 17", day:"Day 3 · 19:00 – 02:00", yes:74, no:4,
+  legend:"231 yes · 12 no · 64 pending", diet:"collected at the Sep 3 touchpoint",
+  own:[["H","Hacienda ballroom + terrace","Cold spark permit — 30-day notice"],["M","Plated dinner + late-night taco bar","Menu v2 with the couple"],["D","DJ Selva — first dance TBD","Song in the loop"]],
+  vendors:[["Hacienda San Gabriel","Venue · #C-102","b-booked","Booked"],["Cocina de Humo","Catering · #C-104","b-booked","Booked"],["DJ Selva","Music","b-booked","Booked"],["Luz Films","Photo & video · #C-105","b-booked","Booked"]],
+  ros:[["17:00","Ballroom flip from lunch"],["19:00","Doors · cocktail hour on the terrace"],["20:30","Entrances & first dance"],["21:00","Dinner — plated or family-style, with couple"],["23:00","Cold sparks · open floor"],["01:00","Late-night taco bar"]],
+  menus:[["First course","plated vs family-style — with couple"],["Main — sea bass","replaces short rib after tasting"],["Main — lamb barbacoa","stays"],["Late-night taco bar","11pm"]],
+  slice_rows:[["Hacienda share","#C-102 · by day","$68,000"],["Catering share","#C-104 · by headcount","$33,600"],["Bar & mixology","#C-104 add-on","$10,800"],["Production & sparks","permit pending","$7,200"]]}
+];
+
+/* ---------- helpers ---------- */
+function offAll(sel){document.querySelectorAll(sel).forEach(b=>b.classList.remove('on'))}
+function show(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));document.getElementById(id).classList.add('on');window.scrollTo({top:0})}
+
+function goView(id,btn){document.getElementById('wnav').style.display='flex';show('v-'+id);offAll('.wnav button');btn.classList.add('on');offAll('.chips .chip');document.querySelector('.chips .chip').classList.add('on')}
+function goWedding(chip){document.getElementById('wnav').style.display='flex';show('v-overview');offAll('.chips .chip');chip.classList.add('on');offAll('.wnav button');document.querySelector('.wnav button').classList.add('on')}
+
+function goEvent(i,chip){
+  const e=EV[i];
+  offAll('.chips .chip');chip.classList.add('on');offAll('.wnav button');
+  document.getElementById('eInv').textContent=e.inv;
+  document.getElementById('eConf').textContent=e.conf;
+  document.getElementById('eVenue').textContent=e.venue;
+  document.getElementById('eVenueS').textContent=e.venueS;
+  document.getElementById('eSlice').textContent=e.slice;
+  document.getElementById('eDate').textContent=e.date;
+  document.getElementById('eDay').textContent=e.day;
+  document.getElementById('evName').textContent=e.venue;
+  document.getElementById('egTitle').textContent='Guests — '+e.inv+' invited';
+  const own=document.querySelectorAll('#e-overview .card')[0];
+  own.querySelectorAll('.row').forEach((r,j)=>{if(e.own[j]){r.style.display='flex';r.querySelector('.icon').textContent=e.own[j][0];r.querySelector('.t').textContent=e.own[j][1];r.querySelector('.d').textContent=e.own[j][2]}else r.style.display='none'});
+  const vend=document.querySelectorAll('#e-overview .card')[1];
+  vend.querySelectorAll('.row').forEach((r,j)=>{if(e.vendors[j]){r.style.display='flex';r.querySelector('.t').textContent=e.vendors[j][0];r.querySelector('.d').textContent=e.vendors[j][1];const b=r.querySelector('.badge');b.className='badge '+e.vendors[j][2];b.textContent=e.vendors[j][3]}else r.style.display='none'});
+  const ros=document.querySelector('#e-schedule .card');
+  ros.querySelectorAll('.row').forEach((r,j)=>{if(e.ros[j]){r.style.display='flex';r.querySelector('.time').textContent=e.ros[j][0];r.querySelector('.t').textContent=e.ros[j][1]}else r.style.display='none'});
+  const men=document.querySelector('#e-menus .card');
+  men.querySelectorAll('.row').forEach((r,j)=>{if(e.menus[j]){r.style.display='flex';r.querySelector('.t').textContent=e.menus[j][0];r.querySelector('.d').textContent=e.menus[j][1];const a=r.querySelector('.amt');if(a)a.textContent=''}else r.style.display='none'});
+  const sli=document.querySelector('#e-budget .card');
+  sli.querySelectorAll('.row').forEach((r,j)=>{if(e.slice_rows[j]){r.style.display='flex';r.querySelector('.t').textContent=e.slice_rows[j][0];r.querySelector('.trace').textContent=e.slice_rows[j][1];r.querySelector('.amt').textContent=e.slice_rows[j][2]}else r.style.display='none'});
+  const gb=document.querySelector('#e-guests .gbar');gb.innerHTML='<i class="yes" style="width:'+e.yes+'%"></i><i class="no" style="width:'+e.no+'%"></i>';
+  document.querySelector('#e-guests .legend').innerHTML='<span><i style="background:var(--sage)"></i>'+e.legend+'</span>';
+  document.querySelectorAll('#e-guests .row .d')[0].textContent=e.diet;
+  document.getElementById('crumbEvent').textContent=e.name;
+  document.getElementById('wnav').style.display='none';
+  eSub('e-overview',document.querySelector('.esub button'));
+  show('v-event');
+}
+function eSub(id,btn){document.querySelectorAll('.esec').forEach(s=>s.style.display='none');document.getElementById(id).style.display='block';offAll('.esub button');btn.classList.add('on')}
+
+function openPlanning(){
+  document.getElementById('wnav').style.display='flex';offAll('.wnav button');
+  offAll('.chips .chip');document.querySelector('.chips .chip').classList.add('on');
+  show('v-planning');pGo(3,document.querySelectorAll('.pstep')[2]);
+}
+function pGo(n,el){offAll('.pstep');el.classList.add('on');document.querySelectorAll('.psec').forEach(x=>x.classList.remove('on'));document.getElementById('p-'+n).classList.add('on')}
+function tick(el){el.classList.toggle('ok');el.textContent=el.classList.contains('ok')?'✓':'';el.closest('.row').classList.toggle('done')}
+
+/* ---------- studio ---------- */
+function wPick(m){
+  document.getElementById('wmenu').classList.remove('open');
+  if(m==='studio'){goStudio();return}
+  enterWedding(m);
+}
+function goStudio(){document.body.classList.add('studio');document.getElementById('wselLabel').textContent='All weddings';sGo('overview',document.querySelector('.snav button'))}
+function sGo(id,btn){document.body.classList.add('studio');show('v-s-'+id);offAll('.snav button');if(btn)btn.classList.add('on')}
+function enterWedding(m){document.body.classList.remove('studio');setMode(m)}
+
+/* ---------- demo mode ---------- */
+function setMode(m){
+  document.body.classList.remove('studio');
+  const simple=(m==='simple');
+  document.body.classList.toggle('simple',simple);
+  document.getElementById('wselLabel').textContent=simple?'Emma & Lucas':'Priya & Arjun';
+  document.getElementById('heroKicker').textContent=simple?'City wedding · Mexico City':'Destination wedding · San Miguel de Allende, MX';
+  document.getElementById('heroTitle').innerHTML=simple?'Emma &amp; Lucas':'Priya &amp; Arjun';
+  document.getElementById('heroMeta').innerHTML=simple?'<span class="accent">October 10, 2026</span> &nbsp;·&nbsp; 96 guests &nbsp;·&nbsp; $85,000':'<span class="accent">January 15 – 17, 2027</span> &nbsp;·&nbsp; 3 days · 5 events · 3 venues &nbsp;·&nbsp; 312 guests &nbsp;·&nbsp; $480,000';
+  document.getElementById('stGuests').textContent=simple?'96':'312';
+  document.getElementById('stGuestsS').textContent=simple?'81 answered · 9 nudge scheduled':'248 answered · 41 nudge scheduled';
+  document.getElementById('stBudget').textContent=simple?'$85k':'$480k';
+  document.getElementById('stBudgetS').textContent=simple?'$46k committed · $28k paid':'$136k committed · $188k paid';
+  document.getElementById('stVendors').innerHTML=simple?'6<span style="font-size:16px;color:var(--muted)">/8</span>':'12<span style="font-size:16px;color:var(--muted)">/18</span>';
+  document.getElementById('stDays').textContent=simple?'77':'174';
+  goWedding(document.querySelector('.chips .chip'));
+}
+
+function goContract(){document.getElementById('wnav').style.display='flex';offAll('.wnav button');document.querySelectorAll('.wnav:not(.snav) button')[5].classList.add('on');show('v-contract')}
+
+/* ---------- present flow ---------- */
+const WED_EVENTS={pa:['Mehndi','Welcome dinner','Sangeet','Ceremony','Reception','Wedding-general'],el:['Wedding day','Wedding-general'],sm:['Ceremony (planned)','Reception (planned)','Wedding-general']};
+let pVendor='';
+function presentOpen(el){
+  const card=el.closest('.bcard');
+  pVendor=(card?.querySelector('.bhero .big')?.textContent||'this vendor').trim();
+  document.getElementById('pTitle').textContent='Present '+pVendor;
+  document.getElementById('pEst').value='';document.getElementById('pNote').value='';
+  pEvents();
+  document.getElementById('pModal').classList.add('open');
+}
+function pEvents(){
+  const w=document.getElementById('pWed').value;
+  document.getElementById('pChips').innerHTML=WED_EVENTS[w].map(e=>'<span class="echip" onclick="this.classList.toggle(\'on\')">'+e+'</span>').join('');
+}
+function presentSend(){
+  const w=document.getElementById('pWed');
+  const wname=w.options[w.selectedIndex].text.split('—')[0].trim();
+  const evs=[...document.querySelectorAll('#pChips .echip.on')].map(e=>e.textContent);
+  document.getElementById('pModal').classList.remove('open');
+  const t=document.getElementById('toast');
+  t.innerHTML='<b>'+pVendor+'</b> presented to '+wname+(evs.length?' — '+evs.join(' · '):'')+'. The loop is open — the ball is in their court.';
+  t.style.display='block';
+  setTimeout(()=>{t.style.display='none'},4200);
+}
+
+/* ---------- calendar ---------- */
+const CAL_EVENTS={
+ '2026-07-25':[{t:'Discovery — Danielle & Cruz',k:'meet'},{t:'Menu tasting · P·A',k:'meet'}],
+ '2026-07-27':[{t:'Check-in #8 · P·A',k:'meet'}],
+ '2026-08-01':[{t:'RSVP reminder · P·A',k:'auto'}],
+ '2026-08-02':[{t:'Mariachi hold expires · P·A',k:'tent'}],
+ '2026-08-06':[{t:'Site visit Museo · E·L',k:'meet'}],
+ '2026-08-12':[{t:'Viñedo tour · S·M',k:'tent'}],
+ '2026-09-01':[{t:'RSVP closes · P·A',k:'auto'}],
+ '2026-09-03':[{t:'Menu emails go out · P·A',k:'auto'}],
+ '2026-10-01':[{t:'Travel & stay emails · P·A',k:'auto'},{t:'Hotel blocks release · P·A',k:'tent'}],
+ '2026-10-09':[{t:'Rehearsal · E·L',k:'meet'}],
+ '2026-10-10':[{t:'EMMA & LUCAS — wedding day',k:'wed'}],
+ '2026-10-15':[{t:'Hacienda balance due · P·A',k:'tent'}],
+ '2026-11-01':[{t:'Terraza balance due · P·A',k:'tent'}],
+ '2027-01-08':[{t:'Guest day-of schedules send · P·A',k:'auto'}],
+ '2027-01-15':[{t:'P·A — Mehndi · Welcome dinner',k:'wed'}],
+ '2027-01-16':[{t:'P·A — Sangeet',k:'wed'}],
+ '2027-01-17':[{t:'P·A — Ceremony · Reception',k:'wed'}]
+};
+let calY=2026, calM=6;
+const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function calRender(){
+  document.getElementById('calTitle').textContent=MN[calM]+' '+calY;
+  const g=document.getElementById('calGrid');
+  let h='';
+  for(const d of ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']) h+='<div class="caldow">'+d+'</div>';
+  const first=new Date(calY,calM,1);
+  let off=(first.getDay()+6)%7;
+  const days=new Date(calY,calM+1,0).getDate();
+  for(let i=0;i<off;i++) h+='<div class="calday dim"></div>';
+  for(let d=1;d<=days;d++){
+    const key=calY+'-'+String(calM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const today=(key==='2026-07-25');
+    h+='<div class="calday'+(today?' today':'')+'"><div class="dn">'+d+'</div>';
+    for(const e of (CAL_EVENTS[key]||[])) h+='<div class="cpill '+e.k+'" title="'+e.t+'">'+e.t+'</div>';
+    h+='</div>';
+  }
+  const total=off+days, rem=(7-total%7)%7;
+  for(let i=0;i<rem;i++) h+='<div class="calday dim"></div>';
+  g.innerHTML=h;
+}
+function calNav(d){calM+=d;if(calM<0){calM=11;calY--}if(calM>11){calM=0;calY++}calRender()}
+calRender();
+</script>
+</body>
+</html>
