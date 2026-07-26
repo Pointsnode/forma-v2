@@ -5,7 +5,11 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 const ROOT = new URL("..", import.meta.url).pathname;
 const SRC = join(ROOT, "src");
-const ALLOWLIST = new Set([]);
+// The admin (service-role) client + the one route that uses it (the touchpoint cron).
+const ALLOWLIST = new Set([
+  "src/lib/supabase/admin.ts",
+  "src/app/api/touchpoints/run/route.ts",
+]);
 const PATTERNS = [/SUPABASE_SERVICE_ROLE_KEY/, /createAdminClient/];
 function* walk(dir) {
   for (const e of readdirSync(dir)) {

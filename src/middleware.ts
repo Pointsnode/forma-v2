@@ -5,7 +5,7 @@ import { signInRedirectPath } from "@/lib/auth-redirect.mjs";
 import { updateSession } from "@/lib/supabase/middleware";
 
 const intl = createIntlMiddleware(routing);
-const PUBLIC = ["/sign-in", "/sign-up", "/reset", "/styleguide"];
+const PUBLIC = ["/sign-in", "/sign-up", "/reset", "/styleguide", "/rsvp"];
 
 export async function middleware(request: NextRequest) {
   // 1. next-intl handles locale routing and returns the base response.

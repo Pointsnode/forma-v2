@@ -15,7 +15,8 @@ const bad = [];
 for (const f of walk(SRC)) {
   const c = readFileSync(f, "utf8");
   for (const v of c.match(/NEXT_PUBLIC_[A-Z0-9_]+/g) || []) {
-    if (/SERVICE_ROLE|SECRET|PRIVATE|PASSWORD|_KEY$/.test(v) && v !== "NEXT_PUBLIC_SUPABASE_ANON_KEY") {
+    // RESEND (email) and CRON secrets are server-only, like the service-role key.
+    if (/SERVICE_ROLE|SECRET|PRIVATE|PASSWORD|RESEND|CRON|_KEY$/.test(v) && v !== "NEXT_PUBLIC_SUPABASE_ANON_KEY") {
       bad.push(`${relative(ROOT, f)}: ${v}`);
     }
   }

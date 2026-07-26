@@ -30,7 +30,7 @@ export default async function WeddingFloor({ params }: { params: Promise<{ local
   if (role === "member") return <CoupleLens weddingId={id} views={views} events={events} wedding={wedding} />;
 
   // ── Planner floor ──────────────────────────────────────────────────────────
-  const [tw, tp, tprop] = [await getTranslations("wedding"), await getTranslations("phase"), await getTranslations("proposals")];
+  const [tw, tp, tprop, tg] = [await getTranslations("wedding"), await getTranslations("phase"), await getTranslations("proposals"), await getTranslations("guests")];
   const [members, invites] = await Promise.all([loadMembers(supabase, id), loadPendingInvites(supabase, id)]);
   const waiting = views.filter((v) => !isTerminal(v.status) && v.status !== "draft");
   const range = formatDateRange(wedding.date_start, wedding.date_end, lang);
@@ -41,7 +41,7 @@ export default async function WeddingFloor({ params }: { params: Promise<{ local
     <div className="flex flex-col gap-6">
       <WeddingHeader wedding={wedding} events={events} />
       <PhaseLine wedding={wedding} events={events} />
-      <FloorNav weddingId={id} active="overview" proposalsLabel={tprop("tab")} overviewLabel={tw("overview")} />
+      <FloorNav weddingId={id} active="overview" proposalsLabel={tprop("tab")} overviewLabel={tw("overview")} guestsLabel={tg("tab")} />
 
       <Card>
         <div className="grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-3">
@@ -78,14 +78,15 @@ export default async function WeddingFloor({ params }: { params: Promise<{ local
 }
 
 function FloorNav({
-  weddingId, active, overviewLabel, proposalsLabel,
-}: { weddingId: string; active: "overview" | "proposals"; overviewLabel: string; proposalsLabel: string }) {
+  weddingId, active, overviewLabel, proposalsLabel, guestsLabel,
+}: { weddingId: string; active: "overview" | "proposals" | "guests"; overviewLabel: string; proposalsLabel: string; guestsLabel: string }) {
   return (
     <WeddingNav
       items={
         <>
           <Link href={`/wedding/${weddingId}`} className={cx(active === "overview" ? "text-ink" : "text-muted hover:text-ink")}>{overviewLabel}</Link>
           <Link href={`/wedding/${weddingId}/proposals`} className={cx(active === "proposals" ? "text-ink" : "text-muted hover:text-ink")}>{proposalsLabel}</Link>
+          <Link href={`/wedding/${weddingId}/guests`} className={cx(active === "guests" ? "text-ink" : "text-muted hover:text-ink")}>{guestsLabel}</Link>
         </>
       }
     />
@@ -100,7 +101,7 @@ async function CoupleLens({
   events: import("@/lib/wedding").EventRow[];
   wedding: import("@/lib/wedding").WeddingRow;
 }) {
-  const tw = await getTranslations("wedding");
+  const [tw, tg] = [await getTranslations("wedding"), await getTranslations("guests")];
   const lang = await getLocale();
   const inCourt = views.filter((v) => v.status === "sent" || v.status === "seen");
   const settled = views.filter((v) => v.status !== "sent" && v.status !== "seen");
@@ -110,6 +111,14 @@ async function CoupleLens({
   return (
     <div className="flex flex-col gap-6">
       <WeddingHeader wedding={wedding} events={events} />
+      <WeddingNav
+        items={
+          <>
+            <Link href={`/wedding/${weddingId}`} className="text-ink">{tw("overview")}</Link>
+            <Link href={`/wedding/${weddingId}/guests`} className="text-muted hover:text-ink">{tg("tab")}</Link>
+          </>
+        }
+      />
       <DecisionInbox weddingId={weddingId} inCourt={inCourt} settled={settled} />
       <Card>
         <div className="grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-3">
