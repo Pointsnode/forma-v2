@@ -33,14 +33,17 @@ grant usage on schema auth to anon, authenticated, service_role;
 grant usage on schema public to anon, authenticated, service_role;
 `;
 
-// Supabase auto-grants API roles on new public/private objects; replicate after migrations.
+// Replicate Supabase's default API-role grants on PUBLIC objects — and NOTHING on
+// schema `private`. Access to private (USAGE + per-function EXECUTE) must come from
+// the migrations themselves (0004), exactly as in production; granting it here
+// would mask a missing grant. Role identity is part of the call shape: tests run
+// each RPC under `set local role authenticated`, so a grant-starved private schema
+// fails the same way it would for a real user.
 const GRANTS = `
-grant usage on schema private to anon, authenticated, service_role;
 grant select, insert, update, delete on all tables in schema public to authenticated, service_role;
 grant select on all tables in schema public to anon;
 grant usage, select on all sequences in schema public to authenticated, service_role;
 grant execute on all functions in schema public to anon, authenticated, service_role;
-grant execute on all functions in schema private to anon, authenticated, service_role;
 `;
 
 const migrations = readdirSync(migDir).filter((f) => f.endsWith(".sql")).sort();

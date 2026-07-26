@@ -162,7 +162,9 @@ do $$ begin
 end $$;
 
 -- ── (7) advance_wedding_phase — positive per predicate, fail-closed venue ─────
-set local request.jwt.claims = '{"sub":"11111111-0000-0000-0000-000000000001","role":"authenticated"}';
+-- advance_wedding_phase is an INTERNAL helper — 0004 grants it no authenticated
+-- EXECUTE (the app never calls it directly) — so exercise it as the owner.
+reset role;
 -- W1 is foundations. Walk the predicates: each satisfied one uncovers the next.
 do $$ begin
   begin perform private.advance_wedding_phase('cccccccc-0000-0000-0000-0000000000c1');
@@ -208,7 +210,7 @@ do $$ begin
     raise exception 'TEST FAIL: studio hiring advanced without a planner agreement';
   exception when sqlstate 'FV101' then null; end;
 end $$;
-set local request.jwt.claims = '{"sub":"44444444-0000-0000-0000-000000000004","role":"authenticated"}';
+-- couple-workspace (WS2) wedding, still as owner
 insert into public.weddings (id, workspace_id, slug, couple_display, kind, phase)
   values ('cccccccc-0000-0000-0000-0000000000c5','bbbbbbbb-0000-0000-0000-0000000000b2','w5','Self & Planned','city','hiring');
 do $$ begin
