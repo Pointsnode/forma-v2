@@ -1,0 +1,44 @@
+// Client-safe loop types + presentation helpers (no server-only imports).
+
+export type ProposalStatus =
+  | "draft" | "sent" | "seen" | "change_requested" | "approved" | "declined" | "withdrawn";
+export type Court = "planner" | "couple" | "none";
+
+export type ViewMessage = {
+  id: string;
+  authorName: string;
+  authorInitials: string;
+  isCouple: boolean;
+  body: string;
+};
+export type ViewProposal = {
+  id: string;
+  status: ProposalStatus;
+  title: string;
+  note: string | null;
+  estimate: string | null;
+  eventLabel: string | null;
+  court: Court;
+  ageDays: number;
+  messages: ViewMessage[];
+};
+
+export type MemberVM = { id: string; name: string; initials: string; role: string };
+export type InviteVM = { id: string; role: string; token: string; expiresAt: string };
+
+// Status → pill tone (maps onto the design tokens; badges only, no borders).
+export function statusClass(s: ProposalStatus): string {
+  switch (s) {
+    case "approved": return "bg-sage-soft text-sage-ink";
+    case "change_requested": return "bg-maroon text-bone";
+    case "declined": return "bg-wine-soft text-wine";
+    case "withdrawn": return "bg-hairline text-muted";
+    case "draft": return "bg-sand-soft text-taupe";
+    default: return "bg-wine-soft text-wine"; // sent / seen — awaiting couple
+  }
+}
+
+// Court → who-b bubble tone. planner = sand (yours), couple = wine.
+export function courtClass(c: Court): string {
+  return c === "planner" ? "bg-sand text-ink" : c === "couple" ? "bg-wine text-bone" : "bg-hairline text-muted";
+}

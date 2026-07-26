@@ -5,6 +5,16 @@ import { redirect } from "@/i18n/navigation";
 import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 
+// Advances the cockpit "Since you were away" cursor. Called on mount from the
+// overview so the next visit's window starts from now.
+export async function touchLastSeen(): Promise<void> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) await supabase.from("profiles").update({ last_seen_at: new Date().toISOString() }).eq("id", user.id);
+}
+
 export type WeddingState = { error?: "invalid" | "generic" } | null;
 
 const slugify = (s: string) =>

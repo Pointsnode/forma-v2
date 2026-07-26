@@ -73,28 +73,35 @@ wedding_events    id PK · wedding_id → weddings (CASCADE)
 
 ```
 proposals   id PK · wedding_id → weddings (CASCADE) · UNIQUE (id, wedding_id)
-            status enum proposal_status ('draft'|'sent'|'seen'|'change_requested'|'approved'|'declined'|'withdrawn')
-            title · note · estimate_amount · currency
-            created_by → profiles · responded_by → profiles · responded_at
-            -- the subject: EXACTLY ONE of (all composite-FK'd with wedding_id):
-            engagement_id → wedding_vendors   (a vendor/venue presentation)
-            quote_id      → quotes
-            menu_id       → menus
-            design_item_id→ design_items
-            schedule_ref  → wedding_events    (run-of-show proposals)
-            CHECK (num_nonnulls(engagement_id, quote_id, menu_id, design_item_id, schedule_ref) = 1)
-proposal_events    proposal_id + wedding_id → proposals(id,wedding_id) · event_id + wedding_id → wedding_events(id,wedding_id)
-                   PK (proposal_id, event_id)         -- "presented FOR these events"
-proposal_messages  id PK · proposal_id → proposals (CASCADE) · wedding_id (composite FK)
-                   author_id → profiles · body text (≤ 4000) · created_at
+            status enum proposal_status ('draft'|'sent'|'seen'|'change_requested'|'approved'|'declined'|'withdrawn') default 'draft'
+            title (≤200) · note · estimate_amount numeric(12,2) · currency char(3) default 'USD'
+            created_by → profiles · responded_by → profiles · responded_at · sent_at · seen_at
+            -- the subject: AT MOST ONE of (all composite-FK'd with wedding_id) — see §3A:
+            event_ref     → wedding_events (id, wedding_id) ON DELETE SET NULL (event_ref)  -- M2 (0003)
+            engagement_id → wedding_vendors   (a vendor/venue presentation)                 -- M4 (0005)
+            quote_id      → quotes                                                          -- M5 (0006)
+            menu_id       → menus · design_item_id → design_items                           -- M6 / M4
+            CHECK (num_nonnulls(event_ref, engagement_id, quote_id, menu_id, design_item_id) <= 1)
+proposal_messages  id PK · (proposal_id, wedding_id) composite FK → proposals (CASCADE)
+                   author_id → profiles · body text (1..4000) · created_at (append-only)
 activity    id PK · wedding_id → weddings (CASCADE) · actor_id → profiles NULL (system = null)
-            verb text · summary text · subject jsonb · created_at        -- feeds "Since you were away"
+            verb text · summary text · subject jsonb · created_at (append-only) · index (wedding_id, created_at desc)
+            -- feeds "Since you were away"; profiles.last_seen_at is the read cursor
+wedding_invites  id PK · wedding_id → weddings (CASCADE) · UNIQUE (id, wedding_id)          -- §3B
+            role ('partner'|'family'|'day_of') · token char(24) UNIQUE (server-generated, regex-gated)
+            created_by → profiles · expires_at (default now()+14d) · used_by NULL · used_at NULL
 ```
 
 - The FK-union subject pattern replaces string polymorphism: **every proposal points at a real row, enforced**. Adding a new proposable type later = one nullable column + widening the CHECK, in a migration.
-- `status` transitions via `private.respond_to_proposal(...)` (couple: approve / request change with message) and `private.send_proposal(...)` (staff) — both write `activity`. Couple's RLS write access is **only** through these functions.
-- When a proposal is `approved`, its subject reacts by trigger where mechanical (engagement → `shortlisted`; quote → `accepted`) — the loop moves the mesh.
-- Ball-in-court is **derived**, never stored: `sent/seen → couple`, `change_requested → planner`, `draft → planner`. A view `proposal_court` exposes it so every surface computes it identically.
+- `status` transitions **only** through the lifecycle functions (`send_proposal`, `mark_proposal_seen`, `respond_to_proposal`, `withdraw_proposal`), each writing `activity`; a BEFORE trigger rejects any direct status write. The functions live in `private` (SECURITY DEFINER) behind thin `public` SECURITY INVOKER wrappers (§0) — the couple's only write access is these wrappers.
+- When a proposal is `approved`, its subject reacts by trigger where mechanical (engagement → `shortlisted`; quote → `accepted`) — the loop moves the mesh. **These approval-moves-the-mesh triggers arrive with their subject tables (M4+); in M2, approval moves only the proposal.**
+- Ball-in-court is **derived**, never stored: `sent/seen → couple`, `change_requested/draft → planner`, terminal → `none`. View `proposal_court` (security_invoker) exposes court + `age_days` (since the court last flipped) so every surface computes it identically.
+
+### §3A amendment (M2) — freeform proposals are legal, forever
+The original `CHECK (... = 1)` required a mesh subject, but four of the five subject tables don't exist until M4–M6, and the loop is communication-first ("should we do fireworks on the terrace?" is a real proposal with no subject). The check is **`num_nonnulls(...) <= 1`** — at most one subject, zero allowed. In M2 the only subject column is `event_ref`; each later migration adds its column and widens the check. The M:N `proposal_events` ("presented FOR these events") table is **deferred** to arrive with those richer subjects; M2 links a proposal to a single event via `event_ref`.
+
+### §3B amendment (M2) — wedding_invites (the bridge to a couple)
+The couple lens needs a couple, but the Phase-1 contract gate that auto-creates membership is M5 and email is M3. Bridge: **tokenized invite links**. Staff inserts a `wedding_invites` row (token server-generated by column default, regex-gated, 14-day expiry); any signed-in account calls `accept_wedding_invite(token)` (SECURITY DEFINER: validates token/expiry/unused with `for update`, creates the membership idempotently, marks used, writes activity) to become a `wedding_member`. Single-use; staff revoke by deleting an unused row. The couple never sees the `wedding_invites` table (staff-only RLS). No email in M2 — the planner copies the link.
 
 ## 4. People — guests, event_guests, touchpoints (M3 — 0004)
 
