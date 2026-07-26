@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
+import { Link, redirect } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { loadWedding } from "@/lib/load-wedding";
+import { loadWeddingContext } from "@/lib/load-wedding";
 import { WeddingHeader } from "@/components/wedding/wedding-header";
 import { Heading } from "@/components/ui";
 import { gateItems, nextPhase } from "@/lib/wedding";
@@ -11,9 +11,10 @@ export default async function PlanningRoom({ params }: { params: Promise<{ local
   const { locale, id } = await params;
   setRequestLocale(locale);
   const supabase = await createClient();
-  const data = await loadWedding(supabase, id);
-  if (!data) notFound();
-  const { wedding, events } = data;
+  const ctx = await loadWeddingContext(supabase, id);
+  if (!ctx || ctx.role === "none") notFound();
+  if (ctx.role === "member") redirect({ href: `/wedding/${id}`, locale }); // planning is a planner room
+  const { wedding, events } = ctx;
 
   const [t, tp] = [await getTranslations("planning"), await getTranslations("phase")];
   const items = gateItems(wedding, events);

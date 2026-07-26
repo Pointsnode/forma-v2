@@ -9,6 +9,7 @@ export type EventKind = "ceremony" | "reception" | "dinner" | "party" | "ritual"
 
 export type WeddingRow = {
   id: string;
+  workspace_id?: string;
   couple_display: string;
   phase: Phase;
   kind: WeddingKind | null;

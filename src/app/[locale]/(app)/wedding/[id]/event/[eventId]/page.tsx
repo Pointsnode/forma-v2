@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { loadWedding } from "@/lib/load-wedding";
+import { loadWeddingContext } from "@/lib/load-wedding";
 import { WeddingHeader } from "@/components/wedding/wedding-header";
 import { EventEditor } from "@/components/wedding/event-forms";
 import { Card, Fact, WeddingNav } from "@/components/ui";
@@ -16,9 +16,9 @@ export default async function EventPage({
   const { locale, id, eventId } = await params;
   setRequestLocale(locale);
   const supabase = await createClient();
-  const data = await loadWedding(supabase, id);
-  if (!data) notFound();
-  const { wedding, events } = data;
+  const ctx = await loadWeddingContext(supabase, id);
+  if (!ctx || ctx.role === "none") notFound();
+  const { wedding, events, role } = ctx;
 
   // Single-event law: with no event layer, an event page has no standing — send
   // a direct visitor back to the flat floor.
@@ -47,9 +47,11 @@ export default async function EventPage({
         </div>
       </Card>
 
-      <Card>
-        <EventEditor weddingId={wedding.id} event={event} multi />
-      </Card>
+      {role === "staff" ? (
+        <Card>
+          <EventEditor weddingId={wedding.id} event={event} multi />
+        </Card>
+      ) : null}
     </div>
   );
 }
