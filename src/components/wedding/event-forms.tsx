@@ -10,7 +10,7 @@ import { formatTime, type EventKind, type EventRow } from "@/lib/wedding";
 const KINDS: EventKind[] = ["ceremony", "reception", "dinner", "party", "ritual", "other"];
 const inputCls = "rounded-xl bg-bone px-3 py-2 text-[14px] text-ink shadow-card outline-none focus:shadow-lift";
 
-function Fields({ e, t }: { e?: EventRow; t: (k: string) => string }) {
+function Fields({ e, t, defaultOrderIndex = 0 }: { e?: EventRow; t: (k: string) => string; defaultOrderIndex?: number }) {
   return (
     <div className="grid grid-cols-2 gap-3">
       <label className="col-span-2 flex flex-col gap-1">
@@ -41,13 +41,13 @@ function Fields({ e, t }: { e?: EventRow; t: (k: string) => string }) {
       </label>
       <label className="flex flex-col gap-1">
         <span className="text-[12px] text-muted">{t("orderIndex")}</span>
-        <input name="order_index" inputMode="numeric" defaultValue={e?.order_index ?? 0} className={inputCls} />
+        <input name="order_index" inputMode="numeric" defaultValue={e?.order_index ?? defaultOrderIndex} className={inputCls} />
       </label>
     </div>
   );
 }
 
-export function AddEventForm({ weddingId }: { weddingId: string }) {
+export function AddEventForm({ weddingId, nextOrderIndex = 0 }: { weddingId: string; nextOrderIndex?: number }) {
   const t = useTranslations("event");
   const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState<EventState, FormData>(addEvent.bind(null, weddingId), null);
@@ -57,7 +57,7 @@ export function AddEventForm({ weddingId }: { weddingId: string }) {
   return (
     <form action={action} className="flex flex-col gap-3 rounded-2xl bg-paper p-4 shadow-card">
       <p className="font-display text-[16px] text-ink">{t("addTitle")}</p>
-      <Fields t={t} />
+      <Fields t={t} defaultOrderIndex={nextOrderIndex} />
       {state?.error ? <p className="text-[13px] text-wine">{t("error")}</p> : null}
       <div className="flex gap-2">
         <Button type="submit" disabled={pending}>{t("save")}</Button>
@@ -143,6 +143,9 @@ export function EventEditor({
 }
 
 export function EventsPanel({ weddingId, events, multi }: { weddingId: string; events: EventRow[]; multi: boolean }) {
+  // A fresh event defaults to the end of the running order, so an untouched
+  // Orden never front-runs an existing event even within the same day.
+  const nextOrderIndex = events.length ? Math.max(...events.map((e) => e.order_index)) + 1 : 0;
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col">
@@ -150,7 +153,7 @@ export function EventsPanel({ weddingId, events, multi }: { weddingId: string; e
           <EventEditor key={e.id} weddingId={weddingId} event={e} multi={multi} linkToPage />
         ))}
       </div>
-      <AddEventForm weddingId={weddingId} />
+      <AddEventForm weddingId={weddingId} nextOrderIndex={nextOrderIndex} />
     </div>
   );
 }
