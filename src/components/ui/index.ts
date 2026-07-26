@@ -4,3 +4,4 @@ export {
   type PillTone, type ButtonProps,
 } from "./primitives";
 export { HeroShell, WeddingNav, EventBar, EventChips } from "./shells";
+export { PhaseDots } from "./phase-dots";

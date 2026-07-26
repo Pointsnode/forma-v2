@@ -62,14 +62,16 @@ export type ButtonProps = {
   variant?: "solid" | "ghost";
   disabled?: boolean;
   className?: string;
+  onClick?: () => void;
 };
 
 /** Ink solid / ghost button. No gradients. */
-export function Button({ children, type = "button", variant = "solid", disabled, className }: ButtonProps) {
+export function Button({ children, type = "button", variant = "solid", disabled, className, onClick }: ButtonProps) {
   return (
     <button
       type={type}
       disabled={disabled}
+      onClick={onClick}
       className={cx(
         "inline-flex items-center justify-center rounded-full px-5 py-2.5 text-[14px] font-medium transition-opacity disabled:opacity-50",
         variant === "solid" ? "bg-ink text-bone hover:opacity-90" : "bg-transparent text-ink hover:text-taupe",
