@@ -10,12 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: Secret scan (gitleaks)
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Filesystem scan of the checked-out tree (pinned image). `dir` mode has
+        # no base^..head git range, so it is immune to the root-commit history
+        # artifact that breaks gitleaks-action's PR range on this branch.
+        run: docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.24.3 dir /repo --redact -v --exit-code 2
       - uses: actions/setup-node@v4
         with:
           node-version: 22
