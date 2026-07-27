@@ -508,7 +508,11 @@ begin
   update public.contract_signers set signed_at = now(), typed_name = p_typed_name where id = s.id;
   select count(*) into remaining from public.contract_signers where contract_id = c.id and signed_at is null and declined_at is null;
   if remaining = 0 then
-    update public.contracts set status = 'completed', completed_at = now() where id = c.id;
+    -- stamp the artifact path on completion; the app renders + uploads the stamped
+    -- PDF/HTML to contract-artifacts at exactly this path (the M6 → documents bridge).
+    update public.contracts set status = 'completed', completed_at = now(),
+      artifact_path = concat(c.wedding_id, '/', c.id, '.html')
+      where id = c.id;
   else
     update public.contracts set status = 'partially_signed' where id = c.id;
   end if;

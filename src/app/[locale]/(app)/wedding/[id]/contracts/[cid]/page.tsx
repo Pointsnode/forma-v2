@@ -7,6 +7,7 @@ import { loadContractRoom } from "@/lib/contracts";
 import { WeddingShell } from "@/components/wedding/wedding-shell";
 import { SendButton, VoidButton } from "@/components/contracts/room-controls";
 import { Card, Heading, Badge, WhoBadge, Check, Row, RowMain, cx, type BadgeTone } from "@/components/ui";
+import { substituteBody } from "@/lib/merge-body";
 
 const STATUS_TONE: Record<string, BadgeTone> = {
   completed: "sage", sent: "wine", partially_signed: "wine", draft: "sand", declined: "wine", voided: "sand",
@@ -27,6 +28,7 @@ export default async function ContractRoom({ params }: { params: Promise<{ local
   if (!room || room.contract.wedding_id !== id) notFound();
   const { contract, body, fields, signers, blockingTitle } = room;
   const held = !!contract.blocking_proposal_id && contract.status === "draft";
+  const renderedBody = substituteBody(body, Object.fromEntries(fields.map((f) => [f.field_key, f.resolved])));
 
   // audit trail — this contract's activity
   const { data: acts } = await supabase
@@ -51,7 +53,7 @@ export default async function ContractRoom({ params }: { params: Promise<{ local
               <Badge tone={STATUS_TONE[contract.status] ?? "sand"}>{tc(`status_${contract.status}`)}</Badge>
             </div>
             <p className="mb-4 font-accent text-[15px] italic text-taupe">{tc("draftSub")}</p>
-            {body ? <p className="mb-4 whitespace-pre-wrap text-[13.5px] leading-[1.7] text-ink-soft">{body}</p> : null}
+            {renderedBody ? <p className="mb-4 whitespace-pre-wrap text-[13.5px] leading-[1.7] text-ink-soft">{renderedBody}</p> : null}
             {fields.length ? (
               <>
                 <p className="mb-2 text-[11px] uppercase tracking-[0.12em] text-muted">{tc("mergeFields")}</p>

@@ -86,7 +86,8 @@ do $$ begin
     raise exception 'TEST FAIL: merge value not snapshot at send'; end if;
 end $$;
 
--- signer surface is anonymous
+-- signer surface is anonymous (writes as anon; the status READS reset role, since
+-- contracts are invisible to anon under RLS — a read as anon would false-pass null)
 set local role anon;
 set local request.jwt.claims = '';
 -- order gate: signer 2 cannot go before signer 1
@@ -95,29 +96,33 @@ do $$ begin
     raise exception 'TEST FAIL: out-of-order signature accepted';
   exception when sqlstate 'FM021' then null; end;
 end $$;
--- required-field gate: signer 1 cannot sign before filling the required field
+-- required-field gate, fill, sign signer 1, then immutability (all as anon)
 do $$ begin
   begin perform public.sign_contract_as('sign1sign1sign1sign1sig1', 'Danielle');
     raise exception 'TEST FAIL: signed with a required field unfilled';
   exception when sqlstate 'FM025' then null; end;
-  -- fill then sign → partially_signed
   perform public.fill_contract_fields_as('sign1sign1sign1sign1sig1', jsonb_build_object('couple_initials','DC'));
   perform public.sign_contract_as('sign1sign1sign1sign1sig1', 'Danielle Cruz');
-  if (select status from public.contracts where id='c0117ac0-0000-0000-0000-0000000000a1') <> 'partially_signed' then
-    raise exception 'TEST FAIL: contract not partially_signed after signer 1'; end if;
-  -- immutability: signer 1 cannot act again
   begin perform public.sign_contract_as('sign1sign1sign1sign1sig1', 'again');
     raise exception 'TEST FAIL: signer re-acted';
   exception when sqlstate 'FM024' then null; end;
 end $$;
-
--- ── (5) Phase-1 matrix: complete + UNPAID deposit → nothing yet ───────────────
+reset role;
 do $$ begin
-  perform public.sign_contract_as('sign2sign2sign2sign2sig2', 'Gio M');
+  if (select status from public.contracts where id='c0117ac0-0000-0000-0000-0000000000a1') <> 'partially_signed' then
+    raise exception 'TEST FAIL: contract not partially_signed after signer 1'; end if;
+end $$;
+
+-- ── (5) last signer completes; deposit still UNPAID → the gate holds ─────────
+set local role anon;
+set local request.jwt.claims = '';
+do $$ begin perform public.sign_contract_as('sign2sign2sign2sign2sig2', 'Gio M'); end $$;
+reset role;
+do $$ begin
   if (select status from public.contracts where id='c0117ac0-0000-0000-0000-0000000000a1') <> 'completed' then
     raise exception 'TEST FAIL: contract not completed after last signer'; end if;
-end $$;
-do $$ begin
+  if (select artifact_path from public.contracts where id='c0117ac0-0000-0000-0000-0000000000a1') is null then
+    raise exception 'TEST FAIL: completion did not stamp artifact_path (the copy-filed promise)'; end if;
   if (select phase from public.weddings where id='cccccccc-0000-0000-0000-0000000000c1') <> 'hiring' then
     raise exception 'TEST FAIL: phase advanced on completion before the deposit was paid'; end if;
   if exists (select 1 from public.wedding_members where wedding_id='cccccccc-0000-0000-0000-0000000000c1' and user_id='33333333-0000-0000-0000-000000000003') then

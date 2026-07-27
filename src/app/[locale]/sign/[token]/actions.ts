@@ -1,6 +1,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { fileContractArtifact } from "@/lib/contract-artifact";
 
 export type SignResult = { ok?: boolean; error?: string; completed?: boolean };
 
@@ -18,7 +20,20 @@ export async function signContract(token: string, typedName: string): Promise<Si
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("sign_contract_as", { p_token: token, p_typed_name: typedName });
   if (error) return { error: error.code || "generic" };
-  return { ok: true, completed: (data as { completed?: boolean } | null)?.completed ?? false };
+  const completed = (data as { completed?: boolean } | null)?.completed ?? false;
+  // On completion the DB stamped artifact_path; file the frozen copy there so the
+  // "a copy has been filed" state is true. Service-role (no signer session for
+  // Storage writes); best-effort — the path is stamped regardless.
+  if (completed) {
+    try {
+      const admin = createAdminClient();
+      const { data: s } = await admin.from("contract_signers").select("contract_id").eq("token", token).maybeSingle();
+      if (s?.contract_id) await fileContractArtifact(admin, s.contract_id as string);
+    } catch (e) {
+      console.error("contract artifact filing failed", e);
+    }
+  }
+  return { ok: true, completed };
 }
 
 export async function declineContract(token: string, reason: string): Promise<SignResult> {

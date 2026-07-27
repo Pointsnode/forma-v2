@@ -10,6 +10,7 @@ const ALLOWLIST = new Set([
   "src/lib/supabase/admin.ts",
   "src/app/api/touchpoints/run/route.ts",
   "src/app/api/stripe/webhook/route.ts",
+  "src/app/[locale]/sign/[token]/actions.ts",
 ]);
 const PATTERNS = [/SUPABASE_SERVICE_ROLE_KEY/, /createAdminClient/];
 function* walk(dir) {

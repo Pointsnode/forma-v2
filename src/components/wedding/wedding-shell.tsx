@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { PhaseDots, cx } from "@/components/ui";
 import {
   countdownDays, dayNumber, formatDateRange, formatMoney, itemsToGate,
@@ -48,7 +49,19 @@ export async function WeddingShell({
   ].filter(Boolean).join("  ·  ");
 
   const multi = events.length >= 2;
-  const n = itemsToGate(wedding, events, venuedEventIds);
+  // The phase-1 line must reflect the two Phase-1 conditions (agreement completed /
+  // deposit paid), not default to "ready" — gateItems only models the 2→3 gate.
+  let n = itemsToGate(wedding, events, venuedEventIds);
+  if (wedding.phase === "hiring") {
+    const supabase = await createClient();
+    const { data: c } = await supabase.from("contracts").select("id").eq("wedding_id", wedding.id).eq("kind", "planner_agreement").eq("status", "completed").limit(1).maybeSingle();
+    let depositPaid = false;
+    if (c) {
+      const { data: l } = await supabase.from("ledger_lines").select("id").eq("contract_id", c.id).eq("kind", "planner_fee").eq("status", "paid").limit(1);
+      depositPaid = !!(l && l.length);
+    }
+    n = (c ? 0 : 1) + (depositPaid ? 0 : 1);
+  }
   const phaseStatus =
     wedding.phase === "closed" ? tp("closedState")
       : n === 0 ? tp("atGate")

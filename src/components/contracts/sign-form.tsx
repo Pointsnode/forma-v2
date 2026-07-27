@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Button, cx } from "@/components/ui";
+import { substituteBody } from "@/lib/merge-body";
 import { fillFields, signContract, declineContract } from "@/app/[locale]/sign/[token]/actions";
 
 type Field = { id: string; key: string; label: string; merge_source: string; signer_order: number | null; required: boolean; value: string | null };
@@ -26,16 +27,21 @@ export function SignForm({ token, view }: { token: string; view: ContractView })
   const [pending, start] = useTransition();
   const [err, setErr] = useState<string | null>(null);
   const [done, setDone] = useState<"signed" | "declined" | null>(null);
+  const [signedCompleted, setSignedCompleted] = useState<boolean | null>(null);
   const [declining, setDeclining] = useState(false);
   const [reason, setReason] = useState("");
   const [typed, setTyped] = useState("");
   const myFields = view.fields.filter((f) => f.merge_source === "manual" && (f.signer_order === view.me.sign_order || f.signer_order === null));
   const [vals, setVals] = useState<Record<string, string>>(Object.fromEntries(myFields.map((f) => [f.key, f.value ?? ""])));
 
-  const completed = view.contract.status === "completed" || done === "signed";
+  // The banner must not jump to "all signed" on a non-final signature — honor the
+  // rpc's completed flag, and name the next signer for the sequential handoff.
   const declinedState = view.contract.status === "declined" || view.me.declined_at != null || done === "declined";
+  const completed = view.contract.status === "completed" || signedCompleted === true;
   const alreadySigned = view.me.signed_at != null;
-  const nextSigner = view.signers.find((s) => !s.signed && !s.declined);
+  const order = (a: Signer, b: Signer) => a.sign_order - b.sign_order;
+  const nextSigner = view.signers.filter((s) => !s.signed && !s.declined).sort(order)[0];
+  const nextAfterMe = view.signers.filter((s) => s.sign_order > view.me.sign_order && !s.signed && !s.declined).sort(order)[0];
 
   function doSign() {
     setErr(null);
@@ -46,7 +52,7 @@ export function SignForm({ token, view }: { token: string; view: ContractView })
       }
       const r = await signContract(token, typed.trim());
       if (r.error) setErr(errMsg(t, r.error));
-      else setDone("signed");
+      else { setDone("signed"); setSignedCompleted(r.completed ?? false); }
     });
   }
   function doDecline() {
@@ -61,6 +67,7 @@ export function SignForm({ token, view }: { token: string; view: ContractView })
   // ── terminal states ──────────────────────────────────────────────────────
   if (declinedState) return <Banner tone="wine" title={t("declinedTitle")} body={t("declinedBody")} />;
   if (completed) return <Banner tone="sage" title={t("completeTitle")} body={t("completeBody")} />;
+  if (done === "signed") return <Banner tone="sage" title={t("thanksTitle")} body={nextAfterMe ? t("waitingNext", { name: nextAfterMe.name }) : t("thanksBody")} />;
   if (alreadySigned) return <Banner tone="sage" title={t("thanksTitle")} body={nextSigner ? t("waitingNext", { name: nextSigner.name }) : t("thanksBody")} />;
   if (!view.my_turn) return <Banner tone="sand" title={t("notYetTitle")} body={nextSigner ? t("waitingNext", { name: nextSigner.name }) : t("notYetBody")} />;
 
@@ -69,7 +76,7 @@ export function SignForm({ token, view }: { token: string; view: ContractView })
     <div className="flex flex-col gap-5">
       <div className="rounded-2xl bg-paper p-6 shadow-card">
         <h2 className="font-display text-[22px] text-ink">{view.contract.title}</h2>
-        {view.body ? <p className="mt-3 whitespace-pre-wrap text-[14px] leading-[1.7] text-ink-soft">{view.body}</p> : null}
+        {view.body ? <p className="mt-3 whitespace-pre-wrap text-[14px] leading-[1.7] text-ink-soft">{substituteBody(view.body, Object.fromEntries(view.fields.map((f) => [f.key, f.value])))}</p> : null}
       </div>
 
       {myFields.length ? (
