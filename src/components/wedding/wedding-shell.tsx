@@ -8,7 +8,7 @@ import {
   phaseOrdinal, type EventRow, type WeddingRow,
 } from "@/lib/wedding";
 
-export type WeddingTab = "overview" | "proposals" | "guests" | "vendors" | "budget" | "contracts" | "planning";
+export type WeddingTab = "overview" | "whatsnext" | "proposals" | "guests" | "vendors" | "budget" | "contracts" | "design" | "documents" | "planning";
 
 // The wedding shell — full-bleed ink masthead (eyebrow · display couple name ·
 // meta · event chips · the slim planning line as its bottom edge), the sticky
@@ -27,10 +27,10 @@ export async function WeddingShell({
   showNav?: boolean;
   children: ReactNode;
 }) {
-  const [tw, te, tp, tprop, tg, teng, tm, tc] = [
+  const [tw, te, tp, tg, teng, tm, tc, tops] = [
     await getTranslations("wedding"), await getTranslations("event"), await getTranslations("phase"),
-    await getTranslations("proposals"), await getTranslations("guests"), await getTranslations("engagement"),
-    await getTranslations("money"), await getTranslations("contract"),
+    await getTranslations("guests"), await getTranslations("engagement"),
+    await getTranslations("money"), await getTranslations("contract"), await getTranslations("ops"),
   ];
   const lang = await getLocale();
 
@@ -72,17 +72,20 @@ export async function WeddingShell({
     role === "staff"
       ? [
           { key: "overview", href: `/wedding/${wedding.id}`, label: tw("overview") },
-          { key: "proposals", href: `/wedding/${wedding.id}/proposals`, label: tprop("tab") },
+          { key: "whatsnext", href: `/wedding/${wedding.id}/whats-next`, label: tops("whatsNextTab") },
           { key: "guests", href: `/wedding/${wedding.id}/guests`, label: tg("tab") },
           { key: "vendors", href: `/wedding/${wedding.id}/vendors`, label: teng("tab") },
           { key: "budget", href: `/wedding/${wedding.id}/budget`, label: tm("tab") },
           { key: "contracts", href: `/wedding/${wedding.id}/contracts`, label: tc("tab") },
+          { key: "design", href: `/wedding/${wedding.id}/design`, label: tops("designTab") },
+          { key: "documents", href: `/wedding/${wedding.id}/documents`, label: tops("documentsTab") },
         ]
       : [
           { key: "overview", href: `/wedding/${wedding.id}`, label: tw("overview") },
+          { key: "whatsnext", href: `/wedding/${wedding.id}/whats-next`, label: tops("whatsNextTab") },
           { key: "guests", href: `/wedding/${wedding.id}/guests`, label: tg("tab") },
-          { key: "budget", href: `/wedding/${wedding.id}/budget`, label: tm("tab") },
-          { key: "contracts", href: `/wedding/${wedding.id}/contracts`, label: tc("tab") },
+          { key: "design", href: `/wedding/${wedding.id}/design`, label: tops("designTab") },
+          { key: "documents", href: `/wedding/${wedding.id}/documents`, label: tops("documentsTab") },
         ];
 
   return (
@@ -100,7 +103,7 @@ export async function WeddingShell({
               wedding.guest_target ? tw("guestsLabel", { count: wedding.guest_target }) : null,
               money,
             ].filter(Boolean).join("  ·  ")}
-            {days != null ? <span className="ml-3 text-[#948C7F]">· {days} {tw("days")}</span> : null}
+            {days != null ? <span className="ml-3 text-[#948C7F]">· {wedding.phase === "closed" ? tw("settled") : days >= 0 ? `${days} ${tw("days")}` : tw("daysAgo", { count: -days })}</span> : null}
           </p>
 
           {/* Single-event law: no chip row exists until a second event does. */}

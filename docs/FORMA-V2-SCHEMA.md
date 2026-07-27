@@ -201,7 +201,19 @@ Ported from v1's merged D1–D3 design (0048–0050), which is proven: `contract
 - **Artifact bridge (M5 → M6, §1D):** `documents` arrives in M6 (§8). In M5 the stamped final PDF/HTML files to a private `contract-artifacts` bucket at `{wedding_id}/{contract_id}.html` (folder = wedding id, so bucket RLS keys on wedding staff/member) with the path stored on `contracts.artifact_path` — stamped by the DB on completion, uploaded by the app (self-healing on room load); M6 migrates it into a `documents` row (source `contract_artifact`). The gate fires on either order (last signature or deposit paid), both idempotent (`run_phase1_gate` guards on `phase='hiring'`).
 - **Draft-hold:** a contract whose draft references an unapproved proposal (nullable composite FK `blocking_proposal_id`) cannot be sent — the "why it's still a draft" card is a real constraint, and the send happens automatically (trigger on proposal approval) exactly as the prototype's audit trail promises.
 
-## 8. Operations (M6 — 0007)
+## 8. Operations (M6 — 0008)
+
+> **M6 amendments (0008_operations):** (A) §8 is `0008` (M5 took 0007). (B) `documents`
+> absorbs the artifact bridge — contract completion inserts a `documents` row
+> (source `contract_artifact`, idempotent on contract_id); 0008 backfilled the 4
+> existing artifacts. New private buckets `wedding-docs` + `design-media`, mime lists
+> bound to shared constants + a logic guard. (C) anon surface grows to
+> `menu_lookup`/`menu_submit` (`/menu/[code]`); the sweep allowlist updated same
+> change. (D) proposals widen with `menu_id`, `design_item_id` — CHECK over the real
+> subjects (no `quote_id` column exists). (E) What's-next is computed (goal library +
+> `detect()`); `tasks` is the residue + the studio aggregation. (F) 3→4 is
+> date-driven (`advance_wedding_phase`); `close_wedding` is the wedding_days→closed
+> writer. day_of members are money/contract/guest-blind (`is_wedding_billing_member`).
 
 ```
 schedule_items  id PK · wedding_id · event_id + wedding_id → wedding_events (CASCADE) NOT NULL

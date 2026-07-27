@@ -3,9 +3,9 @@ import { cx } from "./cn";
 
 /** Borderless surface on soft shadow — the v2 card. No borders, no gradients.
     Paper surface a shade lighter than the bone ground (the prototype's .card). */
-export function Card({ children, className, lift = false }: { children: ReactNode; className?: string; lift?: boolean }) {
+export function Card({ children, className, lift = false, id }: { children: ReactNode; className?: string; lift?: boolean; id?: string }) {
   return (
-    <div className={cx("rounded-2xl bg-paper p-6", lift ? "shadow-lift" : "shadow-card", className)}>{children}</div>
+    <div id={id} className={cx("rounded-2xl bg-paper p-6", lift ? "shadow-lift" : "shadow-card", className)}>{children}</div>
   );
 }
 

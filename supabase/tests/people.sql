@@ -207,7 +207,8 @@ begin
     and has_function_privilege('anon', p.oid, 'EXECUTE')
     and p.proname not in (
       'rsvp_lookup','rsvp_submit','touchpoint_open',
-      'load_contract_as','fill_contract_fields_as','sign_contract_as','decline_contract_as'
+      'load_contract_as','fill_contract_fields_as','sign_contract_as','decline_contract_as',
+      'menu_lookup','menu_submit'
     );
   if leaked is not null then
     raise exception 'TEST FAIL: anon can execute non-RSVP function(s): %', leaked;

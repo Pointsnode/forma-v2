@@ -11,12 +11,14 @@ import { cx } from "@/components/ui";
 export function StudioNav() {
   const t = useTranslations("studio");
   const tv = useTranslations("vendors");
+  const tops = useTranslations("ops");
   const path = usePathname();
-  const items: { href: "/" | "/weddings" | "/venues" | "/vendors"; label: string }[] = [
+  const items: { href: "/" | "/weddings" | "/venues" | "/vendors" | "/tasks"; label: string }[] = [
     { href: "/", label: t("overview") },
     { href: "/weddings", label: t("weddings") },
     { href: "/venues", label: tv("venues") },
     { href: "/vendors", label: tv("vendors") },
+    { href: "/tasks", label: tops("tasksTab") },
   ];
   return (
     <nav className="sticky top-[62px] z-40 flex gap-7 overflow-x-auto bg-paper px-8 [box-shadow:inset_0_-1px_0_var(--color-hairline)] md:px-10">
