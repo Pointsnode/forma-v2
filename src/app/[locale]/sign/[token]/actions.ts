@@ -2,9 +2,9 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { fileContractArtifact } from "@/lib/contract-artifact";
+import { ensureArtifactFiled } from "@/lib/contract-artifact";
 
-export type SignResult = { ok?: boolean; error?: string; completed?: boolean };
+export type SignResult = { ok?: boolean; error?: string; completed?: boolean; filed?: boolean };
 
 // The signer surface is tokenized (no account) — thin passthroughs to the public
 // invoker wrappers, which run the private DEFINER fns with the order/required/
@@ -22,18 +22,19 @@ export async function signContract(token: string, typedName: string): Promise<Si
   if (error) return { error: error.code || "generic" };
   const completed = (data as { completed?: boolean } | null)?.completed ?? false;
   // On completion the DB stamped artifact_path; file the frozen copy there so the
-  // "a copy has been filed" state is true. Service-role (no signer session for
-  // Storage writes); best-effort — the path is stamped regardless.
+  // banner's "a copy has been filed" is TRUE only when it is. `filed` gates the
+  // banner copy; a failed upload no longer claims success.
+  let filed = false;
   if (completed) {
     try {
       const admin = createAdminClient();
       const { data: s } = await admin.from("contract_signers").select("contract_id").eq("token", token).maybeSingle();
-      if (s?.contract_id) await fileContractArtifact(admin, s.contract_id as string);
+      if (s?.contract_id) filed = await ensureArtifactFiled(admin, s.contract_id as string);
     } catch (e) {
       console.error("contract artifact filing failed", e);
     }
   }
-  return { ok: true, completed };
+  return { ok: true, completed, filed };
 }
 
 export async function declineContract(token: string, reason: string): Promise<SignResult> {

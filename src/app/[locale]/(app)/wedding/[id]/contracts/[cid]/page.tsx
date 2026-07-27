@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loadWeddingContext } from "@/lib/load-wedding";
 import { loadContractRoom } from "@/lib/contracts";
+import { ensureArtifactFiled } from "@/lib/contract-artifact";
 import { WeddingShell } from "@/components/wedding/wedding-shell";
 import { SendButton, VoidButton } from "@/components/contracts/room-controls";
 import { Card, Heading, Badge, WhoBadge, Check, Row, RowMain, cx, type BadgeTone } from "@/components/ui";
@@ -30,6 +31,16 @@ export default async function ContractRoom({ params }: { params: Promise<{ local
   const held = !!contract.blocking_proposal_id && contract.status === "draft";
   const renderedBody = substituteBody(body, Object.fromEntries(fields.map((f) => [f.field_key, f.resolved])));
 
+  // A completed contract's stamped copy — self-heal it (staff can upload under RLS;
+  // no service-role needed) so "filed" is real, then offer a signed-URL download.
+  let artifactUrl: string | null = null;
+  if (contract.status === "completed") {
+    if (role === "staff") { try { await ensureArtifactFiled(supabase, cid); } catch (e) { console.error("artifact self-heal failed", e); } }
+    const path = contract.artifact_path ?? `${contract.wedding_id}/${cid}.html`;
+    const { data: signed } = await supabase.storage.from("contract-artifacts").createSignedUrl(path, 3600);
+    artifactUrl = signed?.signedUrl ?? null;
+  }
+
   // audit trail — this contract's activity
   const { data: acts } = await supabase
     .from("activity").select("id, verb, summary, created_at, actor_id")
@@ -51,6 +62,7 @@ export default async function ContractRoom({ params }: { params: Promise<{ local
             <div className="mb-1 flex items-center gap-3">
               <Heading className="text-[24px]">{contract.title}</Heading>
               <Badge tone={STATUS_TONE[contract.status] ?? "sand"}>{tc(`status_${contract.status}`)}</Badge>
+              {artifactUrl ? <a href={artifactUrl} target="_blank" rel="noopener" className="ml-auto text-[12.5px] text-wine hover:underline hover:underline-offset-2">{tc("downloadCopy")} ↓</a> : null}
             </div>
             <p className="mb-4 font-accent text-[15px] italic text-taupe">{tc("draftSub")}</p>
             {renderedBody ? <p className="mb-4 whitespace-pre-wrap text-[13.5px] leading-[1.7] text-ink-soft">{renderedBody}</p> : null}

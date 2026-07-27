@@ -47,7 +47,7 @@ create table if not exists public.contracts (
   status public.contract_status not null default 'draft',
   title text not null,
   blocking_proposal_id uuid,        -- draft-hold: cannot send while its proposal is unapproved
-  artifact_path text,               -- stamped PDF in the contract-artifacts bucket (M6 → documents)
+  artifact_path text,               -- stamped PDF/HTML in the contract-artifacts bucket (M6 → documents)
   created_by uuid references public.profiles (id) on delete set null,
   completed_at timestamptz,
   created_at timestamptz not null default now(),

@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { substituteBody } from "@/lib/merge-body";
+import { ARTIFACT_UPLOAD_MIME } from "@/lib/contract-artifact-mime.mjs";
 
 function esc(s: string): string {
   return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] ?? c);
@@ -36,7 +37,23 @@ export async function fileContractArtifact(admin: SupabaseClient, contractId: st
     <h3 style="font-family:'Playfair Display',Georgia,serif;font-size:16px">Signatures</h3>${signerBlock}
   </div>`;
 
-  const { error } = await admin.storage.from("contract-artifacts").upload(c.artifact_path, new Blob([html], { type: "text/html" }), { contentType: "text/html", upsert: true });
+  const { error } = await admin.storage.from("contract-artifacts").upload(c.artifact_path, new Blob([html], { type: ARTIFACT_UPLOAD_MIME }), { contentType: ARTIFACT_UPLOAD_MIME, upsert: true });
   if (error) { console.error(`contract artifact upload failed: ${error.message}`); return false; }
   return true;
+}
+
+// Self-heal: ensure a completed contract's artifact exists (stamps the path if it
+// was completed before the stamp existed, then files). Idempotent; staff-only path.
+export async function ensureArtifactFiled(admin: SupabaseClient, contractId: string): Promise<boolean> {
+  const { data: c } = await admin.from("contracts").select("id, wedding_id, status, artifact_path").eq("id", contractId).maybeSingle();
+  if (!c || c.status !== "completed") return false;
+  let path = c.artifact_path as string | null;
+  if (!path) {
+    path = `${c.wedding_id}/${c.id}.html`;
+    await admin.from("contracts").update({ artifact_path: path }).eq("id", c.id);
+  } else {
+    const { data: signed } = await admin.storage.from("contract-artifacts").createSignedUrl(path, 60);
+    if (signed?.signedUrl) return true; // object already present
+  }
+  return fileContractArtifact(admin, contractId);
 }

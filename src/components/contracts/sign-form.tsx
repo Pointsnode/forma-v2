@@ -28,6 +28,7 @@ export function SignForm({ token, view }: { token: string; view: ContractView })
   const [err, setErr] = useState<string | null>(null);
   const [done, setDone] = useState<"signed" | "declined" | null>(null);
   const [signedCompleted, setSignedCompleted] = useState<boolean | null>(null);
+  const [signedFiled, setSignedFiled] = useState(false);
   const [declining, setDeclining] = useState(false);
   const [reason, setReason] = useState("");
   const [typed, setTyped] = useState("");
@@ -52,7 +53,7 @@ export function SignForm({ token, view }: { token: string; view: ContractView })
       }
       const r = await signContract(token, typed.trim());
       if (r.error) setErr(errMsg(t, r.error));
-      else { setDone("signed"); setSignedCompleted(r.completed ?? false); }
+      else { setDone("signed"); setSignedCompleted(r.completed ?? false); setSignedFiled(r.filed ?? false); }
     });
   }
   function doDecline() {
@@ -66,7 +67,7 @@ export function SignForm({ token, view }: { token: string; view: ContractView })
 
   // ── terminal states ──────────────────────────────────────────────────────
   if (declinedState) return <Banner tone="wine" title={t("declinedTitle")} body={t("declinedBody")} />;
-  if (completed) return <Banner tone="sage" title={t("completeTitle")} body={t("completeBody")} />;
+  if (completed) return <Banner tone="sage" title={t("completeTitle")} body={signedFiled ? t("completeFiled") : t("completeBody")} />;
   if (done === "signed") return <Banner tone="sage" title={t("thanksTitle")} body={nextAfterMe ? t("waitingNext", { name: nextAfterMe.name }) : t("thanksBody")} />;
   if (alreadySigned) return <Banner tone="sage" title={t("thanksTitle")} body={nextSigner ? t("waitingNext", { name: nextSigner.name }) : t("thanksBody")} />;
   if (!view.my_turn) return <Banner tone="sand" title={t("notYetTitle")} body={nextSigner ? t("waitingNext", { name: nextSigner.name }) : t("notYetBody")} />;

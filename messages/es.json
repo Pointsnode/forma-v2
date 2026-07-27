@@ -581,7 +581,8 @@
     "verb_contract_completed": "Completado — {name}",
     "verb_contract_declined": "Rechazado — {name}",
     "verb_contract_voided": "Anulado — {name}",
-    "verb_deposit_paid": "Depósito pagado — {name}"
+    "verb_deposit_paid": "Depósito pagado — {name}",
+    "downloadCopy": "Descargar copia firmada"
   },
   "sign": {
     "wordmark": "planificación, refinada.",
@@ -590,7 +591,7 @@
     "declinedTitle": "Rechazado",
     "declinedBody": "Este documento fue rechazado. Tu planner ha sido notificado.",
     "completeTitle": "Todo firmado",
-    "completeBody": "Ya están todas las firmas — gracias. Se ha archivado una copia.",
+    "completeBody": "Ya están todas las firmas — gracias.",
     "thanksTitle": "Gracias — has firmado",
     "thanksBody": "Tu firma quedó registrada.",
     "waitingNext": "En espera de {name}.",
@@ -605,7 +606,8 @@
     "errRequired": "Completa todos los campos obligatorios.",
     "errTurn": "Aún no es tu turno.",
     "errActed": "Ya actuaste sobre este documento.",
-    "errGeneric": "Algo salió mal."
+    "errGeneric": "Algo salió mal.",
+    "completeFiled": "Ya están todas las firmas — gracias. Se ha archivado una copia."
   },
   "billing": {
     "title": "Facturación",

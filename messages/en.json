@@ -581,7 +581,8 @@
     "verb_contract_completed": "Completed — {name}",
     "verb_contract_declined": "Declined — {name}",
     "verb_contract_voided": "Voided — {name}",
-    "verb_deposit_paid": "Deposit paid — {name}"
+    "verb_deposit_paid": "Deposit paid — {name}",
+    "downloadCopy": "Download signed copy"
   },
   "sign": {
     "wordmark": "planning, refined.",
@@ -590,7 +591,7 @@
     "declinedTitle": "Declined",
     "declinedBody": "This document was declined. Your planner has been notified.",
     "completeTitle": "All signed",
-    "completeBody": "Every signature is in — thank you. A copy has been filed.",
+    "completeBody": "Every signature is in — thank you.",
     "thanksTitle": "Thank you — you've signed",
     "thanksBody": "Your signature is recorded.",
     "waitingNext": "Waiting on {name}.",
@@ -605,7 +606,8 @@
     "errRequired": "Please fill every required field.",
     "errTurn": "It isn't your turn yet.",
     "errActed": "You've already acted on this document.",
-    "errGeneric": "Something went wrong."
+    "errGeneric": "Something went wrong.",
+    "completeFiled": "Every signature is in — thank you. A copy has been filed."
   },
   "billing": {
     "title": "Billing",
