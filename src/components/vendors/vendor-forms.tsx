@@ -2,10 +2,11 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui";
+import { Button, cx } from "@/components/ui";
 import { createVendor, uploadVendorMedia, presentVendor, type VendorResult } from "@/app/[locale]/(app)/(studio)/vendors/actions";
 
 const input = "w-full rounded-xl bg-bone px-3.5 py-2.5 text-[14px] text-ink shadow-card outline-none focus:shadow-lift";
+const mlbl = "mt-4 block text-[10.5px] uppercase tracking-[0.14em] text-muted";
 const KINDS = ["venue", "catering", "florals", "music", "photo_video", "beauty", "decor", "rentals", "other"] as const;
 const kindKey = (k: string) => `kind${k.charAt(0).toUpperCase()}${k.slice(1)}`;
 
@@ -60,69 +61,97 @@ export function MediaUpload({ vendorId, kind }: { vendorId: string; kind: "photo
 }
 
 type Wedding = { id: string; couple_display: string; events: { id: string; label: string }[] };
-export function PresentModal({ vendorId, weddings }: { vendorId: string; weddings: Wedding[] }) {
+// The Present modal — prototype v1.9's flow: to a wedding, for an event, this
+// opens the loop. Overlay + mbox; on success a toast confirms the ball is in
+// their court.
+export function PresentModal({ vendorId, vendorName, weddings }: { vendorId: string; vendorName: string; weddings: Wedding[] }) {
   const t = useTranslations("vendors");
   const [open, setOpen] = useState(false);
   const [weddingId, setWeddingId] = useState(weddings[0]?.id ?? "");
   const [events, setEvents] = useState<string[]>([]);
   const [estimate, setEstimate] = useState("");
   const [note, setNote] = useState("");
-  const [toast, setToast] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const wedding = weddings.find((w) => w.id === weddingId);
 
+  function close() { setOpen(false); setErr(null); }
   function submit() {
     if (!weddingId) return;
     setErr(null);
     start(async () => {
       const r = await presentVendor(vendorId, weddingId, events, estimate, note);
       if (r.error) setErr(t("error"));
-      else { setToast(true); setOpen(false); setEvents([]); setEstimate(""); setNote(""); setTimeout(() => setToast(false), 2500); }
+      else {
+        close(); setEvents([]); setEstimate(""); setNote("");
+        setToast(t("loopOpenToast", { vendor: vendorName }));
+        setTimeout(() => setToast(null), 4200);
+      }
     });
   }
 
-  if (!open) {
-    return (
-      <div className="flex items-center gap-3">
-        <Button onClick={() => setOpen(true)} disabled={!weddings.length}>{t("present")}</Button>
-        {toast ? <span className="rounded-full bg-sage-soft px-3 py-1 text-[13px] text-sage-ink">{t("loopOpen")}</span> : null}
-      </div>
-    );
-  }
   return (
-    <div className="flex flex-col gap-3 rounded-2xl bg-paper p-4 shadow-lift">
-      <p className="font-display text-[17px] text-ink">{t("presentTitle")}</p>
-      <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("pickWedding")}</span>
-        <select value={weddingId} onChange={(e) => { setWeddingId(e.target.value); setEvents([]); }} className={input}>
-          {weddings.map((w) => <option key={w.id} value={w.id}>{w.couple_display}</option>)}
-        </select></label>
-      {wedding && wedding.events.length ? (
-        <div className="flex flex-col gap-1">
-          <span className="text-[12px] text-muted">{t("pickEvents")}</span>
-          <div className="flex flex-wrap gap-2">
-            {wedding.events.map((e) => {
-              const on = events.includes(e.id);
-              return (
-                <button key={e.id} type="button"
-                  onClick={() => setEvents(on ? events.filter((x) => x !== e.id) : [...events, e.id])}
-                  className={`rounded-full px-3 py-1.5 text-[13px] ${on ? "bg-ink text-bone" : "bg-bone text-muted shadow-card"}`}>
-                  {e.label}
-                </button>
-              );
-            })}
+    <>
+      <Button onClick={() => setOpen(true)} disabled={!weddings.length}>{t("present")}</Button>
+
+      {open ? (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
+          <button aria-hidden className="absolute inset-0 cursor-default bg-[rgba(21,18,16,0.55)]" onClick={close} />
+          <div className="relative w-full max-w-[530px] rounded-[18px] bg-paper p-7 shadow-hero">
+            <h3 className="font-display text-[23px] text-ink">{t("presentVendor", { vendor: vendorName })}</h3>
+            <p className="mb-2 mt-0.5 font-accent text-[15px] italic text-taupe">{t("presentSub")}</p>
+
+            <label className={mlbl}>{t("pickWedding")}</label>
+            <select value={weddingId} onChange={(e) => { setWeddingId(e.target.value); setEvents([]); }} className={cx(input, "mt-1.5")}>
+              {weddings.map((w) => <option key={w.id} value={w.id}>{w.couple_display}</option>)}
+            </select>
+
+            {wedding && wedding.events.length ? (
+              <>
+                <label className={mlbl}>{t("pickEvents")}</label>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {wedding.events.map((e) => {
+                    const on = events.includes(e.id);
+                    return (
+                      <button key={e.id} type="button"
+                        onClick={() => setEvents(on ? events.filter((x) => x !== e.id) : [...events, e.id])}
+                        className={cx("rounded-full px-3.5 py-1.5 text-[12px]", on ? "bg-ink text-bone" : "bg-sand-soft text-ink-soft")}>
+                        {e.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            ) : null}
+
+            <label className={mlbl}>{t("estimate")}</label>
+            <input value={estimate} onChange={(e) => setEstimate(e.target.value)} inputMode="numeric" className={cx(input, "mt-1.5")} placeholder="$ —" />
+
+            <label className={mlbl}>{t("note")}</label>
+            <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className={cx(input, "mt-1.5 min-h-16 resize-y")} />
+
+            {err ? <p className="mt-2 text-[13px] text-wine">{err}</p> : null}
+            <div className="mt-5 flex justify-end gap-2.5">
+              <Button variant="ghost" onClick={close}>{t("cancel")}</Button>
+              <button
+                type="button"
+                onClick={submit}
+                disabled={pending || !weddingId}
+                className="inline-flex items-center justify-center rounded-full bg-wine px-5 py-2.5 text-[14px] font-medium text-bone transition-opacity hover:opacity-90 disabled:opacity-50"
+              >
+                {t("confirmSend")}
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
-      <div className="grid grid-cols-2 gap-3">
-        <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("estimate")}</span><input value={estimate} onChange={(e) => setEstimate(e.target.value)} inputMode="numeric" className={input} /></label>
-      </div>
-      <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("note")}</span><textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className={input} /></label>
-      {err ? <p className="text-[13px] text-wine">{err}</p> : null}
-      <div className="flex gap-2">
-        <Button onClick={submit} disabled={pending || !weddingId}>{t("confirm")}</Button>
-        <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
-      </div>
-    </div>
+
+      {toast ? (
+        <div className="fixed bottom-16 left-1/2 z-[95] w-max max-w-[92vw] -translate-x-1/2 rounded-full bg-ink px-6 py-3 text-center text-[12.5px] text-bone shadow-hero">
+          {toast}
+        </div>
+      ) : null}
+    </>
   );
 }

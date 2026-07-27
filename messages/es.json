@@ -3,7 +3,8 @@
     "name": "Forma",
     "shell": "Espacio",
     "signOut": "Cerrar sesión",
-    "loading": "Cargando"
+    "loading": "Cargando",
+    "tagline": "planificación, refinada."
   },
   "nav": {
     "cockpit": "Panel",
@@ -50,7 +51,13 @@
     "underManagementHint": "Salvia hecho · vino actual · arena por venir",
     "weddingsHint": "las más próximas primero — cada una abre su propio espacio",
     "empty": "Aún no hay bodas. Crea la primera.",
-    "createWedding": "Crear boda"
+    "createWedding": "Crear boda",
+    "plannerStudio": "Estudio de planificación · todas las bodas",
+    "allWeddings": "Todas las bodas",
+    "switcherStudio": "Estudio — todas las bodas",
+    "switcherStudioHint": "Resumen, catálogo, bodas",
+    "statWeddings": "Bodas en gestión",
+    "statChase": "Por atender"
   },
   "wedding": {
     "wholeWedding": "Boda completa",
@@ -87,7 +94,15 @@
       "budgetTotal": "Presupuesto",
       "submit": "Crear boda",
       "error": "No se pudo crear la boda. Inténtalo de nuevo."
-    }
+    },
+    "statGuests": "Invitados",
+    "statGuestsSub": "{count} respondieron",
+    "statBudget": "Presupuesto",
+    "statBookings": "Reservas confirmadas",
+    "statDays": "Días para el primer día",
+    "membersTitle": "Las personas",
+    "membersHint": "quiénes están en esta boda",
+    "eventsHint": "los eventos de la boda"
   },
   "phase": {
     "hiring": "Contratación",
@@ -149,7 +164,8 @@
       "party": "Fiesta",
       "ritual": "Ritual",
       "other": "Otro"
-    }
+    },
+    "day": "Día"
   },
   "proposals": {
     "waiting": "Esperando una decisión",
@@ -186,7 +202,9 @@
       "declined": "Rechazada",
       "withdrawn": "Retirada"
     },
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "waitingLoop": "el circuito — planner ↔ pareja",
+    "nextGate": "La siguiente puerta"
   },
   "court": {
     "planner": "Contigo",
@@ -253,7 +271,12 @@
       "quote_received": "registró una cotización",
       "engagement_booked": "reservó un proveedor",
       "phase_advanced": "avanzó la fase"
-    }
+    },
+    "greetingTitle": "Buenos días, {name}",
+    "greetingDate": "{date} — el estudio de un vistazo",
+    "nInPhase": "{count} en {phase}",
+    "oldestChase": "El más antiguo lleva {days} días en manos de alguien",
+    "ageDays": "{days}d"
   },
   "guests": {
     "tab": "Invitados",
@@ -407,7 +430,11 @@
     "labelPacket": "Paquete",
     "labelRates": "Tarifas",
     "labelMenu": "Menú",
-    "labelOther": "Otro"
+    "labelOther": "Otro",
+    "presentVendor": "Presentar {vendor}",
+    "presentSub": "a una boda, para un evento — así se abre el circuito",
+    "confirmSend": "Presentar a la pareja",
+    "loopOpenToast": "{vendor} presentada — el circuito está abierto, la pelota está en su cancha."
   },
   "engagement": {
     "tab": "Proveedores",

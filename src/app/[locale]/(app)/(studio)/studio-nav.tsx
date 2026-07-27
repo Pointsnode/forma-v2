@@ -4,9 +4,10 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cx } from "@/components/ui";
 
-// Studio-scope nav. M1 has two real surfaces — Overview and Weddings. Other
-// studio tabs (Venues, Vendors, Contracts…) arrive with their milestones; we
-// render nothing for them rather than a dead stub (absent, not fake).
+// Studio-scope nav — the prototype's .snav: full-bleed, sticky under the top bar,
+// paper ground with a hairline base and an ink underline on the active tab.
+// Surfaces past M4 (Contracts, Tasks, Calendar…) arrive with their milestones —
+// absent, not stubbed.
 export function StudioNav() {
   const t = useTranslations("studio");
   const tv = useTranslations("vendors");
@@ -18,11 +19,18 @@ export function StudioNav() {
     { href: "/vendors", label: tv("vendors") },
   ];
   return (
-    <nav className="flex items-center gap-7 pb-3 text-[14px] [box-shadow:inset_0_-1px_0_var(--color-hairline)]">
+    <nav className="sticky top-[62px] z-40 flex gap-7 overflow-x-auto bg-paper px-8 [box-shadow:inset_0_-1px_0_var(--color-hairline)] md:px-10">
       {items.map((i) => {
         const active = i.href === "/" ? path === "/" : path.startsWith(i.href);
         return (
-          <Link key={i.href} href={i.href} className={cx(active ? "text-ink" : "text-muted hover:text-ink")}>
+          <Link
+            key={i.href}
+            href={i.href}
+            className={cx(
+              "whitespace-nowrap border-b-2 pb-[13px] pt-[15px] text-[13px]",
+              active ? "border-ink font-medium text-ink" : "border-transparent text-muted hover:text-ink",
+            )}
+          >
             {i.label}
           </Link>
         );

@@ -66,7 +66,7 @@ export default async function VendorProfile({ params }: { params: Promise<{ loca
 
       <Card>
         <Heading className="mb-2 text-[18px]">{t("present")}</Heading>
-        <PresentModal vendorId={id} weddings={weddings} />
+        <PresentModal vendorId={id} vendorName={vendor.name} weddings={weddings} />
       </Card>
 
       <Card>

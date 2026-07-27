@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Button } from "@/components/ui";
-import { signOut } from "../(auth)/actions";
+import { TopBar, type SwitcherWedding, heroTone } from "@/components/ui";
+import { countdownDays, initials, phaseOrdinal, type Phase } from "@/lib/wedding";
 
-// Shared app chrome: the wordmark + sign out. Studio nav lives in (studio); the
-// wedding floor and event pages bring their own header (the scope law).
+// Shared app chrome: the dark top bar (wordmark · workspace · wedding switcher ·
+// planner monogram) wraps every studio and wedding surface. The studio nav row
+// and the wedding masthead compose beneath it, full-bleed and sticky.
 export default async function AppLayout({
   children,
   params,
@@ -16,25 +16,42 @@ export default async function AppLayout({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations();
+  const [tp, tw] = [await getTranslations("phase"), await getTranslations("wedding")];
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
+  let workspaceName: string | null = null;
+  let monogram = "··";
+  let switcher: SwitcherWedding[] = [];
+
+  if (user) {
+    const [{ data: prof }, { data: ws }, { data: weds }] = await Promise.all([
+      supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle(),
+      supabase.from("workspace_members").select("workspaces(name)").order("created_at", { ascending: true }).limit(1).maybeSingle(),
+      supabase.from("weddings").select("id, couple_display, phase, date_start").order("date_start", { ascending: true, nullsFirst: false }),
+    ]);
+    const name = (prof?.display_name as string | null) ?? user.email ?? "";
+    monogram = plannerMonogram(name);
+    workspaceName = ((ws?.workspaces as unknown as { name: string } | null)?.name) ?? null;
+    switcher = ((weds ?? []) as { id: string; couple_display: string; phase: Phase; date_start: string | null }[]).map((w) => {
+      const days = countdownDays(w.date_start);
+      const meta = `${tp("ordinal", { n: phaseOrdinal(w.phase) })} · ${tp(w.phase)}${days != null ? ` · ${days} ${tw("days")}` : ""}`;
+      return { id: w.id, initials: initials(w.couple_display), name: w.couple_display, meta, tone: heroTone(w.id) };
+    });
+  }
+
   return (
-    <div className="mx-auto max-w-6xl px-6 py-6">
-      <header className="flex items-center justify-between">
-        <Link href="/" className="font-display text-[22px] tracking-tight text-ink">
-          {t("app.name")}
-        </Link>
-        {user ? (
-          <form action={signOut}>
-            <Button type="submit" variant="ghost">{t("app.signOut")}</Button>
-          </form>
-        ) : null}
-      </header>
-      <div className="mt-8">{children}</div>
+    <div>
+      {user ? <TopBar workspaceName={workspaceName} weddings={switcher} monogram={monogram} /> : null}
+      <main>{children}</main>
     </div>
   );
+}
+
+function plannerMonogram(name: string): string {
+  const parts = name.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase() || "··";
 }

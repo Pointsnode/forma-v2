@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
-import { redirect } from "@/i18n/navigation";
+import { redirect, Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loadWeddingContext } from "@/lib/load-wedding";
-import { WeddingHeader } from "@/components/wedding/wedding-header";
+import { WeddingShell } from "@/components/wedding/wedding-shell";
 import { EventEditor } from "@/components/wedding/event-forms";
 import { EventPruning } from "@/components/guests/event-pruning";
-import { Card, Fact, Heading, WeddingNav } from "@/components/ui";
+import { Card, Heading, StatRow, Stat } from "@/components/ui";
 import { dayNumber, formatTime } from "@/lib/wedding";
 
 export default async function EventPage({
@@ -21,14 +21,13 @@ export default async function EventPage({
   if (!ctx || ctx.role === "none") notFound();
   const { wedding, events, role } = ctx;
 
-  // Single-event law: with no event layer, an event page has no standing — send
-  // a direct visitor back to the flat floor.
+  // Single-event law: with no event layer, an event page has no standing.
   if (events.length < 2) redirect({ href: `/wedding/${id}`, locale });
 
   const event = events.find((e) => e.id === eventId);
   if (!event) notFound();
 
-  const [te, tw, tg, teng] = [await getTranslations("event"), await getTranslations("wedding"), await getTranslations("guests"), await getTranslations("engagement")];
+  const [te, tg, teng] = [await getTranslations("event"), await getTranslations("guests"), await getTranslations("engagement")];
 
   const { data: venueRows } = await supabase
     .from("event_vendors")
@@ -56,53 +55,54 @@ export default async function EventPage({
   });
 
   return (
-    <div className="flex flex-col gap-6">
-      <WeddingHeader wedding={wedding} events={events} activeEventId={event.id} />
-      <WeddingNav items={<span className="text-ink">{te("overview")}</span>} />
+    <WeddingShell wedding={wedding} events={events} role={role} activeEventId={event.id} showNav={false}>
+      <nav className="mb-5 text-[12.5px] text-muted">
+        <Link href={`/wedding/${id}`} className="hover:text-ink hover:underline hover:underline-offset-2">{te("overview")}</Link>
+        <span className="mx-2 text-hairline">/</span>
+        <span className="font-display text-[15px] text-ink">{event.label}</span>
+      </nav>
 
-      <Card>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-4">
-          <Fact value={te(`kinds.${event.kind}`)} label={te("kind")} />
-          <Fact value={event.event_date ?? te("undated")} label={te("date")} />
-          <Fact value={times || "—"} label={`${te("startTime")} – ${te("endTime")}`} />
-          <Fact value={n != null ? te("dayN", { n }) : "—"} label={tw("facts.date")} />
-          <Fact value={event.guest_target ?? "—"} label={te("guestTarget")} />
-        </div>
-      </Card>
+      <StatRow>
+        <Stat value={te(`kinds.${event.kind}`)} label={te("kind")} />
+        <Stat value={event.event_date ?? te("undated")} label={te("date")} />
+        <Stat value={times || "—"} label={`${te("startTime")} – ${te("endTime")}`} />
+        <Stat value={n != null ? te("dayN", { n }) : "—"} label={te("day")} />
+        <Stat value={event.guest_target ?? "—"} label={te("guestTarget")} />
+      </StatRow>
 
-      <Card>
-        <Heading className="mb-2 text-[18px]">{teng("venueSlice")}</Heading>
-        {bookedVenue ? (
-          <div>
-            <p className="font-display text-[16px] text-ink">{bookedVenue.v!.name}</p>
-            <p className="font-accent text-[14px] text-muted">{[bookedVenue.v!.contact_name, bookedVenue.v!.contact_email].filter(Boolean).join(" · ") || teng("bookedVenue")}</p>
-          </div>
-        ) : venues.length ? (
-          <ul className="flex flex-col gap-1.5">
-            {venues.map((r, i) => (
-              <li key={i} className="flex items-center justify-between text-[14px]">
-                <span className="text-ink">{r.v!.name}</span>
-                <span className="font-accent text-[13px] text-muted">{teng(`status${r.status.charAt(0).toUpperCase()}${r.status.slice(1)}`)}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="font-accent text-[15px] text-muted">{teng("noVenueYet")}</p>
-        )}
-      </Card>
-
-      {role === "staff" ? (
+      <div className="mt-[18px] flex flex-col gap-[18px]">
         <Card>
-          <EventEditor weddingId={wedding.id} event={event} multi />
+          <Heading className="mb-2 text-[18px]">{teng("venueSlice")}</Heading>
+          {bookedVenue ? (
+            <div>
+              <p className="font-display text-[16px] text-ink">{bookedVenue.v!.name}</p>
+              <p className="font-accent text-[14px] text-muted">{[bookedVenue.v!.contact_name, bookedVenue.v!.contact_email].filter(Boolean).join(" · ") || teng("bookedVenue")}</p>
+            </div>
+          ) : venues.length ? (
+            <ul className="flex flex-col gap-1.5">
+              {venues.map((r, i) => (
+                <li key={i} className="flex items-center justify-between text-[14px]">
+                  <span className="text-ink">{r.v!.name}</span>
+                  <span className="font-accent text-[13px] text-muted">{teng(`status${r.status.charAt(0).toUpperCase()}${r.status.slice(1)}`)}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="font-accent text-[15px] text-muted">{teng("noVenueYet")}</p>
+          )}
         </Card>
-      ) : null}
 
-      {eventGuests.length > 0 ? (
-        <Card>
-          <Heading className="mb-2 text-[18px]">{tg("eventGuests")}</Heading>
-          <EventPruning weddingId={wedding.id} eventId={event.id} rows={eventGuests} readOnly={role !== "staff"} />
-        </Card>
-      ) : null}
-    </div>
+        {role === "staff" ? (
+          <Card><EventEditor weddingId={wedding.id} event={event} multi /></Card>
+        ) : null}
+
+        {eventGuests.length > 0 ? (
+          <Card>
+            <Heading className="mb-2 text-[18px]">{tg("eventGuests")}</Heading>
+            <EventPruning weddingId={wedding.id} eventId={event.id} rows={eventGuests} readOnly={role !== "staff"} />
+          </Card>
+        ) : null}
+      </div>
+    </WeddingShell>
   );
 }

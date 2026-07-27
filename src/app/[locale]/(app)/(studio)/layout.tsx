@@ -14,7 +14,7 @@ export default async function StudioLayout({
   return (
     <div>
       <StudioNav />
-      <div className="mt-8">{children}</div>
+      <div className="mx-auto max-w-[1240px] px-8 pb-20 pt-8 md:px-10">{children}</div>
     </div>
   );
 }

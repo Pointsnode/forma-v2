@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { Card, Fact, Heading, SectionLabel } from "@/components/ui";
+import { Card, Heading, SectionLabel, SectionTitle, StatRow, Stat } from "@/components/ui";
 import { GuestIntake } from "./guest-intake";
 import { AllGuests } from "./all-guests";
 import { RsvpControls } from "./rsvp-controls";
@@ -24,20 +24,15 @@ export async function GuestBoard({
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <Heading className="text-[26px]">{t("title")}</Heading>
-        <p className="font-accent text-[16px] text-muted">{t("hint")}</p>
-      </div>
+      <SectionTitle title={t("title")} accent={t("hint")} className="mb-0 mt-0" />
 
-      {/* Headline rollup */}
-      <Card>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
-          <Fact value={rollup.invited} label={t("invited")} />
-          <Fact value={rollup.answered} label={t("answered")} />
-          <Fact value={rollup.yes} label={t("yes")} />
-          <Fact value={rollup.pending} label={t("pending")} />
-        </div>
-      </Card>
+      {/* Headline rollup — the stat strip */}
+      <StatRow>
+        <Stat value={rollup.invited} label={t("invited")} />
+        <Stat value={rollup.answered} valueClassName="text-sage-ink" label={t("answered")} />
+        <Stat value={rollup.yes} label={t("yes")} />
+        <Stat value={rollup.pending} valueClassName={rollup.pending ? "text-wine" : undefined} label={t("pending")} />
+      </StatRow>
 
       {empty ? (
         <Card><div className="flex flex-col items-center gap-3 py-4">
