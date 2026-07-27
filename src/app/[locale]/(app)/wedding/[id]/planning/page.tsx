@@ -3,7 +3,9 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link, redirect } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loadWeddingContext } from "@/lib/load-wedding";
+import { loadVenuedEventIds } from "@/lib/vendors";
 import { WeddingHeader } from "@/components/wedding/wedding-header";
+import { AdvanceButton } from "@/components/wedding/advance-button";
 import { Heading } from "@/components/ui";
 import { gateItems, nextPhase } from "@/lib/wedding";
 
@@ -16,9 +18,11 @@ export default async function PlanningRoom({ params }: { params: Promise<{ local
   if (ctx.role === "member") redirect({ href: `/wedding/${id}`, locale }); // planning is a planner room
   const { wedding, events } = ctx;
 
-  const [t, tp] = [await getTranslations("planning"), await getTranslations("phase")];
-  const items = gateItems(wedding, events);
+  const [t, tp, teng] = [await getTranslations("planning"), await getTranslations("phase"), await getTranslations("engagement")];
+  const venued = await loadVenuedEventIds(supabase, id);
+  const items = gateItems(wedding, events, venued);
   const target = nextPhase(wedding.phase);
+  const canAdvance = items.length > 0 && items.every((i) => i.done) && !!target;
 
   return (
     <div className="flex flex-col gap-6">
@@ -59,6 +63,8 @@ export default async function PlanningRoom({ params }: { params: Promise<{ local
           </ul>
         )}
       </section>
+
+      {canAdvance ? <AdvanceButton weddingId={id} label={teng("advance", { phase: tp(target!) })} /> : null}
 
       <Link href={`/wedding/${wedding.id}`} className="text-[13px] text-muted hover:text-ink">
         ← {t("backToWedding")}

@@ -134,7 +134,7 @@ touchpoint_sends  touchpoint_id → touchpoints (CASCADE) · guest_id + wedding_
 ### §1C amendment (M3) — RSVP controls live on the wedding
 `weddings` gains `rsvp_deadline date NULL` and `rsvp_open boolean NOT NULL default false` (0005). Staff set both from the guest tab; `rsvp_submit` refuses when closed (FM011) or past deadline (FM012). Setting `rsvp_deadline` seeds the touchpoint timeline idempotently (invite / reminder@−14d / close@deadline). The public RSVP surface is anon: `grant usage on schema private to anon` + EXECUTE on the two rsvp wrappers to anon (the guest is anonymous — the anon path IS the production path). The cron's `build_touchpoint_sends` is `service_role`-only.
 
-## 5. Partners — catalog, presenting, engagements (M4 — 0005)
+## 5. Partners — catalog, presenting, engagements (M4 — 0006)
 
 ```
 vendors        id PK · workspace_id → workspaces (CASCADE) · UNIQUE (id, workspace_id)   -- CATALOG, workspace-private
@@ -164,7 +164,14 @@ quotes         id PK · wedding_id (composite w/ engagement) · engagement_id �
 - An event's "venue" = its `event_vendors` row whose vendor kind is `venue` and engagement status `booked`. Partial unique index enforces **at most one booked venue per event**.
 - Phase-2 gate reads this table: dates locked + every event has a booked venue (§9).
 
-## 6. Money — one ledger, fully traceable (M5 — 0006)
+### §5A–C amendments (M4)
+- **§5A subjects widen:** `proposals` gains `engagement_id` + composite FK `(engagement_id, wedding_id) → wedding_vendors (id, wedding_id)` ON DELETE SET NULL(engagement_id); `CHECK (num_nonnulls(event_ref, engagement_id) <= 1)`. Freeform stays legal.
+- **§5B approval moves the mesh (first instance):** approving an engagement-subject proposal advances the engagement `presented → shortlisted` (only from presented; later statuses never regress); declining → `declined`. A trigger on proposals, in the function layer.
+- **§5C storage:** private bucket `vendor-media`, paths `{workspace_id}/{vendor_id}/{uuid}.{ext}`; workspace members read/write/delete under their own prefix; served via short-lived signed URLs; photos ≤5MB (app), files ≤20MB, images+pdf. Policy DDL versioned in `supabase/storage/vendor-media.sql` (storage schema is Supabase-managed, outside `migrations/`).
+- **Partner view is a function, not a view:** the couple's membership-scoped projection over the private catalog is `public.wedding_partners(w)` (thin invoker over a private DEFINER function) — a security_invoker view can't read the couple-invisible `vendors`, and a security_definer view trips the advisor. The catalog stays structurally invisible.
+- **advance_wedding_phase is staff-callable in M4** (planning-room Advance) via `public.advance_phase`; its FV205 venue predicate is now real (every event needs an `event_vendors` row with `venue_booked`).
+
+## 6. Money — one ledger, fully traceable (M5 — 0007)
 
 ```
 ledger_lines  id PK · wedding_id → weddings (CASCADE)

@@ -62,23 +62,26 @@ export function nextPhase(p: Phase): Phase | null {
 export type PredicateKey = "budget" | "guests" | "location" | "eventsDated" | "venue";
 export type GateItem = { key: PredicateKey; done: boolean; pending?: boolean };
 
-export function gateItems(w: WeddingRow, events: EventRow[]): GateItem[] {
-  if (w.phase !== "foundations") return []; // only 2→3 is predicate-gated in M1
+// venuedEventIds: events with a booked venue (M4). When omitted, the venue item
+// reads as pending — the M1–M3 behaviour before the catalog existed.
+export function gateItems(w: WeddingRow, events: EventRow[], venuedEventIds: Set<string> = new Set()): GateItem[] {
+  if (w.phase !== "foundations") return []; // only 2→3 is predicate-gated
   const budget = Number(w.budget_total ?? 0) > 0;
   const guests = (w.guest_target ?? 0) > 0;
   const location = !!w.location_city && !!w.location_country;
   const eventsDated = events.length > 0 && events.every((e) => !!e.event_date);
+  const venues = events.length > 0 && events.every((e) => venuedEventIds.has(e.id));
   return [
     { key: "budget", done: budget },
     { key: "guests", done: guests },
     { key: "location", done: location },
     { key: "eventsDated", done: eventsDated },
-    { key: "venue", done: false, pending: true }, // M4, fail-closed
+    { key: "venue", done: venues, pending: !venues }, // real predicate in M4
   ];
 }
 
-export function itemsToGate(w: WeddingRow, events: EventRow[]): number {
-  return gateItems(w, events).filter((i) => !i.done).length;
+export function itemsToGate(w: WeddingRow, events: EventRow[], venuedEventIds: Set<string> = new Set()): number {
+  return gateItems(w, events, venuedEventIds).filter((i) => !i.done).length;
 }
 
 // ── Dates ────────────────────────────────────────────────────────────────────

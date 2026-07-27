@@ -5,9 +5,9 @@ import { itemsToGate, phaseOrdinal, type EventRow, type WeddingRow } from "@/lib
 
 // The slim planning line under the hero — computed from the §9 predicates, the
 // same ones the Planning room reads. Clicking it opens the Planning room.
-export async function PhaseLine({ wedding, events }: { wedding: WeddingRow; events: EventRow[] }) {
+export async function PhaseLine({ wedding, events, venuedEventIds }: { wedding: WeddingRow; events: EventRow[]; venuedEventIds?: Set<string> }) {
   const tp = await getTranslations("phase");
-  const n = itemsToGate(wedding, events);
+  const n = itemsToGate(wedding, events, venuedEventIds);
   const status =
     wedding.phase === "closed"
       ? tp("closedState")

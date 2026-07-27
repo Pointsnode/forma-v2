@@ -162,9 +162,10 @@ do $$ begin
 end $$;
 
 -- ── (7) advance_wedding_phase — positive per predicate, fail-closed venue ─────
--- advance_wedding_phase is an INTERNAL helper — 0004 grants it no authenticated
--- EXECUTE (the app never calls it directly) — so exercise it as the owner.
+-- Exercise as the owner (no jwt) — advance's staff guard trusts a no-jwt context;
+-- clear the lingering claims so auth.uid() is null (reset role alone doesn't).
 reset role;
+set local request.jwt.claims = '';
 -- W1 is foundations. Walk the predicates: each satisfied one uncovers the next.
 do $$ begin
   begin perform private.advance_wedding_phase('cccccccc-0000-0000-0000-0000000000c1');
