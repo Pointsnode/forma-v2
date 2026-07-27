@@ -7,7 +7,7 @@ import { WeddingShell } from "@/components/wedding/wedding-shell";
 import { EventEditor } from "@/components/wedding/event-forms";
 import { EventPruning } from "@/components/guests/event-pruning";
 import { Card, Heading, StatRow, Stat } from "@/components/ui";
-import { dayNumber, formatTime } from "@/lib/wedding";
+import { dayNumber, formatTime, formatMoney } from "@/lib/wedding";
 
 export default async function EventPage({
   params,
@@ -44,6 +44,9 @@ export default async function EventPage({
   const n = dayNumber(event.event_date, wedding.date_start);
   const times = [formatTime(event.start_time, lang), formatTime(event.end_time, lang)].filter(Boolean).join(" – ");
 
+  const { data: sliceRow } = await supabase.from("event_money_slice").select("total").eq("wedding_id", id).eq("event_id", event.id).maybeSingle();
+  const slice = sliceRow ? formatMoney((sliceRow as { total: number }).total, lang) : null;
+
   const { data: egData } = await supabase
     .from("event_guests")
     .select("guest_id, invited, rsvp_status, guests(full_name)")
@@ -68,6 +71,7 @@ export default async function EventPage({
         <Stat value={times || "—"} label={`${te("startTime")} – ${te("endTime")}`} />
         <Stat value={n != null ? te("dayN", { n }) : "—"} label={te("day")} />
         <Stat value={event.guest_target ?? "—"} label={te("guestTarget")} />
+        {slice ? <Stat value={slice} label={te("slice")} /> : null}
       </StatRow>
 
       <div className="mt-[18px] flex flex-col gap-[18px]">

@@ -15,8 +15,11 @@ const bad = [];
 for (const f of walk(SRC)) {
   const c = readFileSync(f, "utf8");
   for (const v of c.match(/NEXT_PUBLIC_[A-Z0-9_]+/g) || []) {
-    // RESEND (email) and CRON secrets are server-only, like the service-role key.
-    if (/SERVICE_ROLE|SECRET|PRIVATE|PASSWORD|RESEND|CRON|_KEY$/.test(v) && v !== "NEXT_PUBLIC_SUPABASE_ANON_KEY") {
+    // RESEND (email), CRON, and STRIPE SECRET/WEBHOOK are server-only, like the
+    // service-role key. The Supabase anon key and the Stripe PUBLISHABLE key are
+    // public-by-design — the only NEXT_PUBLIC_*_KEY names allowed.
+    const PUBLIC_OK = new Set(["NEXT_PUBLIC_SUPABASE_ANON_KEY", "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"]);
+    if (/SERVICE_ROLE|SECRET|WEBHOOK|PRIVATE|PASSWORD|RESEND|CRON|_KEY$/.test(v) && !PUBLIC_OK.has(v)) {
       bad.push(`${relative(ROOT, f)}: ${v}`);
     }
   }

@@ -7,7 +7,7 @@ import {
   phaseOrdinal, type EventRow, type WeddingRow,
 } from "@/lib/wedding";
 
-export type WeddingTab = "overview" | "proposals" | "guests" | "vendors" | "planning";
+export type WeddingTab = "overview" | "proposals" | "guests" | "vendors" | "budget" | "contracts" | "planning";
 
 // The wedding shell — full-bleed ink masthead (eyebrow · display couple name ·
 // meta · event chips · the slim planning line as its bottom edge), the sticky
@@ -26,9 +26,10 @@ export async function WeddingShell({
   showNav?: boolean;
   children: ReactNode;
 }) {
-  const [tw, te, tp, tprop, tg, teng] = [
+  const [tw, te, tp, tprop, tg, teng, tm, tc] = [
     await getTranslations("wedding"), await getTranslations("event"), await getTranslations("phase"),
     await getTranslations("proposals"), await getTranslations("guests"), await getTranslations("engagement"),
+    await getTranslations("money"), await getTranslations("contract"),
   ];
   const lang = await getLocale();
 
@@ -61,10 +62,14 @@ export async function WeddingShell({
           { key: "proposals", href: `/wedding/${wedding.id}/proposals`, label: tprop("tab") },
           { key: "guests", href: `/wedding/${wedding.id}/guests`, label: tg("tab") },
           { key: "vendors", href: `/wedding/${wedding.id}/vendors`, label: teng("tab") },
+          { key: "budget", href: `/wedding/${wedding.id}/budget`, label: tm("tab") },
+          { key: "contracts", href: `/wedding/${wedding.id}/contracts`, label: tc("tab") },
         ]
       : [
           { key: "overview", href: `/wedding/${wedding.id}`, label: tw("overview") },
           { key: "guests", href: `/wedding/${wedding.id}/guests`, label: tg("tab") },
+          { key: "budget", href: `/wedding/${wedding.id}/budget`, label: tm("tab") },
+          { key: "contracts", href: `/wedding/${wedding.id}/contracts`, label: tc("tab") },
         ];
 
   return (

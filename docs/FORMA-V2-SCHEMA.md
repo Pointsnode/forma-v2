@@ -191,13 +191,14 @@ fee_payments  id PK · wedding_id · ledger_line_id → ledger_lines (kind='plan
 - Only `planner_fee` lines ever touch Stripe (`fee_payments`); everything else is tracked (Decision 3 in the plan). The schema keeps in-Forma vendor payments possible later by adding a payments table against the same lines — no rebuild.
 - **Wedding close is computable:** `private.close_wedding(w)` verifies phase = `wedding_days`, all events past, and no line in ('expected','scheduled','due') — "all tabs settled" as a WHERE clause. Day-of extras insert as `due` and therefore block close until resolved.
 
-## 7. Contracts — the D3 suite, mesh-fed (M5 — 0006, same migration)
+## 7. Contracts — the D3 suite, mesh-fed (M5 — 0007, same migration)
 
 Ported from v1's merged D1–D3 design (0048–0050), which is proven: `contract_templates` (workspace-scoped: full/partial/day-of/riders), `contracts` (id, wedding_id, engagement_id NULL composite-FK'd — planner agreements have none; kind ('planner_agreement'|'vendor'|'venue'); status ('draft'|'sent'|'partially_signed'|'completed'|'declined'|'voided')), `contract_draft_content`, `contract_fields` (anchored placement, org-immutable, page-fraction coordinate checks), `contract_signers` (sequential order, per-signer tokens), fill/sign via the locked v1 function pattern (`fill_contract_fields_as` / `sign_contract_as`: token→single-signer server-derived, for-update locks, order gate, required-field gate FM025, value caps, values frozen at `signed_at` by immutability trigger, declined ≠ satisfied).
 
 **v2 additions:**
 - **Merge fields resolve from the mesh:** `contract_fields.merge_source` enum ('couple_names'|'event_ref'|'venue_restrictions'|'quote_amount'|'ledger_schedule'|'workspace_profile'|'vendor_contact'|'manual') — resolved server-side at draft render; the contract room's green pills are these.
 - **Contracts fire the gates:** AFTER-UPDATE trigger on completion — `planner_agreement` completed + its deposit `ledger_line` paid → create the couple's `wedding_members` rows + advance phase 1→2 (§2). Venue contract completed → engagement `booked`. Completion also emits the stamped-PDF job and files the artifact to `documents`.
+- **Artifact bridge (M5 → M6, §1D):** `documents` arrives in M6 (§8). In M5 the stamped final PDF files to a private `contract-artifacts` bucket ({workspace_id}/{contract_id}/{uuid}.pdf) with the path stored on `contracts.artifact_path`; M6 migrates it into a `documents` row (source `contract_artifact`). The gate fires on either order (last signature or deposit paid), both idempotent (`run_phase1_gate` guards on `phase='hiring'`).
 - **Draft-hold:** a contract whose draft references an unapproved proposal (nullable composite FK `blocking_proposal_id`) cannot be sent — the "why it's still a draft" card is a real constraint, and the send happens automatically (trigger on proposal approval) exactly as the prototype's audit trail promises.
 
 ## 8. Operations (M6 — 0007)
