@@ -103,7 +103,7 @@ export async function WeddingShell({
               wedding.guest_target ? tw("guestsLabel", { count: wedding.guest_target }) : null,
               money,
             ].filter(Boolean).join("  ·  ")}
-            {days != null ? <span className="ml-3 text-[#948C7F]">· {days} {tw("days")}</span> : null}
+            {days != null ? <span className="ml-3 text-[#948C7F]">· {wedding.phase === "closed" ? tw("settled") : days >= 0 ? `${days} ${tw("days")}` : tw("daysAgo", { count: -days })}</span> : null}
           </p>
 
           {/* Single-event law: no chip row exists until a second event does. */}

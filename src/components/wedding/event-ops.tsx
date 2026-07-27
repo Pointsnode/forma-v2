@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Button, Card, Heading, Badge, Tag, cx } from "@/components/ui";
 import {
-  addScheduleItem, deleteScheduleItem, checkScheduleItem,
+  addScheduleItem, updateScheduleItem, deleteScheduleItem, checkScheduleItem,
   addMenu, addMenuOption, lockMenu, addTable, assignSeat, unseat, addFloorPlan,
 } from "@/app/[locale]/(app)/wedding/[id]/ops-actions";
 
@@ -29,6 +29,7 @@ export function ScheduleCard({ weddingId, eventId, items, live }: { weddingId: s
   const t = useTranslations("ops");
   const { pending, run } = useRun();
   const [adding, setAdding] = useState(false);
+  const [editing, setEditing] = useState<string | null>(null);
   return (
     <Card>
       <div className="mb-1 flex items-baseline justify-between">
@@ -37,7 +38,15 @@ export function ScheduleCard({ weddingId, eventId, items, live }: { weddingId: s
       </div>
       <p className="mb-2 text-[12.5px] text-muted">{live ? t("scheduleLive") : t("scheduleDraft")}</p>
       {items.length === 0 ? <p className="py-3 text-center font-accent text-[14px] text-muted">{t("noSchedule")}</p> : null}
-      {items.map((it) => (
+      {items.map((it) => editing === it.id ? (
+        <form key={it.id} action={(fd) => { run(() => updateScheduleItem(it.id, fd), () => t("error")); setEditing(null); }} className="flex flex-wrap items-end gap-2 py-2.5">
+          <input name="time" type="time" defaultValue={it.time?.slice(0, 5) ?? ""} className={input} />
+          <input name="title" required defaultValue={it.title} className={cx(input, "w-48")} />
+          <input name="detail" defaultValue={it.detail ?? ""} placeholder={t("itemNote")} className={input} />
+          <Button type="submit" disabled={pending}>{t("save")}</Button>
+          <button type="button" onClick={() => setEditing(null)} className="text-[12px] text-muted">{t("cancel")}</button>
+        </form>
+      ) : (
         <div key={it.id} className={cx("flex items-center gap-3 py-2.5 not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)]", it.done && "opacity-55")}>
           {live ? (
             <button onClick={() => run(() => checkScheduleItem(it.id, !it.done), () => t("error"))} disabled={pending}
@@ -45,6 +54,7 @@ export function ScheduleCard({ weddingId, eventId, items, live }: { weddingId: s
           ) : null}
           <span className="w-16 shrink-0 font-accent text-[15px] italic text-taupe">{it.time?.slice(0, 5) ?? ""}</span>
           <div className="min-w-0 flex-1"><p className={cx("text-[13.5px] text-ink", it.done && "line-through")}>{it.title}</p>{it.detail ? <p className="text-[12px] text-muted">{it.detail}</p> : null}</div>
+          <button onClick={() => setEditing(it.id)} className="shrink-0 text-[12px] text-muted hover:text-ink">{t("edit")}</button>
           <button onClick={() => run(() => deleteScheduleItem(it.id), () => t("error"))} disabled={pending} className="shrink-0 text-[12px] text-muted hover:text-wine">×</button>
         </div>
       ))}

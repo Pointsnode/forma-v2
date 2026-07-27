@@ -112,7 +112,9 @@
     "factsKind": "Kind",
     "factsError": "Couldn't save — try again.",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "daysAgo": "{count} days ago",
+    "settled": "settled"
   },
   "phase": {
     "hiring": "Hiring",
@@ -717,7 +719,14 @@
     "dueDate": "Due",
     "forWedding": "For",
     "studioTask": "Studio task",
-    "noTasks": "Nothing open"
+    "noTasks": "Nothing open",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "queued": "Queued — the cron will send it",
+    "sendMenu": "Send menu collection",
+    "sendSchedules": "Send day-of schedules",
+    "dietaryFlags": "Dietary flags"
   },
   "menu": {
     "wordmark": "planning, refined.",

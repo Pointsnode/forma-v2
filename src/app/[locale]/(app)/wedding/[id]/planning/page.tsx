@@ -36,19 +36,23 @@ export default async function PlanningRoom({ params }: { params: Promise<{ local
   return (
     <WeddingShell wedding={wedding} events={events} role="staff" active="planning" venuedEventIds={venued}>
       <SectionTitle title={t("title")} accent={t("subtitle")} className="mt-0" />
-      <div className="max-w-2xl">
-        <GateCard title={target ? t("gateTo", { phase: tp(target) }) : t("nextGate")} sub={t("subtitle")}>
-          {items.length === 0 ? (
-            <p className="py-2 font-accent text-[15px] text-[rgba(247,244,238,0.75)]">{t("allClear")}</p>
-          ) : (
-            items.map((it) => (
-              <GateRow key={it.key} done={it.done} title={t(`items.${it.key}`)} detail={it.pending ? t("venuePending") : undefined} />
-            ))
-          )}
-        </GateCard>
-        {canAdvance ? <div className="mt-5"><AdvanceButton weddingId={id} label={teng("advance", { phase: tp(target!) })} /></div> : null}
-        {wedding.phase === "details" ? <div className="mt-5"><AdvanceToDays weddingId={id} /></div> : null}
-      </div>
+      {/* the pre-Phase-4 gate card — only while a predicate/date gate is pending;
+          in wedding_days the Closing card below is the source of truth. */}
+      {wedding.phase !== "wedding_days" && wedding.phase !== "closed" ? (
+        <div className="max-w-2xl">
+          <GateCard title={target ? t("gateTo", { phase: tp(target) }) : t("nextGate")} sub={t("subtitle")}>
+            {items.length === 0 ? (
+              <p className="py-2 font-accent text-[15px] text-[rgba(247,244,238,0.75)]">{t("allClear")}</p>
+            ) : (
+              items.map((it) => (
+                <GateRow key={it.key} done={it.done} title={t(`items.${it.key}`)} detail={it.pending ? t("venuePending") : undefined} />
+              ))
+            )}
+          </GateCard>
+          {canAdvance ? <div className="mt-5"><AdvanceButton weddingId={id} label={teng("advance", { phase: tp(target!) })} /></div> : null}
+          {wedding.phase === "details" ? <div className="mt-5"><AdvanceToDays weddingId={id} /></div> : null}
+        </div>
+      ) : null}
 
       {/* Phase 4 — the day + closing the wedding */}
       {wedding.phase === "wedding_days" ? (

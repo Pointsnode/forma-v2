@@ -18,6 +18,13 @@ export async function addScheduleItem(weddingId: string, eventId: string, form: 
   if (error) return { error: error.code || "generic" };
   rv(); return { ok: true };
 }
+export async function updateScheduleItem(itemId: string, form: FormData): Promise<OpsResult> {
+  const supabase = await createClient();
+  const title = String(form.get("title") ?? "").trim();
+  if (!title) return { error: "invalid" };
+  const { error } = await supabase.from("schedule_items").update({ title, time: txt(form.get("time")), detail: txt(form.get("detail")) }).eq("id", itemId);
+  if (error) return { error: "generic" }; rv(); return { ok: true };
+}
 export async function deleteScheduleItem(itemId: string): Promise<OpsResult> {
   const supabase = await createClient();
   const { error } = await supabase.from("schedule_items").delete().eq("id", itemId);
@@ -93,6 +100,19 @@ export async function closeWedding(weddingId: string): Promise<OpsResult> {
   const supabase = await createClient();
   const { error } = await supabase.rpc("close_wedding", { w: weddingId });
   if (error) return { error: error.code || "generic" }; rv(); return { ok: true };
+}
+
+// ── guest touchpoints (menu collection · day-of schedules) ──────────────────
+// Schedules the touchpoint for today; the cron builds the audience + sends via
+// Resend on its next run (stamping only what Resend accepts — the M3 honesty rule).
+export async function sendTouchpoint(weddingId: string, kind: "menu_collect" | "day_of_schedule"): Promise<OpsResult> {
+  const supabase = await createClient();
+  const { data: existing } = await supabase.from("touchpoints").select("id").eq("wedding_id", weddingId).eq("kind", kind).in("status", ["scheduled", "sending"]).maybeSingle();
+  if (!existing) {
+    const { error } = await supabase.from("touchpoints").insert({ wedding_id: weddingId, kind, scheduled_for: new Date().toISOString().slice(0, 10), audience_rule: { scope: kind === "menu_collect" ? "menu_attendees" : "confirmed" } });
+    if (error) return { error: error.code || "generic" };
+  }
+  rv(); return { ok: true };
 }
 
 // ── tasks + goal overrides ───────────────────────────────────────────────────

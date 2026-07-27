@@ -29,7 +29,7 @@ export default async function EventPage({
   const event = events.find((e) => e.id === eventId);
   if (!event) notFound();
 
-  const [te, tg, teng] = [await getTranslations("event"), await getTranslations("guests"), await getTranslations("engagement")];
+  const [te, tg, teng, tops, tm] = [await getTranslations("event"), await getTranslations("guests"), await getTranslations("engagement"), await getTranslations("ops"), await getTranslations("money")];
 
   const { data: venueRows } = await supabase
     .from("event_vendors")
@@ -52,6 +52,16 @@ export default async function EventPage({
   const ops = await loadEventOps(supabase, id, event.id);
   const live = wedding.phase === "wedding_days";
 
+  // event Budget slice (tagged ledger lines + trace) — role permitting (day_of blind)
+  const { data: sliceLines } = await supabase.from("ledger_lines").select("id, title, amount, status, engagement_id, wedding_vendors(vendors(name))").eq("wedding_id", id).eq("event_id", event.id).order("created_at");
+  const budgetLines = ((sliceLines ?? []) as unknown as { id: string; title: string; amount: number; status: string; wedding_vendors: { vendors: { name: string } | null } | null }[])
+    .map((l) => ({ id: l.id, title: l.title, amount: l.amount, status: l.status, vendor: l.wedding_vendors?.vendors?.name ?? null }));
+  // dietary rollup from chosen menu options
+  const { data: dietRows } = await supabase.from("event_guests").select("menu_options(diet_tags)").eq("event_id", event.id).not("menu_choice_id", "is", null);
+  const dietCount = new Map<string, number>();
+  for (const r of (dietRows ?? []) as unknown as { menu_options: { diet_tags: string[] } | null }[]) for (const tag of r.menu_options?.diet_tags ?? []) dietCount.set(tag, (dietCount.get(tag) ?? 0) + 1);
+  const dietary = [...dietCount.entries()].map(([tag, count]) => `${count} ${tag}`).join(" · ");
+
   const { data: egData } = await supabase
     .from("event_guests")
     .select("guest_id, invited, rsvp_status, guests(full_name)")
@@ -64,10 +74,16 @@ export default async function EventPage({
 
   return (
     <WeddingShell wedding={wedding} events={events} role={role} activeEventId={event.id} showNav={false}>
-      <nav className="mb-5 text-[12.5px] text-muted">
+      <nav className="mb-4 text-[12.5px] text-muted">
         <Link href={`/wedding/${id}`} className="hover:text-ink hover:underline hover:underline-offset-2">{te("overview")}</Link>
         <span className="mx-2 text-hairline">/</span>
         <span className="font-display text-[15px] text-ink">{event.label}</span>
+      </nav>
+      {/* event sub-nav (anchor-scroll) */}
+      <nav className="mb-5 flex gap-5 overflow-x-auto border-b border-hairline pb-2 text-[13px] text-muted">
+        {[["venue", teng("venueSlice")], ["schedule", tops("schedule")], ["menus", tops("menus")], ["seating", tops("seating")], ["guests", tg("tab")], ["slice", te("slice")]].map(([anchor, label]) => (
+          <a key={anchor} href={`#${anchor}`} className="whitespace-nowrap hover:text-ink">{label}</a>
+        ))}
       </nav>
 
       <StatRow>
@@ -80,7 +96,7 @@ export default async function EventPage({
       </StatRow>
 
       <div className="mt-[18px] flex flex-col gap-[18px]">
-        <Card>
+        <Card id="venue">
           <Heading className="mb-2 text-[18px]">{teng("venueSlice")}</Heading>
           {bookedVenue ? (
             <div>
@@ -101,17 +117,33 @@ export default async function EventPage({
           )}
         </Card>
 
-        <ScheduleCard weddingId={id} eventId={event.id} items={ops.schedule} live={live} />
-        <MenusCard weddingId={id} eventId={event.id} menus={ops.menus} />
-        <SeatingCard weddingId={id} eventId={event.id} seating={ops.seating} />
+        <section id="schedule"><ScheduleCard weddingId={id} eventId={event.id} items={ops.schedule} live={live} /></section>
+        <section id="menus"><MenusCard weddingId={id} eventId={event.id} menus={ops.menus} /></section>
+        <section id="seating"><SeatingCard weddingId={id} eventId={event.id} seating={ops.seating} /></section>
+
+        {budgetLines.length ? (
+          <section id="slice">
+            <Card>
+              <Heading className="mb-2 text-[18px]">{te("slice")}</Heading>
+              {budgetLines.map((l) => (
+                <div key={l.id} className="flex items-center gap-3 py-2 not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)]">
+                  <div className="min-w-0 flex-1"><p className="text-[13.5px] text-ink">{l.title}</p>{l.vendor ? <span className="mr-1 mt-[3px] inline-block rounded-full bg-sand-soft px-[9px] py-[2px] text-[10.5px] text-taupe">{l.vendor}</span> : null}</div>
+                  <span className="font-medium text-[13.5px] text-ink">{formatMoney(l.amount, lang)}</span>
+                  <span className="rounded-full bg-sand-soft px-2.5 py-[3px] text-[11px] text-taupe">{tm(`status_${l.status}`)}</span>
+                </div>
+              ))}
+            </Card>
+          </section>
+        ) : null}
 
         {role === "staff" ? (
           <Card><EventEditor weddingId={wedding.id} event={event} multi /></Card>
         ) : null}
 
         {eventGuests.length > 0 ? (
-          <Card>
+          <Card id="guests">
             <Heading className="mb-2 text-[18px]">{tg("eventGuests")}</Heading>
+            {dietary ? <p className="mb-2 text-[13px] text-taupe">{tops("dietaryFlags")}: {dietary}</p> : null}
             <EventPruning weddingId={wedding.id} eventId={event.id} rows={eventGuests} readOnly={role !== "staff"} />
           </Card>
         ) : null}

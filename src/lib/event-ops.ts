@@ -4,7 +4,7 @@ import type { ScheduleItemVM, MenuVM, SeatingVM } from "@/components/wedding/eve
 
 export async function loadEventOps(supabase: SupabaseClient, weddingId: string, eventId: string): Promise<{ schedule: ScheduleItemVM[]; menus: MenuVM[]; seating: SeatingVM }> {
   const [{ data: sched }, { data: menuRows }, { data: choices }, { data: plan }, { data: confirmed }, { data: seatRows }] = await Promise.all([
-    supabase.from("schedule_items").select("id, time, title, detail, done_at").eq("event_id", eventId).order("sort").order("time", { nullsFirst: false }),
+    supabase.from("schedule_items").select("id, time, title, detail, done_at").eq("event_id", eventId).order("time", { ascending: true, nullsFirst: false }).order("sort"),
     supabase.from("menus").select("id, title, locked_at, menu_options(id, label, diet_tags, sort)").eq("event_id", eventId),
     supabase.from("event_guests").select("menu_choice_id").eq("event_id", eventId).not("menu_choice_id", "is", null),
     supabase.from("floor_plans").select("id, name").eq("event_id", eventId).order("created_at").limit(1).maybeSingle(),

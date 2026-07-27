@@ -5,6 +5,7 @@ import { loadWeddingContext } from "@/lib/load-wedding";
 import { loadGuestBoard } from "@/lib/guests";
 import { WeddingShell } from "@/components/wedding/wedding-shell";
 import { GuestBoard } from "@/components/guests/guest-board";
+import { SendTouchpoints } from "@/components/guests/send-touchpoints";
 
 export default async function GuestsTab({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;
@@ -17,6 +18,7 @@ export default async function GuestsTab({ params }: { params: Promise<{ locale: 
 
   return (
     <WeddingShell wedding={wedding} events={events} role={role} active="guests">
+      {role === "staff" ? <div className="mb-4 flex justify-end"><SendTouchpoints weddingId={id} /></div> : null}
       <GuestBoard
         weddingId={id}
         role={role}

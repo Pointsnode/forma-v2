@@ -52,6 +52,11 @@ insert into public.seating_tables (id, wedding_id, floor_plan_id, name) values (
 insert into public.schedule_items (id, wedding_id, event_id, time, title) values ('5c4ed111-0000-0000-0000-0000000000a1','cccccccc-0000-0000-0000-0000000000c1','eeee0000-0000-0000-0000-0000000000e1','19:00','Doors');
 -- an open (due) ledger line that blocks close
 insert into public.ledger_lines (id, wedding_id, title, amount, status, kind) values ('1ed00000-0000-0000-0000-0000000000a1','cccccccc-0000-0000-0000-0000000000c1','Balance', 500, 'due', 'balance');
+-- day-of-blindness fixtures: real rows on W1 so the blindness asserts against DATA
+insert into public.vendors (id, workspace_id, name, kind) values ('d0000000-0000-0000-0000-0000000000b1','aaaaaaaa-0000-0000-0000-0000000000a1','Flor','florals');
+insert into public.wedding_vendors (id, wedding_id, vendor_id, status) values ('e0000000-0000-0000-0000-0000000000b1','cccccccc-0000-0000-0000-0000000000c1','d0000000-0000-0000-0000-0000000000b1','presented');
+insert into public.quotes (id, wedding_id, engagement_id, status, amount) values ('90000000-0000-0000-0000-0000000000b1','cccccccc-0000-0000-0000-0000000000c1','e0000000-0000-0000-0000-0000000000b1','received', 100);
+insert into public.documents (wedding_id, title, source) values ('cccccccc-0000-0000-0000-0000000000c1','A doc','upload');
 
 -- ── (1) cross-wedding seat: W2's table under W1 → composite FK rejects ────────
 do $$ begin
@@ -114,8 +119,16 @@ set local role authenticated;
 set local request.jwt.claims = '{"sub":"44444444-0000-0000-0000-000000000004","role":"authenticated"}';
 do $$ begin
   perform public.check_schedule_item('5c4ed111-0000-0000-0000-0000000000a1', true);  -- allowed for day_of
-  if (select count(*) from public.ledger_lines where wedding_id='cccccccc-0000-0000-0000-0000000000c1') <> 0 then
-    raise exception 'TEST FAIL: day_of can read the ledger'; end if;  -- RLS hides money from day_of
+  -- blind to money AND guest/vendor/quote/document surfaces, with rows present:
+  if (select count(*) from public.ledger_lines where wedding_id='cccccccc-0000-0000-0000-0000000000c1') <> 0 then raise exception 'TEST FAIL: day_of reads the ledger'; end if;
+  if (select count(*) from public.guests where wedding_id='cccccccc-0000-0000-0000-0000000000c1') <> 0 then raise exception 'TEST FAIL: day_of reads guests'; end if;
+  if (select count(*) from public.event_guests where wedding_id='cccccccc-0000-0000-0000-0000000000c1') <> 0 then raise exception 'TEST FAIL: day_of reads event_guests'; end if;
+  if (select count(*) from public.wedding_vendors where wedding_id='cccccccc-0000-0000-0000-0000000000c1') <> 0 then raise exception 'TEST FAIL: day_of reads vendors'; end if;
+  if (select count(*) from public.quotes where wedding_id='cccccccc-0000-0000-0000-0000000000c1') <> 0 then raise exception 'TEST FAIL: day_of reads quotes'; end if;
+  if (select count(*) from public.documents where wedding_id='cccccccc-0000-0000-0000-0000000000c1') <> 0 then raise exception 'TEST FAIL: day_of reads documents'; end if;
+  if (select count(*) from public.wedding_money_rollup where wedding_id='cccccccc-0000-0000-0000-0000000000c1') <> 0 then raise exception 'TEST FAIL: day_of reads the money rollup'; end if;
+  -- but the run of show IS visible (schedule_items member SELECT includes day_of)
+  if (select count(*) from public.schedule_items where wedding_id='cccccccc-0000-0000-0000-0000000000c1') = 0 then raise exception 'TEST FAIL: day_of cannot see the run of show'; end if;
 end $$;
 reset role;
 do $$ begin

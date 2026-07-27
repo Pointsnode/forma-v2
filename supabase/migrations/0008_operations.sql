@@ -540,6 +540,37 @@ create policy contracts_member_read on public.contracts for select to authentica
 drop policy if exists fee_payments_read on public.fee_payments;
 create policy fee_payments_read on public.fee_payments for select to authenticated using (private.is_wedding_staff(wedding_id) or private.is_wedding_billing_member(wedding_id));
 
+-- day_of gets the run of show and NOTHING else — re-scope the M3/M4 guest, vendor
+-- and quote member reads to billing members (partner/family). day_of never reads
+-- guest contact detail, vendor/quote surfaces, or the money rollup.
+drop policy if exists guests_select on public.guests;
+create policy guests_select on public.guests for select to authenticated using (private.is_wedding_staff(wedding_id) or private.is_wedding_billing_member(wedding_id));
+drop policy if exists guests_insert on public.guests;
+create policy guests_insert on public.guests for insert to authenticated with check (private.is_wedding_staff(wedding_id) or private.is_wedding_billing_member(wedding_id));
+drop policy if exists guests_update on public.guests;
+create policy guests_update on public.guests for update to authenticated using (private.is_wedding_staff(wedding_id) or private.is_wedding_billing_member(wedding_id)) with check (private.is_wedding_staff(wedding_id) or private.is_wedding_billing_member(wedding_id));
+drop policy if exists event_guests_select on public.event_guests;
+create policy event_guests_select on public.event_guests for select to authenticated using (private.is_wedding_staff(wedding_id) or private.is_wedding_billing_member(wedding_id));
+drop policy if exists event_guests_write on public.event_guests;
+create policy event_guests_write on public.event_guests for update to authenticated using (private.is_wedding_staff(wedding_id) or private.is_wedding_billing_member(wedding_id)) with check (private.is_wedding_staff(wedding_id) or private.is_wedding_billing_member(wedding_id));
+drop policy if exists wedding_vendors_select on public.wedding_vendors;
+create policy wedding_vendors_select on public.wedding_vendors for select to authenticated using (private.is_wedding_staff(wedding_id) or private.is_wedding_billing_member(wedding_id));
+drop policy if exists event_vendors_select on public.event_vendors;
+create policy event_vendors_select on public.event_vendors for select to authenticated using (private.is_wedding_staff(wedding_id) or private.is_wedding_billing_member(wedding_id));
+drop policy if exists quotes_select on public.quotes;
+create policy quotes_select on public.quotes for select to authenticated using (private.is_wedding_staff(wedding_id) or private.is_wedding_billing_member(wedding_id));
+
+-- the money rollup returns NO row to day_of (budget_total rides the weddings row,
+-- which every member can read; the rollup is the money surface, so it is guarded).
+create or replace view public.wedding_money_rollup with (security_invoker = true) as
+  select w.id as wedding_id, w.budget_total,
+    coalesce(sum(l.amount) filter (where l.status in ('paid','settled')), 0) as paid,
+    coalesce(sum(l.amount) filter (where l.contract_id is not null and l.status in ('expected','scheduled','due')), 0) as committed,
+    coalesce(w.budget_total, 0) - coalesce(sum(l.amount) filter (where l.status in ('paid','settled')), 0) - coalesce(sum(l.amount) filter (where l.contract_id is not null and l.status in ('expected','scheduled','due')), 0) as open
+  from public.weddings w left join public.ledger_lines l on l.wedding_id = w.id
+  where private.is_wedding_staff(w.id) or private.is_wedding_billing_member(w.id)
+  group by w.id, w.budget_total;
+
 -- ═══ Grants (§11) ════════════════════════════════════════════════════════════
 revoke execute on function
   private.is_wedding_billing_member(uuid), private.check_schedule_item(uuid, boolean), private.lock_menu(uuid), private.unlock_menu(uuid),

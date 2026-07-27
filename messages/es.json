@@ -112,7 +112,9 @@
     "factsKind": "Tipo",
     "factsError": "No se pudo guardar — inténtalo de nuevo.",
     "save": "Guardar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "daysAgo": "hace {count} días",
+    "settled": "liquidada"
   },
   "phase": {
     "hiring": "Contratación",
@@ -717,7 +719,14 @@
     "dueDate": "Vence",
     "forWedding": "Para",
     "studioTask": "Tarea del estudio",
-    "noTasks": "Nada abierto"
+    "noTasks": "Nada abierto",
+    "edit": "Editar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "queued": "En cola — el cron lo enviará",
+    "sendMenu": "Enviar recolección de menú",
+    "sendSchedules": "Enviar itinerarios del día",
+    "dietaryFlags": "Restricciones dietéticas"
   },
   "menu": {
     "wordmark": "planificación, refinada.",

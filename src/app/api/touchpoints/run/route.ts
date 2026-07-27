@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendBatch } from "@/lib/email/resend";
 import { rsvpEmail } from "@/lib/email/rsvp-email";
+import { menuEmail, dayOfScheduleEmail } from "@/lib/email/ops-email";
 import { planTouchpointOutcome } from "@/lib/touchpoint-run.mjs";
 
 // Daily cron. Claims due touchpoints, resolves audience, sends the tokenized RSVP
@@ -10,7 +11,7 @@ import { planTouchpointOutcome } from "@/lib/touchpoint-run.mjs";
 // re-sends nothing. Guarded by CRON_SECRET (Vercel sets Authorization: Bearer …).
 export const dynamic = "force-dynamic";
 
-const SENDABLE = new Set(["rsvp_invite", "rsvp_reminder", "rsvp_close"]);
+const SENDABLE = new Set(["rsvp_invite", "rsvp_reminder", "rsvp_close", "menu_collect", "day_of_schedule"]);
 
 async function run(req: NextRequest) {
   const secret = process.env.CRON_SECRET;
@@ -51,17 +52,26 @@ async function run(req: NextRequest) {
       }
     }
     const couple = wd?.couple_display ?? "your wedding";
+    const prefix = `${base}${locale === "es" ? "/es" : ""}`;
 
-    const emails = rows.map((s) =>
-      rsvpEmail({
-        to: s.email,
-        guestName: s.full_name,
-        couple,
-        rsvpUrl: `${base}${locale === "es" ? "/es" : ""}/rsvp/${s.rsvp_code}?s=${s.token}`,
-        kind: tp.kind as "rsvp_invite" | "rsvp_reminder" | "rsvp_close",
-        locale,
-      }),
-    );
+    // Per-kind email. menu_collect → tokenized /menu link; day_of_schedule → a
+    // read-only itinerary (events + times + venue + the guest's seat).
+    let emails;
+    if (tp.kind === "menu_collect") {
+      emails = rows.map((s) => menuEmail({ to: s.email, guestName: s.full_name, couple, menuUrl: `${prefix}/menu/${s.rsvp_code}?s=${s.token}`, locale }));
+    } else if (tp.kind === "day_of_schedule") {
+      const [{ data: evs }, { data: booked }, { data: seatRows }] = await Promise.all([
+        admin.from("wedding_events").select("id, label, event_date, start_time").eq("wedding_id", tp.wedding_id).order("event_date", { ascending: true, nullsFirst: false }),
+        admin.from("event_vendors").select("event_id, venue_booked, wedding_vendors(vendors(name))").eq("wedding_id", tp.wedding_id).eq("venue_booked", true),
+        admin.from("seats").select("guest_id, seating_tables(name)").eq("wedding_id", tp.wedding_id),
+      ]);
+      const venueOf = new Map((booked ?? []).map((b) => [(b as { event_id: string }).event_id, (b as unknown as { wedding_vendors: { vendors: { name: string } | null } | null }).wedding_vendors?.vendors?.name ?? null]));
+      const events = ((evs ?? []) as { id: string; label: string; event_date: string | null; start_time: string | null }[]).map((e) => ({ label: e.label, date: e.event_date, time: e.start_time?.slice(0, 5) ?? null, venue: venueOf.get(e.id) ?? null }));
+      const seatOf = new Map(((seatRows ?? []) as unknown as { guest_id: string; seating_tables: { name: string } | null }[]).map((s) => [s.guest_id, s.seating_tables?.name ?? null]));
+      emails = rows.map((s) => dayOfScheduleEmail({ to: s.email, guestName: s.full_name, couple, events, seat: seatOf.get(s.guest_id) ?? null, locale }));
+    } else {
+      emails = rows.map((s) => rsvpEmail({ to: s.email, guestName: s.full_name, couple, rsvpUrl: `${prefix}/rsvp/${s.rsvp_code}?s=${s.token}`, kind: tp.kind as "rsvp_invite" | "rsvp_reminder" | "rsvp_close", locale }));
+    }
 
     // Honor the send result: only stamp the ledger if Resend actually accepted the
     // batch. Skipped (no key) or failed → leave sent_at null, return the touchpoint
