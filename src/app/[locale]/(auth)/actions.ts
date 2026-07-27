@@ -26,12 +26,15 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
   if (!parsed.success) return { error: "invalid" };
   const locale = await getLocale();
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: { data: { display_name: parsed.data.displayName || null, locale } },
   });
   if (error) return { error: "generic" };
+  // Email confirmation on → no session yet. Tell the user to check their inbox
+  // instead of redirecting to "/", which would bounce straight back to sign-in.
+  if (!data.session) return { sent: true };
   redirect({ href: "/", locale });
   return null;
 }

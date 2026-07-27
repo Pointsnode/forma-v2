@@ -10,6 +10,7 @@ export default async function TasksPage({ params }: { params: Promise<{ locale: 
   setRequestLocale(locale);
   const t = await getTranslations("ops");
   const tw = await getTranslations("wedding");
+  const tg = await getTranslations("goals");
   const supabase = await createClient();
 
   const [{ data: ws }, { data: weds }, { data: taskRows }] = await Promise.all([
@@ -27,7 +28,7 @@ export default async function TasksPage({ params }: { params: Promise<{ locale: 
   await Promise.all(weddings.filter((w) => w.phase !== "closed").map(async (w) => {
     const { data: evs } = await supabase.from("wedding_events").select("id, label, kind, event_date, start_time, end_time, order_index, guest_target").eq("wedding_id", w.id).order("event_date", { ascending: true, nullsFirst: false });
     const events = (evs ?? []) as EventRow[];
-    const groups = computeGoals(await loadGoalMesh(supabase, w, events), w.id);
+    const groups = computeGoals(await loadGoalMesh(supabase, w, events), w.id, tg);
     const open = groups.filter((g) => !g.locked).flatMap((g) => g.goals).filter((g) => !g.done).slice(0, 3);
     nextMoves.set(w.id, open.map((g) => ({ key: g.key, title: g.title, detail: g.detail })));
   }));

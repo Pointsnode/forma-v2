@@ -70,7 +70,11 @@ export default async function WeddingFloor({ params }: { params: Promise<{ local
         {engagements.length ? (
           <Stat value={<>{booked}<span className="text-[16px] text-muted">/{engagements.length}</span></>} label={tw("statBookings")} />
         ) : null}
-        <Stat value={days ?? "—"} label={tw("statDays")} sub={<span className="font-accent text-[14px] italic">{tp(wedding.phase)}</span>} />
+        <Stat
+          value={wedding.phase === "closed" ? tw("settled") : days == null ? "—" : days >= 0 ? days : tw("daysAgo", { count: -days })}
+          label={tw("statDays")}
+          sub={<span className="font-accent text-[14px] italic">{tp(wedding.phase)}</span>}
+        />
       </StatRow>
 
       <div className="mt-[18px] grid gap-[18px] lg:grid-cols-[1.6fr_1fr]">
@@ -87,16 +91,34 @@ export default async function WeddingFloor({ params }: { params: Promise<{ local
         </div>
 
         <div>
-          <SectionTitle title={tprop("nextGate")} accent={target ? tp(target) : undefined} className="mt-0" />
-          <GateCard title={target ? tplan("gateTo", { phase: tp(target) }) : tplan("nextGate")} sub={tplan("subtitle")}>
-            {gate.length === 0 ? (
-              <p className="py-2 font-accent text-[15px] text-[rgba(247,244,238,0.75)]">{tplan("allClear")}</p>
-            ) : (
-              gate.map((it) => (
-                <GateRow key={it.key} done={it.done} title={tplan(`items.${it.key}`)} detail={it.pending ? tplan("venuePending") : undefined} />
-              ))
-            )}
-          </GateCard>
+          {wedding.phase === "closed" ? (
+            <>
+              <SectionTitle title={tprop("nextGate")} accent={tp("closed")} className="mt-0" />
+              <GateCard title={tplan("settled")} sub={tplan("settledSub")}>
+                <p className="py-2 font-accent text-[15px] text-[rgba(247,244,238,0.75)]">{tplan("settledNote")}</p>
+              </GateCard>
+            </>
+          ) : wedding.phase === "wedding_days" ? (
+            <>
+              <SectionTitle title={tprop("nextGate")} accent={tp("wedding_days")} className="mt-0" />
+              <GateCard title={tplan("dayHere")} sub={tplan("dayHereSub")}>
+                <p className="py-2 font-accent text-[15px] text-[rgba(247,244,238,0.75)]">{tplan("dayHereNote")}</p>
+              </GateCard>
+            </>
+          ) : (
+            <>
+              <SectionTitle title={tprop("nextGate")} accent={target ? tp(target) : undefined} className="mt-0" />
+              <GateCard title={target ? tplan("gateTo", { phase: tp(target) }) : tplan("nextGate")} sub={tplan("subtitle")}>
+                {gate.length === 0 ? (
+                  <p className="py-2 font-accent text-[15px] text-[rgba(247,244,238,0.75)]">{tplan("allClear")}</p>
+                ) : (
+                  gate.map((it) => (
+                    <GateRow key={it.key} done={it.done} title={tplan(`items.${it.key}`)} detail={it.pending ? tplan("venuePending") : undefined} />
+                  ))
+                )}
+              </GateCard>
+            </>
+          )}
         </div>
       </div>
 
