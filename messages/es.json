@@ -102,7 +102,16 @@
     "statDays": "Días para el primer día",
     "membersTitle": "Las personas",
     "membersHint": "quiénes están en esta boda",
-    "eventsHint": "los eventos de la boda"
+    "eventsHint": "los eventos de la boda",
+    "editFacts": "Editar datos",
+    "factsTitle": "Datos de la boda",
+    "factsHint": "los cimientos — alimentan la siguiente puerta",
+    "factsCity": "Ciudad",
+    "factsCountry": "País",
+    "factsKind": "Tipo",
+    "factsError": "No se pudo guardar — inténtalo de nuevo.",
+    "save": "Guardar",
+    "cancel": "Cancelar"
   },
   "phase": {
     "hiring": "Contratación",
@@ -380,8 +389,8 @@
   "vendors": {
     "venues": "Lugares",
     "vendors": "Proveedores",
-    "venuesHint": "tu catálogo de lugares",
-    "vendorsHint": "tu catálogo de proveedores",
+    "venuesHint": "tu catálogo de lugares para ofrecer — el circuito de la Fase 2 se nutre de aquí",
+    "vendorsHint": "tu catálogo privado — presentar un proveedor, a una boda, para un evento, así empieza el circuito",
     "add": "Añadir proveedor",
     "addVenue": "Añadir lugar",
     "name": "Nombre",
@@ -434,7 +443,12 @@
     "presentVendor": "Presentar {vendor}",
     "presentSub": "a una boda, para un evento — así se abre el circuito",
     "confirmSend": "Presentar a la pareja",
-    "loopOpenToast": "{vendor} presentada — el circuito está abierto, la pelota está en su cancha."
+    "loopOpenToast": "{vendor} presentada — el circuito está abierto, la pelota está en su cancha.",
+    "needEvent": "Un lugar necesita al menos un evento.",
+    "eventRequired": "obligatorio",
+    "autoAttach": "Se adjunta a {event} — el único evento.",
+    "inCatalog": "En el catálogo",
+    "capacityN": "aforo {n}"
   },
   "engagement": {
     "tab": "Proveedores",

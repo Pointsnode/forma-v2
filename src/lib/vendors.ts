@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { signedUrlMap } from "@/lib/storage";
+import { initials } from "@/lib/wedding";
 
 export type VendorRow = {
   id: string; name: string; kind: string; description: string | null;
@@ -8,19 +9,46 @@ export type VendorRow = {
   contact_name: string | null; contact_email: string | null; contact_phone: string | null;
   capacity: number | null; address: string | null;
 };
-export type VendorCard = { id: string; name: string; kind: string; tags: string[]; cities: string[]; heroUrl: string | null };
+// A catalog card knows where the vendor stands across weddings (engagement pills)
+// and carries the depth the featured card renders (description/restrictions/perks/
+// contact). `couple` is the wedding's monogram (e.g. "P·A").
+export type CardEngagement = { couple: string; status: string };
+export type VendorCard = {
+  id: string; name: string; kind: string; tags: string[]; cities: string[]; heroUrl: string | null;
+  description: string | null; restrictions: string | null; perks: string | null;
+  contactName: string | null; contactEmail: string | null; contactPhone: string | null;
+  capacity: number | null;
+  engagements: CardEngagement[];
+};
+
+const CATALOG_COLS =
+  "id, name, kind, description, tags, cities, restrictions, perks, contact_name, contact_email, contact_phone, capacity, vendor_photos(storage_path, sort), wedding_vendors(status, weddings(couple_display))";
 
 // The studio catalog, as bento cards with a signed hero URL (or null → fallback tile).
 export async function loadVendorCards(supabase: SupabaseClient, opts: { venue: boolean }): Promise<VendorCard[]> {
-  let q = supabase.from("vendors").select("id, name, kind, tags, cities, vendor_photos(storage_path, sort)").order("name", { ascending: true });
+  let q = supabase.from("vendors").select(CATALOG_COLS).order("name", { ascending: true });
   q = opts.venue ? q.eq("kind", "venue") : q.neq("kind", "venue");
   const { data } = await q;
-  const rows = (data ?? []) as unknown as (VendorCard & { vendor_photos: { storage_path: string; sort: number }[] })[];
+  const rows = (data ?? []) as unknown as {
+    id: string; name: string; kind: string; description: string | null; tags: string[] | null; cities: string[] | null;
+    restrictions: string | null; perks: string | null; contact_name: string | null; contact_email: string | null; contact_phone: string | null;
+    capacity: number | null; vendor_photos: { storage_path: string; sort: number }[];
+    wedding_vendors: { status: string; weddings: { couple_display: string } | null }[];
+  }[];
   const heroPaths = rows.map((r) => [...(r.vendor_photos ?? [])].sort((a, b) => a.sort - b.sort)[0]?.storage_path);
   const urls = await signedUrlMap(supabase, heroPaths);
   return rows.map((r) => {
     const hero = [...(r.vendor_photos ?? [])].sort((a, b) => a.sort - b.sort)[0]?.storage_path;
-    return { id: r.id, name: r.name, kind: r.kind, tags: r.tags ?? [], cities: r.cities ?? [], heroUrl: hero ? urls.get(hero) ?? null : null };
+    const engagements = (r.wedding_vendors ?? [])
+      .filter((e) => !["declined", "archived"].includes(e.status))
+      .map((e) => ({ couple: initials(e.weddings?.couple_display ?? ""), status: e.status }));
+    return {
+      id: r.id, name: r.name, kind: r.kind, tags: r.tags ?? [], cities: r.cities ?? [],
+      heroUrl: hero ? urls.get(hero) ?? null : null,
+      description: r.description, restrictions: r.restrictions, perks: r.perks,
+      contactName: r.contact_name, contactEmail: r.contact_email, contactPhone: r.contact_phone,
+      capacity: r.capacity, engagements,
+    };
   });
 }
 

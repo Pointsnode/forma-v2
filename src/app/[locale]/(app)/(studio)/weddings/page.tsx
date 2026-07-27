@@ -3,7 +3,7 @@ import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
   Button, PhaseDots, SectionTitle, Bento, BentoCard, BentoBig, BentoFoot, Badge, type BadgeTone,
-  heroTone,
+  heroToneAt,
 } from "@/components/ui";
 import {
   countdownDays, formatDateRange, formatMoney, phaseOrdinal, type Phase, type WeddingRow,
@@ -43,7 +43,7 @@ export default async function WeddingsPage({ params }: { params: Promise<{ local
         </div>
       ) : (
         <Bento>
-          {weddings.map((w) => {
+          {weddings.map((w, i) => {
             const days = countdownDays(w.date_start);
             const range = formatDateRange(w.date_start, w.date_end, lang);
             const count = w.wedding_events?.[0]?.count ?? 1;
@@ -58,7 +58,7 @@ export default async function WeddingsPage({ params }: { params: Promise<{ local
             return (
               <Link key={w.id} href={`/wedding/${w.id}`} className="group block">
                 <BentoCard
-                  tone={heroTone(w.id)}
+                  tone={heroToneAt(i)}
                   heroLeft={location || tw("noDate")}
                   heroRight={
                     days != null ? (

@@ -18,6 +18,8 @@ export type ViewProposal = {
   note: string | null;
   estimate: string | null;
   eventLabel: string | null;
+  // Engagement subject (M4): vendor + its linked events → card meta.
+  subject: { vendorName: string; eventLabels: string[] } | null;
   court: Court;
   ageDays: number;
   messages: ViewMessage[];

@@ -102,7 +102,16 @@
     "statDays": "Days to day one",
     "membersTitle": "The people",
     "membersHint": "who's on this wedding",
-    "eventsHint": "the wedding's events"
+    "eventsHint": "the wedding's events",
+    "editFacts": "Edit facts",
+    "factsTitle": "Wedding facts",
+    "factsHint": "the foundations — feeds the next gate",
+    "factsCity": "City",
+    "factsCountry": "Country",
+    "factsKind": "Kind",
+    "factsError": "Couldn't save — try again.",
+    "save": "Save",
+    "cancel": "Cancel"
   },
   "phase": {
     "hiring": "Hiring",
@@ -380,8 +389,8 @@
   "vendors": {
     "venues": "Venues",
     "vendors": "Vendors",
-    "venuesHint": "your catalog of places",
-    "vendorsHint": "your catalog of partners",
+    "venuesHint": "your catalog of places to offer — the Phase-2 loop draws from here",
+    "vendorsHint": "your private catalog — presenting a vendor, to a wedding, for an event, is how the loop starts",
     "add": "Add vendor",
     "addVenue": "Add venue",
     "name": "Name",
@@ -434,7 +443,12 @@
     "presentVendor": "Present {vendor}",
     "presentSub": "to a wedding, for an event — this opens the loop",
     "confirmSend": "Present to couple",
-    "loopOpenToast": "{vendor} presented — the loop is open, the ball is in their court."
+    "loopOpenToast": "{vendor} presented — the loop is open, the ball is in their court.",
+    "needEvent": "A venue needs at least one event.",
+    "eventRequired": "required",
+    "autoAttach": "Attaches to {event} — the only event.",
+    "inCatalog": "In catalog",
+    "capacityN": "capacity {n}"
   },
   "engagement": {
     "tab": "Vendors",

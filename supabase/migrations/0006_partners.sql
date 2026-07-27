@@ -195,7 +195,7 @@ create trigger on_engagement_proposal_responded after update on public.proposals
 -- on the composite FK and rolls the whole thing back (atomic).
 create or replace function private.present_vendor(p_vendor uuid, p_wedding uuid, p_event_ids uuid[], p_estimate numeric, p_note text)
 returns uuid language plpgsql security definer set search_path = public as $$
-declare v public.vendors; eng uuid; e uuid; ttl text;
+declare v public.vendors; eng uuid; e uuid; ttl text; evids uuid[]; nevents int;
 begin
   if not private.is_wedding_staff(p_wedding) then raise exception 'not permitted' using errcode = 'FV230'; end if;
   select * into v from public.vendors where id = p_vendor;
@@ -205,10 +205,23 @@ begin
     raise exception 'present only from your own catalog' using errcode = 'FV243';
   end if;
 
+  -- Event placement rules. Single-event law: with exactly one event, an
+  -- engagement auto-attaches to it (the caller shows no event chips). A venue on
+  -- a multi-event wedding MUST name at least one event; other kinds may stay
+  -- event-optional (wedding-general).
+  evids := coalesce(p_event_ids, '{}'::uuid[]);
+  select count(*) into nevents from public.wedding_events where wedding_id = p_wedding;
+  if coalesce(array_length(evids, 1), 0) = 0 and nevents = 1 then
+    select array_agg(id) into evids from public.wedding_events where wedding_id = p_wedding;
+  end if;
+  if v.kind = 'venue' and nevents >= 2 and coalesce(array_length(evids, 1), 0) = 0 then
+    raise exception 'a venue must be presented for at least one event' using errcode = 'FV244';
+  end if;
+
   insert into public.wedding_vendors (wedding_id, vendor_id, status, presented_note, presented_estimate, presented_at)
     values (p_wedding, p_vendor, 'presented', p_note, p_estimate, now())
     returning id into eng;
-  foreach e in array coalesce(p_event_ids, '{}'::uuid[]) loop
+  foreach e in array evids loop
     insert into public.event_vendors (engagement_id, event_id, wedding_id) values (eng, e, p_wedding);
   end loop;
 

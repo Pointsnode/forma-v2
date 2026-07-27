@@ -14,6 +14,7 @@ export type Proposal = {
   estimate_amount: string | number | null;
   currency: string;
   event_ref: string | null;
+  engagement_id: string | null;
   created_by: string | null;
   responded_by: string | null;
   sent_at: string | null;
@@ -21,6 +22,9 @@ export type Proposal = {
   proposal_messages: Message[];
   court: Court;
   age_days: number;
+  // Engagement subject (M4): vendor identity + linked events, for the card meta.
+  engVendorName: string | null;
+  engEventIds: string[];
 };
 
 export type Person = { id: string; display_name: string | null; avatar_url: string | null };
@@ -30,7 +34,7 @@ export type ActivityRow = {
 };
 
 const PROPOSAL_COLS =
-  "id, wedding_id, status, title, note, estimate_amount, currency, event_ref, created_by, responded_by, sent_at, created_at, proposal_messages(id, author_id, body, created_at)";
+  "id, wedding_id, status, title, note, estimate_amount, currency, event_ref, engagement_id, created_by, responded_by, sent_at, created_at, proposal_messages(id, author_id, body, created_at)";
 
 // A proposal is terminal (settled) when it has left the loop.
 export function isTerminal(s: ProposalStatus): boolean {
@@ -48,10 +52,29 @@ export async function loadProposals(
     supabase.from("proposal_court").select("proposal_id, court, age_days").eq("wedding_id", weddingId),
   ]);
   const courtMap = new Map((court ?? []).map((c: { proposal_id: string; court: Court; age_days: number }) => [c.proposal_id, c]));
-  const proposals: Proposal[] = ((rows ?? []) as unknown as Omit<Proposal, "court" | "age_days">[]).map((p) => {
+
+  // Engagement subjects (M4): a present-born proposal carries an engagement_id.
+  // Resolve each to its vendor name + linked event ids for the card meta.
+  const engIds = [...new Set(((rows ?? []) as { engagement_id: string | null }[]).map((r) => r.engagement_id).filter((x): x is string => !!x))];
+  const engMap = new Map<string, { vendorName: string; eventIds: string[] }>();
+  if (engIds.length) {
+    const { data: engs } = await supabase
+      .from("wedding_vendors")
+      .select("id, vendors(name), event_vendors(event_id)")
+      .in("id", engIds);
+    for (const e of (engs ?? []) as unknown as { id: string; vendors: { name: string } | null; event_vendors: { event_id: string }[] }[]) {
+      engMap.set(e.id, { vendorName: e.vendors?.name ?? "—", eventIds: (e.event_vendors ?? []).map((x) => x.event_id) });
+    }
+  }
+
+  const proposals: Proposal[] = ((rows ?? []) as unknown as Omit<Proposal, "court" | "age_days" | "engVendorName" | "engEventIds">[]).map((p) => {
     const c = courtMap.get(p.id);
     const messages = [...(p.proposal_messages ?? [])].sort((a, b) => a.created_at.localeCompare(b.created_at));
-    return { ...p, proposal_messages: messages, court: c?.court ?? "none", age_days: c?.age_days ?? 0 };
+    const eng = p.engagement_id ? engMap.get(p.engagement_id) : undefined;
+    return {
+      ...p, proposal_messages: messages, court: c?.court ?? "none", age_days: c?.age_days ?? 0,
+      engVendorName: eng?.vendorName ?? null, engEventIds: eng?.eventIds ?? [],
+    };
   });
 
   const ids = new Set<string>();
@@ -127,6 +150,9 @@ export function toView(
     note: p.note,
     estimate: formatMoney(p.estimate_amount, locale),
     eventLabel: p.event_ref ? eventLabels.get(p.event_ref) ?? null : null,
+    subject: p.engagement_id
+      ? { vendorName: p.engVendorName ?? "—", eventLabels: p.engEventIds.map((id) => eventLabels.get(id)).filter((x): x is string => !!x) }
+      : null,
     court: p.court,
     ageDays: p.age_days,
     messages: p.proposal_messages.map((m) => {

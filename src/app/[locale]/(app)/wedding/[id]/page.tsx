@@ -5,6 +5,7 @@ import { loadWeddingContext } from "@/lib/load-wedding";
 import { loadProposals, loadCoupleIds, loadMembers, loadPendingInvites, toView, isTerminal } from "@/lib/loop";
 import { loadVenuedEventIds, loadWeddingEngagements } from "@/lib/vendors";
 import { WeddingShell } from "@/components/wedding/wedding-shell";
+import { FactsEditor } from "@/components/wedding/facts-editor";
 import { EventsPanel } from "@/components/wedding/event-forms";
 import { ProposalCard } from "@/components/loop/proposal-card";
 import { NewProposal } from "@/components/loop/new-proposal";
@@ -51,6 +52,18 @@ export default async function WeddingFloor({ params }: { params: Promise<{ local
 
   return (
     <WeddingShell wedding={wedding} events={events} role="staff" active="overview" venuedEventIds={venued}>
+      <div className="mb-2 flex justify-end">
+        <FactsEditor
+          weddingId={id}
+          initial={{
+            budget: wedding.budget_total != null && Number(wedding.budget_total) ? String(Number(wedding.budget_total)) : "",
+            guests: wedding.guest_target != null ? String(wedding.guest_target) : "",
+            city: wedding.location_city ?? "",
+            country: wedding.location_country ?? "",
+            kind: (wedding.kind ?? "") as "city" | "destination" | "",
+          }}
+        />
+      </div>
       <StatRow>
         <Stat value={wedding.guest_target ?? guestRollup.invited} label={tw("statGuests")} sub={guestRollup.answered ? tw("statGuestsSub", { count: guestRollup.answered }) : undefined} />
         <Stat value={money ?? "—"} label={tw("statBudget")} />

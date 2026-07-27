@@ -164,6 +164,38 @@ do $$ begin
     raise exception 'TEST FAIL: phase not persisted as details'; end if;
 end $$;
 
+-- ── (11) single-event law: present with no events auto-attaches to the one ────
+-- A fresh wedding auto-seeds one default event → single-event. Presenting with an
+-- empty event array must attach the engagement to that lone event.
+insert into public.weddings (id, workspace_id, slug, couple_display, kind, budget_total, guest_target, location_city, location_country)
+  values ('cccccccc-0000-0000-0000-0000000000c2','aaaaaaaa-0000-0000-0000-0000000000a1','w2','W Two','city', 50000, 50, 'CDMX', 'MX');
+do $$ declare eng uuid;
+begin
+  if (select count(*) from public.wedding_events where wedding_id='cccccccc-0000-0000-0000-0000000000c2') <> 1 then
+    raise exception 'TEST SETUP: expected a single auto-seeded event'; end if;
+  eng := public.present_vendor('d0000000-0000-0000-0000-0000000000f2','cccccccc-0000-0000-0000-0000000000c2', array[]::uuid[], 1000, 'auto');
+  if (select count(*) from public.event_vendors where engagement_id=eng) <> 1 then
+    raise exception 'TEST FAIL: single-event present did not auto-attach to the only event'; end if;
+end $$;
+
+-- ── (12) a venue on a multi-event wedding must name at least one event → FV244 ─
+insert into public.vendors (id, workspace_id, name, kind) values
+  ('d0000000-0000-0000-0000-0000000000f5','aaaaaaaa-0000-0000-0000-0000000000a1','Hacienda Cinco','venue'),
+  ('d0000000-0000-0000-0000-0000000000f6','aaaaaaaa-0000-0000-0000-0000000000a1','Cocina Seis','catering');
+do $$ begin
+  begin perform public.present_vendor('d0000000-0000-0000-0000-0000000000f5','cccccccc-0000-0000-0000-0000000000c1', array[]::uuid[], 1, 'no events');
+    raise exception 'TEST FAIL: presented a venue to a multi-event wedding with no event';
+  exception when sqlstate 'FV244' then null; end;
+end $$;
+
+-- non-venue kinds stay event-optional even on a multi-event wedding (0 links ok)
+do $$ declare eng uuid;
+begin
+  eng := public.present_vendor('d0000000-0000-0000-0000-0000000000f6','cccccccc-0000-0000-0000-0000000000c1', array[]::uuid[], 1, 'general');
+  if (select count(*) from public.event_vendors where engagement_id=eng) <> 0 then
+    raise exception 'TEST FAIL: event-optional non-venue present unexpectedly linked events'; end if;
+end $$;
+
 reset role;
 select 'partners: ALL TESTS PASSED' as result;
 

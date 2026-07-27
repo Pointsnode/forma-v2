@@ -64,7 +64,7 @@ type Wedding = { id: string; couple_display: string; events: { id: string; label
 // The Present modal — prototype v1.9's flow: to a wedding, for an event, this
 // opens the loop. Overlay + mbox; on success a toast confirms the ball is in
 // their court.
-export function PresentModal({ vendorId, vendorName, weddings }: { vendorId: string; vendorName: string; weddings: Wedding[] }) {
+export function PresentModal({ vendorId, vendorName, vendorKind, weddings }: { vendorId: string; vendorName: string; vendorKind: string; weddings: Wedding[] }) {
   const t = useTranslations("vendors");
   const [open, setOpen] = useState(false);
   const [weddingId, setWeddingId] = useState(weddings[0]?.id ?? "");
@@ -75,14 +75,20 @@ export function PresentModal({ vendorId, vendorName, weddings }: { vendorId: str
   const [err, setErr] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const wedding = weddings.find((w) => w.id === weddingId);
+  const isVenue = vendorKind === "venue";
+  // Single-event law: with one event the engagement auto-attaches — no chips. The
+  // chip picker appears only for multi-event weddings.
+  const multiEvent = (wedding?.events.length ?? 0) >= 2;
 
   function close() { setOpen(false); setErr(null); }
   function submit() {
     if (!weddingId) return;
+    // A venue on a multi-event wedding must name at least one event (mirrors FV244).
+    if (isVenue && multiEvent && events.length === 0) { setErr(t("needEvent")); return; }
     setErr(null);
     start(async () => {
       const r = await presentVendor(vendorId, weddingId, events, estimate, note);
-      if (r.error) setErr(t("error"));
+      if (r.error) setErr(r.error === "FV244" ? t("needEvent") : t("error"));
       else {
         close(); setEvents([]); setEstimate(""); setNote("");
         setToast(t("loopOpenToast", { vendor: vendorName }));
@@ -107,11 +113,11 @@ export function PresentModal({ vendorId, vendorName, weddings }: { vendorId: str
               {weddings.map((w) => <option key={w.id} value={w.id}>{w.couple_display}</option>)}
             </select>
 
-            {wedding && wedding.events.length ? (
+            {multiEvent ? (
               <>
-                <label className={mlbl}>{t("pickEvents")}</label>
+                <label className={mlbl}>{t("pickEvents")}{isVenue ? <span className="ml-1.5 lowercase tracking-normal text-wine">· {t("eventRequired")}</span> : null}</label>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {wedding.events.map((e) => {
+                  {wedding!.events.map((e) => {
                     const on = events.includes(e.id);
                     return (
                       <button key={e.id} type="button"
@@ -123,6 +129,8 @@ export function PresentModal({ vendorId, vendorName, weddings }: { vendorId: str
                   })}
                 </div>
               </>
+            ) : wedding && wedding.events.length === 1 ? (
+              <p className="mt-3 font-accent text-[13.5px] italic text-taupe">{t("autoAttach", { event: wedding.events[0].label })}</p>
             ) : null}
 
             <label className={mlbl}>{t("estimate")}</label>

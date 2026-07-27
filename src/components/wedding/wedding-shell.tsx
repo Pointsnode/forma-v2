@@ -85,20 +85,23 @@ export async function WeddingShell({
             {days != null ? <span className="ml-3 text-[#948C7F]">· {days} {tw("days")}</span> : null}
           </p>
 
-          <div className="flex flex-wrap gap-2 pb-[18px] pt-[22px]">
-            <Chip href={`/wedding/${wedding.id}`} active={!activeEventId}>{tw("wholeWedding")}</Chip>
-            {multi
-              ? events.map((e) => {
-                  const dn = dayNumber(e.event_date, wedding.date_start);
-                  const sub = [dn != null ? te("dayN", { n: dn }) : null, e.guest_target ? tw("guestsLabel", { count: e.guest_target }) : null].filter(Boolean).join(" · ");
-                  return (
-                    <Chip key={e.id} href={`/wedding/${wedding.id}/event/${e.id}`} active={activeEventId === e.id} sub={sub || undefined}>
-                      {e.label}
-                    </Chip>
-                  );
-                })
-              : null}
-          </div>
+          {/* Single-event law: no chip row exists until a second event does. */}
+          {multi ? (
+            <div className="flex flex-wrap gap-2 pb-[18px] pt-[22px]">
+              <Chip href={`/wedding/${wedding.id}`} active={!activeEventId}>{tw("wholeWedding")}</Chip>
+              {events.map((e) => {
+                const dn = dayNumber(e.event_date, wedding.date_start);
+                const sub = [dn != null ? te("dayN", { n: dn }) : null, e.guest_target ? tw("guestsLabel", { count: e.guest_target }) : null].filter(Boolean).join(" · ");
+                return (
+                  <Chip key={e.id} href={`/wedding/${wedding.id}/event/${e.id}`} active={activeEventId === e.id} sub={sub || undefined}>
+                    {e.label}
+                  </Chip>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="pb-[24px]" />
+          )}
         </div>
 
         {/* the planning line as the masthead's bottom edge */}

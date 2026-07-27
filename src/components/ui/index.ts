@@ -11,4 +11,4 @@ export {
   GateCard, GateRow, Check, Row, RowMain,
 } from "./composed";
 export { TopBar, type SwitcherWedding } from "./top-bar";
-export { heroTone } from "./tones";
+export { heroTone, heroToneAt } from "./tones";
