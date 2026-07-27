@@ -6,8 +6,9 @@ import {
 } from "@/components/ui";
 import { CreateWorkspaceForm } from "../workspace-forms";
 import { TouchLastSeen } from "./touch-last-seen";
-import { countdownDays, initials, phaseOrdinal, PHASE_ORDER, type Phase, type WeddingRow } from "@/lib/wedding";
+import { countdownDays, formatMoney, initials, phaseOrdinal, PHASE_ORDER, type Phase, type WeddingRow } from "@/lib/wedding";
 import { loadCockpit } from "@/lib/cockpit";
+import { loadMoneyRadar } from "@/lib/money";
 
 export default async function StudioOverview({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -61,6 +62,12 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
   const oldest = chase[0];
   const today = new Intl.DateTimeFormat(lang === "es" ? "es-ES" : "en-US", { weekday: "long", month: "long", day: "numeric" }).format(new Date());
 
+  // Money radar / urgent (§12) — from the view, RLS-scoped to the viewer's weddings.
+  const tmoney = await getTranslations("money");
+  const { radar, urgent } = await loadMoneyRadar(supabase);
+  const due60 = radar.reduce((s, r) => s + Number(r.amount), 0);
+  const fmt = (n: number) => formatMoney(n, lang) ?? "—";
+
   return (
     <div>
       <TouchLastSeen />
@@ -78,6 +85,7 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
           label={t("statChase")}
           sub={oldest ? tc("oldestChase", { days: oldest.ageDays }) : undefined}
         />
+        {radar.length ? <Stat value={fmt(due60)} label={tmoney("due60")} sub={tmoney("due60Sub", { count: radar.length })} /> : null}
       </StatRow>
 
       <div className="mt-[18px] grid gap-[18px] lg:grid-cols-[1.6fr_1fr]">
@@ -126,8 +134,39 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
           </Card>
         </div>
 
-        {/* right — under management */}
-        <Card className="self-start">
+        {/* right — money radar · urgent · under management */}
+        <div className="flex flex-col gap-[18px]">
+        {radar.length ? (
+          <Card>
+            <Heading className="text-[19px]">{tmoney("radar")}</Heading>
+            <p className="mb-3 mt-0.5 text-[12.5px] text-muted">{tmoney("radarHint")}</p>
+            {radar.slice(0, 6).map((r) => (
+              <Row key={r.id}>
+                <span className="w-14 shrink-0 font-accent text-[14px] italic text-taupe">{r.due_date.slice(5)}</span>
+                <RowMain title={<>{r.title} {r.is_fee ? <span className="ml-1 rounded-full bg-sand-soft px-2 py-[1px] text-[10.5px] text-taupe">{tmoney("yours")}</span> : null}</>} detail={r.couple_display} />
+                <span className="shrink-0 font-medium text-[13.5px] text-ink">{fmt(Number(r.amount))}</span>
+              </Row>
+            ))}
+            <p className="mt-3 text-[11.5px] text-muted">{tmoney("computedNote")}</p>
+          </Card>
+        ) : null}
+
+        {urgent.length ? (
+          <Card>
+            <Heading className="text-[19px]">{tmoney("urgent")}</Heading>
+            <p className="mb-3 mt-0.5 text-[12.5px] text-muted">{tmoney("urgentHint")}</p>
+            {urgent.slice(0, 5).map((r) => (
+              <Link key={r.id} href={`/wedding/${r.wedding_id}/budget`} className="block">
+                <Row className="-mx-2 rounded-xl px-2 hover:bg-bone">
+                  <RowMain title={r.title} detail={r.couple_display} />
+                  <span className="shrink-0 rounded-full bg-wine-soft px-2.5 py-[3px] text-[11px] font-medium text-wine">{fmt(Number(r.amount))}</span>
+                </Row>
+              </Link>
+            ))}
+          </Card>
+        ) : null}
+
+        <Card>
           <Heading className="text-[19px]">{t("underManagement")}</Heading>
           <p className="mb-3 mt-0.5 text-[12.5px] text-muted">{t("underManagementHint")}</p>
           {weddings.length === 0 ? (
@@ -149,6 +188,7 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
             })
           )}
         </Card>
+        </div>
       </div>
     </div>
   );

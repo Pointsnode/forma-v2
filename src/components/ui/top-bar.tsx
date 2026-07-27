@@ -24,6 +24,7 @@ export function TopBar({
   const ts = useTranslations("studio");
   const path = usePathname();
   const [open, setOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const activeId = path.startsWith("/wedding/") ? path.split("/")[2] : null;
   const active = activeId ? weddings.find((w) => w.id === activeId) : null;
@@ -57,17 +58,20 @@ export function TopBar({
           <>
             <button className="fixed inset-0 z-10 cursor-default" aria-hidden onClick={() => setOpen(false)} />
             <div className="absolute right-0 top-[46px] z-20 min-w-[300px] overflow-hidden rounded-2xl bg-paper text-ink shadow-hero">
-              <Link
-                href="/"
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 text-[12.5px] not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)] hover:bg-bone"
-              >
-                <span className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-ink text-[9px] font-semibold text-bone">{monogram}</span>
-                <span>
-                  <span className="block font-medium">{ts("switcherStudio")}</span>
-                  <span className="block text-[11px] text-muted">{ts("switcherStudioHint")}</span>
-                </span>
-              </Link>
+              {/* session-aware: the studio entry exists only for a workspace member */}
+              {workspaceName ? (
+                <Link
+                  href="/"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-[12.5px] not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)] hover:bg-bone"
+                >
+                  <span className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-ink text-[9px] font-semibold text-bone">{monogram}</span>
+                  <span>
+                    <span className="block font-medium">{ts("switcherStudio")}</span>
+                    <span className="block text-[11px] text-muted">{ts("switcherStudioHint")}</span>
+                  </span>
+                </Link>
+              ) : null}
               {weddings.map((w) => (
                 <Link
                   key={w.id}
@@ -85,6 +89,29 @@ export function TopBar({
                   </span>
                 </Link>
               ))}
+            </div>
+          </>
+        ) : null}
+      </div>
+
+      {/* §1F: the monogram is a menu — Sign out lives here now; Billing when a
+          workspace exists; Profile/Settings/Admin arrive with their milestones. */}
+      <div className="relative">
+        <button
+          onClick={() => setMenuOpen((v) => !v)}
+          className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-sand text-[12px] font-semibold text-ink"
+        >
+          {monogram}
+        </button>
+        {menuOpen ? (
+          <>
+            <button className="fixed inset-0 z-10 cursor-default" aria-hidden onClick={() => setMenuOpen(false)} />
+            <div className="absolute right-0 top-[46px] z-20 min-w-[180px] overflow-hidden rounded-2xl bg-paper text-ink shadow-hero">
+              {workspaceName ? (
+                <Link href="/billing" onClick={() => setMenuOpen(false)} className="block px-4 py-3 text-[12.5px] [box-shadow:inset_0_-1px_0_var(--color-hairline)] hover:bg-bone">
+                  {t("billing")}
+                </Link>
+              ) : null}
               <form action={signOut}>
                 <button type="submit" className="w-full px-4 py-3 text-left text-[12.5px] text-muted hover:bg-bone hover:text-ink">
                   {t("signOut")}
@@ -94,8 +121,6 @@ export function TopBar({
           </>
         ) : null}
       </div>
-
-      <span className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-sand text-[12px] font-semibold text-ink">{monogram}</span>
     </div>
   );
 }

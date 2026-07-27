@@ -1,13 +1,14 @@
 import type { ReactNode } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { PhaseDots, cx } from "@/components/ui";
 import {
   countdownDays, dayNumber, formatDateRange, formatMoney, itemsToGate,
   phaseOrdinal, type EventRow, type WeddingRow,
 } from "@/lib/wedding";
 
-export type WeddingTab = "overview" | "proposals" | "guests" | "vendors" | "planning";
+export type WeddingTab = "overview" | "proposals" | "guests" | "vendors" | "budget" | "contracts" | "planning";
 
 // The wedding shell — full-bleed ink masthead (eyebrow · display couple name ·
 // meta · event chips · the slim planning line as its bottom edge), the sticky
@@ -26,9 +27,10 @@ export async function WeddingShell({
   showNav?: boolean;
   children: ReactNode;
 }) {
-  const [tw, te, tp, tprop, tg, teng] = [
+  const [tw, te, tp, tprop, tg, teng, tm, tc] = [
     await getTranslations("wedding"), await getTranslations("event"), await getTranslations("phase"),
     await getTranslations("proposals"), await getTranslations("guests"), await getTranslations("engagement"),
+    await getTranslations("money"), await getTranslations("contract"),
   ];
   const lang = await getLocale();
 
@@ -47,7 +49,19 @@ export async function WeddingShell({
   ].filter(Boolean).join("  ·  ");
 
   const multi = events.length >= 2;
-  const n = itemsToGate(wedding, events, venuedEventIds);
+  // The phase-1 line must reflect the two Phase-1 conditions (agreement completed /
+  // deposit paid), not default to "ready" — gateItems only models the 2→3 gate.
+  let n = itemsToGate(wedding, events, venuedEventIds);
+  if (wedding.phase === "hiring") {
+    const supabase = await createClient();
+    const { data: c } = await supabase.from("contracts").select("id").eq("wedding_id", wedding.id).eq("kind", "planner_agreement").eq("status", "completed").limit(1).maybeSingle();
+    let depositPaid = false;
+    if (c) {
+      const { data: l } = await supabase.from("ledger_lines").select("id").eq("contract_id", c.id).eq("kind", "planner_fee").eq("status", "paid").limit(1);
+      depositPaid = !!(l && l.length);
+    }
+    n = (c ? 0 : 1) + (depositPaid ? 0 : 1);
+  }
   const phaseStatus =
     wedding.phase === "closed" ? tp("closedState")
       : n === 0 ? tp("atGate")
@@ -61,10 +75,14 @@ export async function WeddingShell({
           { key: "proposals", href: `/wedding/${wedding.id}/proposals`, label: tprop("tab") },
           { key: "guests", href: `/wedding/${wedding.id}/guests`, label: tg("tab") },
           { key: "vendors", href: `/wedding/${wedding.id}/vendors`, label: teng("tab") },
+          { key: "budget", href: `/wedding/${wedding.id}/budget`, label: tm("tab") },
+          { key: "contracts", href: `/wedding/${wedding.id}/contracts`, label: tc("tab") },
         ]
       : [
           { key: "overview", href: `/wedding/${wedding.id}`, label: tw("overview") },
           { key: "guests", href: `/wedding/${wedding.id}/guests`, label: tg("tab") },
+          { key: "budget", href: `/wedding/${wedding.id}/budget`, label: tm("tab") },
+          { key: "contracts", href: `/wedding/${wedding.id}/contracts`, label: tc("tab") },
         ];
 
   return (

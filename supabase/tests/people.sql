@@ -193,9 +193,10 @@ do $$ begin
 end $$;
 
 -- ── (9) Anon-executability matrix: grants closed by default (§11) ────────────
--- The ONLY functions anon may execute are the three guest RSVP entry points, in
--- both private and public. Any other anon-executable function — a forgotten revoke
--- — fails here instead of reaching the gate.
+-- The ONLY functions anon may execute are the guest RSVP entry points (M3) and the
+-- contract signer surface (M5 — deliberately grown, §1C), in both private and
+-- public. Any other anon-executable function — a forgotten revoke — fails here
+-- instead of reaching the gate. This allowlist IS the contract.
 reset role;
 do $$
 declare leaked text;
@@ -204,7 +205,10 @@ begin
   from pg_proc p join pg_namespace n on n.oid = p.pronamespace
   where n.nspname in ('private','public')
     and has_function_privilege('anon', p.oid, 'EXECUTE')
-    and p.proname not in ('rsvp_lookup','rsvp_submit','touchpoint_open');
+    and p.proname not in (
+      'rsvp_lookup','rsvp_submit','touchpoint_open',
+      'load_contract_as','fill_contract_fields_as','sign_contract_as','decline_contract_as'
+    );
   if leaked is not null then
     raise exception 'TEST FAIL: anon can execute non-RSVP function(s): %', leaked;
   end if;
