@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
 import { cx } from "./cn";
 
-/** Borderless surface on soft shadow — the v2 card. No borders, no gradients. */
+/** Borderless surface on soft shadow — the v2 card. No borders, no gradients.
+    Paper surface a shade lighter than the bone ground (the prototype's .card). */
 export function Card({ children, className, lift = false }: { children: ReactNode; className?: string; lift?: boolean }) {
   return (
-    <div className={cx("rounded-2xl bg-bone p-6", lift ? "shadow-lift" : "shadow-card", className)}>{children}</div>
+    <div className={cx("rounded-2xl bg-paper p-6", lift ? "shadow-lift" : "shadow-card", className)}>{children}</div>
   );
 }
 
@@ -108,4 +109,48 @@ export function Fact({ value, label }: { value: ReactNode; label: ReactNode }) {
       <span className="font-accent text-[15px] text-muted">{label}</span>
     </div>
   );
+}
+
+// ── Status badge — the prototype's .badge family, mapped to five visual tones ──
+// sand: scheduled/expected/draft/general/private · wine: awaiting/due/quoting
+// sage: approved/paid/signed/shared · maroon: change · ink: booked
+export type BadgeTone = "sand" | "wine" | "sage" | "maroon" | "ink";
+const BADGE: Record<BadgeTone, string> = {
+  sand: "bg-sand-soft text-taupe",
+  wine: "bg-wine-soft text-wine",
+  sage: "bg-sage-soft text-sage-ink",
+  maroon: "bg-maroon text-bone",
+  ink: "bg-ink text-bone",
+};
+export function Badge({ children, tone = "sand", className }: { children: ReactNode; tone?: BadgeTone; className?: string }) {
+  return (
+    <span className={cx("inline-block whitespace-nowrap rounded-full px-2.5 py-[3px] text-[11px] font-medium tracking-[0.02em]", BADGE[tone], className)}>
+      {children}
+    </span>
+  );
+}
+
+/** Hairline circle holding a serif initial — the prototype's .icon (list glyph). */
+export function Icon({ children, size = 36 }: { children: ReactNode; size?: number }) {
+  return (
+    <span style={{ width: size, height: size }} className="flex shrink-0 items-center justify-center rounded-full font-accent italic text-taupe ring-1 ring-hairline">
+      <span style={{ fontSize: Math.round(size * 0.44) }}>{children}</span>
+    </span>
+  );
+}
+
+// ── Presence badge — who holds the ball. planner sand · couple wine · vendor sage
+export type Who = "planner" | "couple" | "vendor";
+const WHO: Record<Who, string> = { planner: "bg-sand text-ink", couple: "bg-wine text-bone", vendor: "bg-sage text-ink" };
+export function WhoBadge({ who, children, size = 22, title }: { who: Who; children: ReactNode; size?: number; title?: string }) {
+  return (
+    <span title={title} style={{ width: size, height: size }} className={cx("inline-flex shrink-0 items-center justify-center rounded-full font-semibold tracking-[0.02em]", WHO[who])}>
+      <span style={{ fontSize: Math.max(8.5, Math.round(size * 0.39)) }}>{children}</span>
+    </span>
+  );
+}
+
+/** Small taupe keyword tag — vendor/venue attributes. */
+export function Tag({ children }: { children: ReactNode }) {
+  return <span className="mr-1 mt-[3px] inline-block rounded-full bg-sand-soft px-[9px] py-[2px] text-[10.5px] text-taupe">{children}</span>;
 }

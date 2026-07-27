@@ -104,7 +104,7 @@ export function DecisionInbox({ weddingId, inCourt, settled }: { weddingId: stri
         <p className="font-accent text-[16px] text-muted">{t("inboxHint")}</p>
       </div>
       {inCourt.length === 0 ? (
-        <div className="rounded-2xl bg-bone p-8 text-center shadow-card">
+        <div className="rounded-2xl bg-paper p-8 text-center shadow-card">
           <p className="font-accent text-[17px] text-ink">{t("empty")}</p>
           <p className="mt-1 font-accent text-[14.5px] text-muted">{t("emptyHint")}</p>
         </div>

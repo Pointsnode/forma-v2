@@ -8,7 +8,7 @@ export default async function JoinPage({ params }: { params: Promise<{ locale: s
   const t = await getTranslations("invites");
 
   return (
-    <div className="mx-auto max-w-sm">
+    <div className="mx-auto max-w-sm px-6 py-12">
       <Card>
         <Heading>{t("acceptTitle")}</Heading>
         <p className="mb-5 mt-1 font-accent text-[16px] text-muted">{t("membersHint")}</p>

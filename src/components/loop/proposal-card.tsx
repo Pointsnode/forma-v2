@@ -19,7 +19,12 @@ export function ProposalCard({ weddingId, p }: { weddingId: string; p: ViewPropo
   const [pending, start] = useTransition();
 
   const terminal = ["approved", "declined", "withdrawn"].includes(p.status);
-  const meta = [p.eventLabel, p.estimate ? `${t("estimatePrefix")} ${p.estimate}` : null].filter(Boolean).join(" · ");
+  // Engagement-subject cards carry vendor · events · amount; freeform cards keep
+  // their single event tag. (§ prototype meta pattern.)
+  const meta = (p.subject
+    ? [p.subject.vendorName, p.subject.eventLabels.join(", ") || null, p.estimate ? `${t("estimatePrefix")} ${p.estimate}` : null]
+    : [p.eventLabel, p.estimate ? `${t("estimatePrefix")} ${p.estimate}` : null]
+  ).filter(Boolean).join(" · ");
   const ageLabel = p.court === "none" ? tc("none") : p.ageDays === 0 ? tc("today") : tc("days", { count: p.ageDays });
 
   function act(fn: () => Promise<{ error?: string }>) {

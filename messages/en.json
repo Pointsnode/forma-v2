@@ -3,7 +3,8 @@
     "name": "Forma",
     "shell": "Workspace",
     "signOut": "Sign out",
-    "loading": "Loading"
+    "loading": "Loading",
+    "tagline": "planning, refined."
   },
   "nav": {
     "cockpit": "Cockpit",
@@ -50,7 +51,13 @@
     "underManagementHint": "Sage done · wine current · sand ahead",
     "weddingsHint": "closest first — each opens its own floor",
     "empty": "No weddings yet. Create the first.",
-    "createWedding": "Create wedding"
+    "createWedding": "Create wedding",
+    "plannerStudio": "Planner studio · all weddings",
+    "allWeddings": "All weddings",
+    "switcherStudio": "Studio — all weddings",
+    "switcherStudioHint": "Overview, catalog, weddings",
+    "statWeddings": "Weddings under management",
+    "statChase": "To chase"
   },
   "wedding": {
     "wholeWedding": "Whole wedding",
@@ -87,7 +94,24 @@
       "budgetTotal": "Budget",
       "submit": "Create wedding",
       "error": "Could not create the wedding. Try again."
-    }
+    },
+    "statGuests": "Guests invited",
+    "statGuestsSub": "{count} answered",
+    "statBudget": "Budget",
+    "statBookings": "Bookings confirmed",
+    "statDays": "Days to day one",
+    "membersTitle": "The people",
+    "membersHint": "who's on this wedding",
+    "eventsHint": "the wedding's events",
+    "editFacts": "Edit facts",
+    "factsTitle": "Wedding facts",
+    "factsHint": "the foundations — feeds the next gate",
+    "factsCity": "City",
+    "factsCountry": "Country",
+    "factsKind": "Kind",
+    "factsError": "Couldn't save — try again.",
+    "save": "Save",
+    "cancel": "Cancel"
   },
   "phase": {
     "hiring": "Hiring",
@@ -149,7 +173,8 @@
       "party": "Party",
       "ritual": "Ritual",
       "other": "Other"
-    }
+    },
+    "day": "Day"
   },
   "proposals": {
     "waiting": "Waiting on a decision",
@@ -186,7 +211,9 @@
       "declined": "Declined",
       "withdrawn": "Withdrawn"
     },
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "waitingLoop": "the loop — planner ↔ couple",
+    "nextGate": "The next gate"
   },
   "court": {
     "planner": "With you",
@@ -253,7 +280,12 @@
       "quote_received": "logged a quote",
       "engagement_booked": "booked a vendor",
       "phase_advanced": "advanced the phase"
-    }
+    },
+    "greetingTitle": "Good morning, {name}",
+    "greetingDate": "{date} — the studio at a glance",
+    "nInPhase": "{count} in {phase}",
+    "oldestChase": "Oldest is {days} days in someone's court",
+    "ageDays": "{days}d"
   },
   "guests": {
     "tab": "Guest list",
@@ -357,8 +389,8 @@
   "vendors": {
     "venues": "Venues",
     "vendors": "Vendors",
-    "venuesHint": "your catalog of places",
-    "vendorsHint": "your catalog of partners",
+    "venuesHint": "your catalog of places to offer — the Phase-2 loop draws from here",
+    "vendorsHint": "your private catalog — presenting a vendor, to a wedding, for an event, is how the loop starts",
     "add": "Add vendor",
     "addVenue": "Add venue",
     "name": "Name",
@@ -407,7 +439,16 @@
     "labelPacket": "Packet",
     "labelRates": "Rates",
     "labelMenu": "Menu",
-    "labelOther": "Other"
+    "labelOther": "Other",
+    "presentVendor": "Present {vendor}",
+    "presentSub": "to a wedding, for an event — this opens the loop",
+    "confirmSend": "Present to couple",
+    "loopOpenToast": "{vendor} presented — the loop is open, the ball is in their court.",
+    "needEvent": "A venue needs at least one event.",
+    "eventRequired": "required",
+    "autoAttach": "Attaches to {event} — the only event.",
+    "inCatalog": "In catalog",
+    "capacityN": "capacity {n}"
   },
   "engagement": {
     "tab": "Vendors",

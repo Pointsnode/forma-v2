@@ -32,7 +32,9 @@
 
 html, body { height: 100%; }
 body {
-  background: var(--color-paper);
+  /* Bone page, paper surfaces — matching the prototype: cards sit a shade
+     lighter than the ground, which is what gives them their float. */
+  background: var(--color-bone);
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
