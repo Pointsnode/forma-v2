@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendBatch } from "@/lib/email/resend";
 import { rsvpEmail } from "@/lib/email/rsvp-email";
+import { planTouchpointOutcome } from "@/lib/touchpoint-run.mjs";
 
 // Daily cron. Claims due touchpoints, resolves audience, sends the tokenized RSVP
 // emails via Resend, stamps the send ledger. Idempotent end to end: claiming with
@@ -33,6 +34,7 @@ async function run(req: NextRequest) {
 
   const claimed = (due ?? []).filter((t) => SENDABLE.has(t.kind));
   let totalSent = 0;
+  let totalSkipped = 0;
 
   for (const tp of claimed) {
     const { data: sends } = await admin.rpc("build_touchpoint_sends", { p_touchpoint: tp.id });
@@ -50,26 +52,42 @@ async function run(req: NextRequest) {
     }
     const couple = wd?.couple_display ?? "your wedding";
 
-    if (rows.length) {
-      const emails = rows.map((s) =>
-        rsvpEmail({
-          to: s.email,
-          guestName: s.full_name,
-          couple,
-          rsvpUrl: `${base}${locale === "es" ? "/es" : ""}/rsvp/${s.rsvp_code}?s=${s.token}`,
-          kind: tp.kind as "rsvp_invite" | "rsvp_reminder" | "rsvp_close",
-          locale,
-        }),
-      );
-      await sendBatch(emails); // no-op if RESEND_API_KEY unset
-      // stamp the ledger for this run (send rows are the record of what went out)
-      await admin.from("touchpoint_sends").update({ sent_at: new Date().toISOString() }).eq("touchpoint_id", tp.id).is("sent_at", null);
-      totalSent += rows.length;
+    const emails = rows.map((s) =>
+      rsvpEmail({
+        to: s.email,
+        guestName: s.full_name,
+        couple,
+        rsvpUrl: `${base}${locale === "es" ? "/es" : ""}/rsvp/${s.rsvp_code}?s=${s.token}`,
+        kind: tp.kind as "rsvp_invite" | "rsvp_reminder" | "rsvp_close",
+        locale,
+      }),
+    );
+
+    // Honor the send result: only stamp the ledger if Resend actually accepted the
+    // batch. Skipped (no key) or failed → leave sent_at null, return the touchpoint
+    // to 'scheduled', and the next run retries. The ledger must never lie.
+    let result: { sent?: number; skipped?: boolean; failed?: boolean };
+    try {
+      result = await sendBatch(emails);
+    } catch {
+      result = { failed: true };
     }
-    await admin.from("touchpoints").update({ status: "sent" }).eq("id", tp.id);
+    const outcome = planTouchpointOutcome(result, rows.length);
+
+    if (outcome.stampSent) {
+      if (rows.length) {
+        await admin.from("touchpoint_sends").update({ sent_at: new Date().toISOString() }).eq("touchpoint_id", tp.id).is("sent_at", null);
+      }
+      await admin.from("touchpoints").update({ status: "sent" }).eq("id", tp.id);
+      totalSent += outcome.sent;
+    } else {
+      console.error(`touchpoints: ${outcome.skipped} send(s) NOT delivered for touchpoint ${tp.id} — returned to scheduled (RESEND unset or send failed)`);
+      await admin.from("touchpoints").update({ status: "scheduled" }).eq("id", tp.id);
+      totalSkipped += outcome.skipped;
+    }
   }
 
-  return NextResponse.json({ ok: true, touchpoints: claimed.length, sent: totalSent });
+  return NextResponse.json({ ok: true, touchpoints: claimed.length, sent: totalSent, skipped: totalSkipped });
 }
 
 export const GET = run;
