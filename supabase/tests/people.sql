@@ -180,6 +180,19 @@ begin
   if n <> 0 then raise exception 'TEST FAIL: reminder audience should exclude the answered + no-email guest, got %', n; end if;
 end $$;
 
+-- ── (8) guest import writes exactly one activity row, attributed to the importer
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"11111111-0000-0000-0000-000000000001","role":"authenticated"}';
+select public.log_guest_import('cccccccc-0000-0000-0000-0000000000c1', 5);
+do $$ begin
+  if (select count(*) from public.activity where wedding_id='cccccccc-0000-0000-0000-0000000000c1' and verb='list_imported') <> 1 then
+    raise exception 'TEST FAIL: import did not write exactly one list_imported row'; end if;
+  if (select actor_id from public.activity where wedding_id='cccccccc-0000-0000-0000-0000000000c1' and verb='list_imported') <> '11111111-0000-0000-0000-000000000001' then
+    raise exception 'TEST FAIL: list_imported actor is not the importer'; end if;
+  if (select summary from public.activity where wedding_id='cccccccc-0000-0000-0000-0000000000c1' and verb='list_imported') <> '5' then
+    raise exception 'TEST FAIL: list_imported summary should carry only the count'; end if;
+end $$;
+
 reset role;
 select 'people: ALL TESTS PASSED' as result;
 

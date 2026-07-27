@@ -21,8 +21,12 @@ export async function importGuests(weddingId: string, rows: NewGuest[]): Promise
     console.error(`importGuests failed (${error.code}): ${error.message}`);
     return { error: "generic" };
   }
+  // One activity row per import (verb localized at render; summary = count only).
+  const added = count ?? rows.length;
+  const { error: logErr } = await supabase.rpc("log_guest_import", { w: weddingId, n: added });
+  if (logErr) console.error(`log_guest_import failed (${logErr.code}): ${logErr.message}`);
   refresh();
-  return { ok: true, added: count ?? rows.length };
+  return { ok: true, added };
 }
 
 export async function addGuest(weddingId: string, fields: Record<string, unknown>): Promise<GuestResult> {

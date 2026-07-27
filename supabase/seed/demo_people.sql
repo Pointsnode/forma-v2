@@ -75,7 +75,7 @@ begin
       on conflict do nothing;
 
     insert into public.activity (wedding_id, actor_id, verb, summary, created_at) values
-      (pa, null, 'list_imported', '24 guests', now() - interval '20 days'),
+      (pa, null, 'list_imported', '24', now() - interval '20 days'),
       (pa, null, 'guest_rsvpd', 'Ananya Rao', now() - interval '2 days'),
       (pa, null, 'guest_rsvpd', 'Vikram Mehta', now() - interval '3 days');
   end if;

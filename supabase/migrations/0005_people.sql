@@ -232,6 +232,18 @@ returns jsonb language sql security invoker set search_path = public as $$ selec
 create or replace function public.touchpoint_open(token text)
 returns void language sql security invoker set search_path = public as $$ select private.touchpoint_open(token); $$;
 
+-- Guest import → one activity row per import (not per guest). Staff or couple may
+-- import; the importer is the recorded actor; summary carries only the count (the
+-- verb is localized at render, like every other M3 activity verb).
+create or replace function private.log_guest_import(w uuid, n int)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not (private.is_wedding_staff(w) or private.is_wedding_member(w)) then raise exception 'not permitted' using errcode = 'FV230'; end if;
+  perform private.log_activity(w, (select auth.uid()), 'list_imported', n::text, jsonb_build_object('count', n));
+end $$;
+create or replace function public.log_guest_import(w uuid, n int)
+returns void language sql security invoker set search_path = public as $$ select private.log_guest_import(w, n); $$;
+
 -- ── Views (security_invoker; the board reads these, never counters) ──────────
 create or replace view public.guest_rsvp_rollup with (security_invoker = true) as
 select
@@ -374,6 +386,7 @@ revoke execute on function
 grant execute on function
   private.rsvp_lookup(text), private.rsvp_submit(text, jsonb), private.touchpoint_open(text)
   to anon, authenticated;
+grant execute on function private.log_guest_import(uuid, int) to authenticated;
 grant execute on function
   public.rsvp_lookup(text), public.rsvp_submit(text, jsonb), public.touchpoint_open(text)
   to anon, authenticated;
