@@ -38,6 +38,7 @@ export function SignInForm() {
 export function SignUpForm() {
   const t = useTranslations("auth");
   const [state, action, pending] = useActionState<AuthState, FormData>(signUp, null);
+  if (state?.sent) return <p className="text-[14px] text-sage-ink">{t("confirmSent")}</p>;
   return (
     <form action={action} className="flex flex-col gap-4">
       <Field name="displayName" type="text" label={t("displayName")} autoComplete="name" />

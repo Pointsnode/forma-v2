@@ -99,6 +99,31 @@ export function countdownDays(dateStart: string | null, now: Date = new Date()):
   return Math.round((start - today) / 86_400_000);
 }
 
+// A closed-aware, past-aware countdown label: "settled" for closed weddings, "N
+// days ago" for past dates, "N days" ahead. `tw` is the `wedding` translator (no
+// next-intl import here — the caller passes it). Empty string when undated.
+export function countdownLabel(
+  dateStart: string | null,
+  phase: Phase,
+  tw: (k: string, v?: Record<string, string | number>) => string,
+): string {
+  if (phase === "closed") return tw("settled");
+  const d = countdownDays(dateStart);
+  if (d == null) return "";
+  return d >= 0 ? `${d} ${tw("days")}` : tw("daysAgo", { count: -d });
+}
+
+// Phase label without a bogus ordinal for the terminal state ("Closed", not
+// "Phase 4 · Closed").
+export function phaseLabel(phase: Phase, tp: (k: string, v?: Record<string, string | number>) => string): string {
+  if (phase === "closed") return tp("closed");
+  return `${tp("ordinal", { n: phaseOrdinal(phase) })} · ${tp(phase)}`;
+}
+
+// Run-of-show ordering rank (late-night aware). Pure logic lives in
+// run-of-show.mjs so the logic test can import it without a TS loader.
+export { runOfShowRank } from "./run-of-show.mjs";
+
 // 1-based day number of an event within the wedding's span.
 export function dayNumber(eventDate: string | null, dateStart: string | null): number | null {
   if (!eventDate || !dateStart) return null;

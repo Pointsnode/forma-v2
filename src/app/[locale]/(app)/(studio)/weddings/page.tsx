@@ -6,8 +6,11 @@ import {
   heroToneAt,
 } from "@/components/ui";
 import {
-  countdownDays, formatDateRange, formatMoney, phaseOrdinal, type Phase, type WeddingRow,
+  countdownDays, countdownLabel, formatDateRange, formatMoney, phaseLabel, type Phase, type WeddingRow,
 } from "@/lib/wedding";
+
+// Closed weddings get the near-ink "settling" hero (prototype).
+const CLOSED_TONE = "#1E1E1E";
 
 // Phase → badge tone: sage once the details/wedding are underway, sand while the
 // foundations are still forming.
@@ -58,13 +61,15 @@ export default async function WeddingsPage({ params }: { params: Promise<{ local
             return (
               <Link key={w.id} href={`/wedding/${w.id}`} className="group block">
                 <BentoCard
-                  tone={heroToneAt(i)}
+                  tone={w.phase === "closed" ? CLOSED_TONE : heroToneAt(i)}
                   heroLeft={location || tw("noDate")}
                   heroRight={
-                    days != null ? (
+                    w.phase === "closed" ? (
+                      <BentoBig size={16}>{tw("settled")}</BentoBig>
+                    ) : days != null && days >= 0 ? (
                       <BentoBig>{days}<span className="ml-1 font-sans text-[12px] opacity-80">{tw("days")}</span></BentoBig>
                     ) : (
-                      <BentoBig size={16}>{tp(w.phase)}</BentoBig>
+                      <BentoBig size={16}>{countdownLabel(w.date_start, w.phase, tw) || tp(w.phase)}</BentoBig>
                     )
                   }
                   className="transition-shadow group-hover:shadow-lift"
@@ -74,7 +79,7 @@ export default async function WeddingsPage({ params }: { params: Promise<{ local
                   </p>
                   <p className="mt-1 text-[12px] text-muted">{meta}</p>
                   <BentoFoot>
-                    <Badge tone={phaseTone(w.phase)}>{`${tp("ordinal", { n: phaseOrdinal(w.phase) })} · ${tp(w.phase)}`}</Badge>
+                    <Badge tone={phaseTone(w.phase)}>{phaseLabel(w.phase, tp)}</Badge>
                     <span className="ml-auto text-[11.5px] tracking-[0.03em] text-wine group-hover:underline group-hover:underline-offset-2">{tw("openWedding")} →</span>
                   </BentoFoot>
                 </BentoCard>

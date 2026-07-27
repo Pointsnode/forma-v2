@@ -17,8 +17,9 @@ export default async function WhatsNextTab({ params }: { params: Promise<{ local
   const { wedding, events, role } = ctx;
   const t = await getTranslations("ops");
 
+  const tg = await getTranslations("goals");
   const mesh = await loadGoalMesh(supabase, wedding, events);
-  const groups = computeGoals(mesh, id);
+  const groups = computeGoals(mesh, id, tg);
 
   return (
     <WeddingShell wedding={wedding} events={events} role={role} active="whatsnext">

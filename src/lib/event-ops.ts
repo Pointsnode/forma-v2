@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ScheduleItemVM, MenuVM, SeatingVM } from "@/components/wedding/event-ops";
+import { runOfShowRank } from "@/lib/wedding";
 
 export async function loadEventOps(supabase: SupabaseClient, weddingId: string, eventId: string): Promise<{ schedule: ScheduleItemVM[]; menus: MenuVM[]; seating: SeatingVM }> {
   const [{ data: sched }, { data: menuRows }, { data: choices }, { data: plan }, { data: confirmed }, { data: seatRows }] = await Promise.all([
@@ -13,6 +14,10 @@ export async function loadEventOps(supabase: SupabaseClient, weddingId: string, 
   ]);
 
   const schedule: ScheduleItemVM[] = (sched ?? []).map((s: { id: string; time: string | null; title: string; detail: string | null; done_at: string | null }) => ({ id: s.id, time: s.time, title: s.title, detail: s.detail, done: !!s.done_at }));
+  // Late-night semantics via runOfShowRank: a 00:30 send-off sorts AFTER the
+  // 22:00 reception, untimed items sink to the bottom. Stable sort keeps the DB
+  // `sort` tiebreak for items sharing a minute (or all untimed).
+  schedule.sort((a, b) => runOfShowRank(a.time) - runOfShowRank(b.time));
 
   const choiceCount = new Map<string, number>();
   for (const c of (choices ?? []) as { menu_choice_id: string }[]) choiceCount.set(c.menu_choice_id, (choiceCount.get(c.menu_choice_id) ?? 0) + 1);

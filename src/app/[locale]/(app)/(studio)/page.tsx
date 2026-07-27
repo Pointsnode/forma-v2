@@ -6,7 +6,7 @@ import {
 } from "@/components/ui";
 import { CreateWorkspaceForm } from "../workspace-forms";
 import { TouchLastSeen } from "./touch-last-seen";
-import { countdownDays, formatMoney, initials, phaseOrdinal, PHASE_ORDER, type Phase, type WeddingRow } from "@/lib/wedding";
+import { countdownLabel, formatMoney, initials, phaseLabel, PHASE_ORDER, type Phase, type WeddingRow } from "@/lib/wedding";
 import { loadCockpit } from "@/lib/cockpit";
 import { loadMoneyRadar } from "@/lib/money";
 
@@ -173,14 +173,14 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
             <p className="py-6 text-center font-accent text-[16px] text-muted">{t("empty")}</p>
           ) : (
             weddings.map((w) => {
-              const days = countdownDays(w.date_start);
+              const cd = countdownLabel(w.date_start, w.phase, tw);
               return (
                 <Link key={w.id} href={`/wedding/${w.id}`} className="block">
                   <Row className="-mx-2 rounded-xl px-2 hover:bg-bone">
                     <Monogram initials={initials(w.couple_display)} size={34} />
                     <RowMain
                       title={<span className="inline-flex items-center gap-2 font-display text-[16px] font-normal">{w.couple_display} <PhaseDots phase={w.phase} /></span>}
-                      detail={`${tp("ordinal", { n: phaseOrdinal(w.phase) })} · ${tp(w.phase)}${days != null ? ` · ${days} ${tw("days")}` : ""}`}
+                      detail={`${phaseLabel(w.phase, tp)}${cd ? ` · ${cd}` : ""}`}
                     />
                   </Row>
                 </Link>

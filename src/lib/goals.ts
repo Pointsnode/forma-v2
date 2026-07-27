@@ -60,30 +60,32 @@ export async function loadGoalMesh(supabase: SupabaseClient, wedding: WeddingRow
 
 const GKEYS = { date: "set_date", venue: "lock_venue", budget: "set_budget", team: "book_team", guestsIn: "guest_list_in", invites: "invitations_out", rsvps: "rsvps_in", menus: "menus_defined", seating: "seating_started", ros: "run_of_show", contracts: "contracts_signed" } as const;
 
-export function computeGoals(m: Mesh, id: string): GoalPhaseGroup[] {
+type GoalT = (k: string, v?: Record<string, string | number>) => string;
+
+export function computeGoals(m: Mesh, id: string, t: GoalT): GoalPhaseGroup[] {
   const dated = m.events.filter((e) => e.event_date).length;
   const g = (key: string, phase: GoalPhase, title: string, done: boolean, detail: string | null, subs: SubChip[] = [], link?: Goal["link"], overridable = false): Goal => {
     const o = m.overrides.get(key) ?? null;
     return { key, phase, title, done: done || o?.status === "manual_done", detail, subs, link, overridable, override: o?.status ?? null, overrideNote: o?.note ?? null };
   };
-  const evLink = (tab: string, label: string) => ({ href: `/wedding/${id}/guests`, label }) as Goal["link"];
+  const evLink = (label: string) => ({ href: `/wedding/${id}/guests`, label }) as Goal["link"];
 
   const goals: Goal[] = [
-    g(GKEYS.date, "foundations", "Set the date", dated > 0 && dated === m.events.length, m.events.length ? `${dated} of ${m.events.length} events dated` : null, m.events.map((e) => ({ label: e.label, done: !!e.event_date }))),
-    g(GKEYS.venue, "foundations", "Lock the venue", m.bookedKinds.has("venue"), m.bookedKinds.has("venue") ? "Venue booked" : "No venue booked yet", [], { href: `/wedding/${id}/vendors`, label: "Vendors →" }),
-    g(GKEYS.budget, "foundations", "Set the budget", Number(m.wedding.budget_total ?? 0) > 0, Number(m.wedding.budget_total ?? 0) > 0 ? "Detected from the ledger" : "Not set", [], { href: `/wedding/${id}/budget`, label: "Budget →" }),
-    g(GKEYS.team, "details", "The team", m.bookedCount >= 4, `${m.bookedCount} of ${m.engCount || "—"} booked`, [...m.bookedKinds].map((k) => ({ label: k, done: true })), { href: `/wedding/${id}/vendors`, label: "Vendors →" }),
-    g(GKEYS.guestsIn, "details", "Guest list in", m.guests.invited > 0, m.guests.invited > 0 ? `${m.guests.invited} uploaded` : "No list yet", [], evLink("guests", "Guest list →")),
-    g(GKEYS.invites, "details", "Invitations out", m.invitesSent, m.invitesSent ? "RSVP touchpoint sent" : "Not sent", [], evLink("guests", "Guest list →")),
-    g(GKEYS.rsvps, "details", "RSVPs in", m.guests.invited > 0 && m.guests.answered >= m.guests.invited, m.guests.invited ? `${m.guests.answered} of ${m.guests.invited}` : null, [], evLink("guests", "Guest list →")),
-    g(GKEYS.menus, "details", "Menus defined", m.events.length > 0 && m.events.every((e) => m.menusByEvent.get(e.id)?.hasOptions), null, m.events.map((e) => ({ label: e.label, done: !!m.menusByEvent.get(e.id)?.hasOptions }))),
-    g(GKEYS.ros, "details", "Run of show drafted", m.events.length > 0 && m.events.every((e) => (m.scheduleByEvent.get(e.id) ?? 0) > 0), null, m.events.map((e) => ({ label: e.label, done: (m.scheduleByEvent.get(e.id) ?? 0) > 0 }))),
-    g(GKEYS.contracts, "details", "Contracts signed", m.contractsTotal > 0 && m.contractsSigned === m.contractsTotal, m.contractsTotal ? `${m.contractsSigned} of ${m.contractsTotal}` : null, [], { href: `/wedding/${id}/contracts`, label: "Contracts →" }),
-    g(GKEYS.seating, "details", "Seating started", false, "Opens as RSVPs land", [], undefined, true),
+    g(GKEYS.date, "foundations", t("setDate"), dated > 0 && dated === m.events.length, m.events.length ? t("datedOf", { done: dated, total: m.events.length }) : null, m.events.map((e) => ({ label: e.label, done: !!e.event_date }))),
+    g(GKEYS.venue, "foundations", t("lockVenue"), m.bookedKinds.has("venue"), m.bookedKinds.has("venue") ? t("venueBooked") : t("venueNone"), [], { href: `/wedding/${id}/vendors`, label: t("linkVendors") }),
+    g(GKEYS.budget, "foundations", t("setBudget"), Number(m.wedding.budget_total ?? 0) > 0, Number(m.wedding.budget_total ?? 0) > 0 ? t("budgetDetected") : t("budgetNone"), [], { href: `/wedding/${id}/budget`, label: t("linkBudget") }),
+    g(GKEYS.team, "details", t("team"), m.bookedCount >= 4, t("teamBooked", { done: m.bookedCount, total: m.engCount || "—" }), [...m.bookedKinds].map((k) => ({ label: k, done: true })), { href: `/wedding/${id}/vendors`, label: t("linkVendors") }),
+    g(GKEYS.guestsIn, "details", t("guestsIn"), m.guests.invited > 0, m.guests.invited > 0 ? t("guestsUploaded", { count: m.guests.invited }) : t("guestsNone"), [], evLink(t("linkGuests"))),
+    g(GKEYS.invites, "details", t("invites"), m.invitesSent, m.invitesSent ? t("invitesSent") : t("invitesNone"), [], evLink(t("linkGuests"))),
+    g(GKEYS.rsvps, "details", t("rsvps"), m.guests.invited > 0 && m.guests.answered >= m.guests.invited, m.guests.invited ? t("countOf", { done: m.guests.answered, total: m.guests.invited }) : null, [], evLink(t("linkGuests"))),
+    g(GKEYS.menus, "details", t("menus"), m.events.length > 0 && m.events.every((e) => m.menusByEvent.get(e.id)?.hasOptions), null, m.events.map((e) => ({ label: e.label, done: !!m.menusByEvent.get(e.id)?.hasOptions }))),
+    g(GKEYS.ros, "details", t("ros"), m.events.length > 0 && m.events.every((e) => (m.scheduleByEvent.get(e.id) ?? 0) > 0), null, m.events.map((e) => ({ label: e.label, done: (m.scheduleByEvent.get(e.id) ?? 0) > 0 }))),
+    g(GKEYS.contracts, "details", t("contracts"), m.contractsTotal > 0 && m.contractsSigned === m.contractsTotal, m.contractsTotal ? t("countOf", { done: m.contractsSigned, total: m.contractsTotal }) : null, [], { href: `/wedding/${id}/contracts`, label: t("linkContracts") }),
+    g(GKEYS.seating, "details", t("seating"), false, t("seatingHint"), [], undefined, true),
   ];
 
   const phases: { phase: GoalPhase; title: string }[] = [
-    { phase: "foundations", title: "Foundations" }, { phase: "details", title: "The details" }, { phase: "wedding_days", title: "The wedding days" },
+    { phase: "foundations", title: t("phaseFoundations") }, { phase: "details", title: t("phaseDetails") }, { phase: "wedding_days", title: t("phaseWeddingDays") },
   ];
   const curIdx = PHASE_ORDER.indexOf(m.wedding.phase === "closed" ? "wedding_days" : (m.wedding.phase as Phase));
   return phases.map((p) => {
