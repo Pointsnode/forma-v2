@@ -193,6 +193,24 @@ do $$ begin
     raise exception 'TEST FAIL: list_imported summary should carry only the count'; end if;
 end $$;
 
+-- ── (9) Anon-executability matrix: grants closed by default (§11) ────────────
+-- The ONLY functions anon may execute are the three guest RSVP entry points, in
+-- both private and public. Any other anon-executable function — a forgotten revoke
+-- — fails here instead of reaching the gate.
+reset role;
+do $$
+declare leaked text;
+begin
+  select string_agg(n.nspname || '.' || p.proname, ', ' order by n.nspname, p.proname) into leaked
+  from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname in ('private','public')
+    and has_function_privilege('anon', p.oid, 'EXECUTE')
+    and p.proname not in ('rsvp_lookup','rsvp_submit','touchpoint_open');
+  if leaked is not null then
+    raise exception 'TEST FAIL: anon can execute non-RSVP function(s): %', leaked;
+  end if;
+end $$;
+
 reset role;
 select 'people: ALL TESTS PASSED' as result;
 

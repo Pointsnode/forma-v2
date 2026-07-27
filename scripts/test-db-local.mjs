@@ -43,8 +43,13 @@ const GRANTS = `
 grant select, insert, update, delete on all tables in schema public to authenticated, service_role;
 grant select on all tables in schema public to anon;
 grant usage, select on all sequences in schema public to authenticated, service_role;
-grant execute on all functions in schema public to anon, authenticated, service_role;
+grant execute on all functions in schema public to authenticated, service_role;
 `;
+// NB: no blanket EXECUTE grant to anon on public functions. anon's function access
+// must come only from a migration's explicit grant (the 3 rsvp wrappers) — a broad
+// grant here would mask a missing/forgotten revoke, exactly as the private over-grant
+// did before 0004. anon still holds Postgres's PUBLIC default until a migration
+// revokes it, so the anon-executability matrix test reflects the real ACL.
 
 const migrations = readdirSync(migDir).filter((f) => f.endsWith(".sql")).sort();
 const tests = readdirSync(testDir).filter((f) => f.endsWith(".sql") && !f.startsWith("_")).sort();

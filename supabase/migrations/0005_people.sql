@@ -386,10 +386,32 @@ revoke execute on function
 grant execute on function
   private.rsvp_lookup(text), private.rsvp_submit(text, jsonb), private.touchpoint_open(text)
   to anon, authenticated;
+-- log_guest_import is authenticated-only (staff/couple). Close the PUBLIC default
+-- EXECUTE on both the private fn and its public wrapper (§11: grants closed by
+-- default, the internal auth check is second-line, not the gate).
+revoke execute on function private.log_guest_import(uuid, int) from public, anon;
+revoke execute on function public.log_guest_import(uuid, int) from public, anon;
 grant execute on function private.log_guest_import(uuid, int) to authenticated;
+grant execute on function public.log_guest_import(uuid, int) to authenticated;
 grant execute on function
   public.rsvp_lookup(text), public.rsvp_submit(text, jsonb), public.touchpoint_open(text)
   to anon, authenticated;
 -- The cron audience builder is service-role only.
 revoke execute on function public.build_touchpoint_sends(uuid) from public, anon, authenticated;
 grant execute on function public.build_touchpoint_sends(uuid) to service_role;
+
+-- Close anon EXECUTE on every privileged PUBLIC wrapper carried from M2 — 0003's
+-- `revoke … from anon` did not remove the PUBLIC-default grant (that requires
+-- `from public`), so anon could invoke them (the private hop still denied — but
+-- grants-closed-by-default is the contract, §11). Only the guest RSVP wrappers
+-- stay anon-callable. Belt: `, anon` clears any direct grant too.
+revoke execute on function
+  public.send_proposal(uuid), public.mark_proposal_seen(uuid),
+  public.respond_to_proposal(uuid, text, text), public.withdraw_proposal(uuid),
+  public.post_proposal_message(uuid, text), public.accept_wedding_invite(text)
+  from public, anon;
+grant execute on function
+  public.send_proposal(uuid), public.mark_proposal_seen(uuid),
+  public.respond_to_proposal(uuid, text, text), public.withdraw_proposal(uuid),
+  public.post_proposal_message(uuid, text), public.accept_wedding_invite(text)
+  to authenticated;
