@@ -6,6 +6,8 @@ import { loadWeddingContext } from "@/lib/load-wedding";
 import { WeddingShell } from "@/components/wedding/wedding-shell";
 import { EventEditor } from "@/components/wedding/event-forms";
 import { EventPruning } from "@/components/guests/event-pruning";
+import { ScheduleCard, MenusCard, SeatingCard } from "@/components/wedding/event-ops";
+import { loadEventOps } from "@/lib/event-ops";
 import { Card, Heading, StatRow, Stat } from "@/components/ui";
 import { dayNumber, formatTime, formatMoney } from "@/lib/wedding";
 
@@ -46,6 +48,9 @@ export default async function EventPage({
 
   const { data: sliceRow } = await supabase.from("event_money_slice").select("total").eq("wedding_id", id).eq("event_id", event.id).maybeSingle();
   const slice = sliceRow ? formatMoney((sliceRow as { total: number }).total, lang) : null;
+
+  const ops = await loadEventOps(supabase, id, event.id);
+  const live = wedding.phase === "wedding_days";
 
   const { data: egData } = await supabase
     .from("event_guests")
@@ -95,6 +100,10 @@ export default async function EventPage({
             <p className="font-accent text-[15px] text-muted">{teng("noVenueYet")}</p>
           )}
         </Card>
+
+        <ScheduleCard weddingId={id} eventId={event.id} items={ops.schedule} live={live} />
+        <MenusCard weddingId={id} eventId={event.id} menus={ops.menus} />
+        <SeatingCard weddingId={id} eventId={event.id} seating={ops.seating} />
 
         {role === "staff" ? (
           <Card><EventEditor weddingId={wedding.id} event={event} multi /></Card>

@@ -111,6 +111,47 @@ export async function toggleTask(taskId: string, done: boolean): Promise<OpsResu
   const { error } = await supabase.from("tasks").update({ done_at: done ? new Date().toISOString() : null }).eq("id", taskId);
   if (error) return { error: "generic" }; rv(); return { ok: true };
 }
+// ── documents + design (storage-backed) ─────────────────────────────────────
+async function uploadTo(bucket: string, weddingId: string, file: File): Promise<{ path?: string; error?: string }> {
+  const supabase = await createClient();
+  const ext = (file.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const path = `${weddingId}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from(bucket).upload(path, file, { contentType: file.type });
+  if (error) { console.error(`upload ${bucket}: ${error.message}`); return { error: "generic" }; }
+  return { path };
+}
+export async function uploadDocument(weddingId: string, form: FormData): Promise<OpsResult> {
+  const supabase = await createClient();
+  const file = form.get("file");
+  const title = String(form.get("title") ?? "").trim();
+  if (!(file instanceof File) || file.size === 0 || !title) return { error: "invalid" };
+  if (file.size > 20 * 1024 * 1024) return { error: "toobig" };
+  const up = await uploadTo("wedding-docs", weddingId, file);
+  if (up.error || !up.path) return { error: "generic" };
+  const { error } = await supabase.from("documents").insert({ wedding_id: weddingId, title, source: "upload", storage_path: up.path });
+  if (error) return { error: error.code || "generic" }; rv(); return { ok: true };
+}
+export async function addDesignBoard(weddingId: string, title: string): Promise<OpsResult> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("design_boards").insert({ wedding_id: weddingId, title: title.trim() || "Board" }).select("id").single();
+  if (error || !data) return { error: "generic" }; rv(); return { ok: true, id: data.id };
+}
+export async function addDesignItem(boardId: string, weddingId: string, form: FormData): Promise<OpsResult> {
+  const supabase = await createClient();
+  const title = String(form.get("title") ?? "").trim();
+  if (!title) return { error: "invalid" };
+  let path: string | null = null;
+  const file = form.get("file");
+  if (file instanceof File && file.size > 0) {
+    if (file.size > 20 * 1024 * 1024) return { error: "toobig" };
+    const up = await uploadTo("design-media", weddingId, file);
+    if (up.error) return { error: "generic" };
+    path = up.path ?? null;
+  }
+  const { error } = await supabase.from("design_items").insert({ board_id: boardId, wedding_id: weddingId, title, note: txt(form.get("note")), storage_path: path });
+  if (error) return { error: error.code || "generic" }; rv(); return { ok: true };
+}
+
 export async function setGoalOverride(weddingId: string, goalKey: string, status: "manual_done" | "dismissed" | null, note: string): Promise<OpsResult> {
   const supabase = await createClient();
   if (status === null) {
