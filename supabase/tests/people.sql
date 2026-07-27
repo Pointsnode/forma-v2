@@ -60,12 +60,11 @@ update public.event_guests set invited = false
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"11111111-0000-0000-0000-000000000001","role":"authenticated"}';
 do $$ begin
-  begin perform private.advance_wedding_phase('cccccccc-0000-0000-0000-0000000000c1');
-    raise exception 'TEST FAIL: an internal private helper was executable by authenticated (0004 revoke not biting)';
-  exception when insufficient_privilege then null; end;
-  -- and this migration's own new internal helper is explicitly revoked too
+  -- an internal helper is not executable by a signed-in user (0005's explicit revoke
+  -- biting). (advance_wedding_phase became staff-callable in M4, so seed_touchpoints_for
+  -- is the stable internal probe here.)
   begin perform private.seed_touchpoints_for('cccccccc-0000-0000-0000-0000000000c1');
-    raise exception 'TEST FAIL: seed_touchpoints_for executable by authenticated (0005 explicit revoke missing)';
+    raise exception 'TEST FAIL: seed_touchpoints_for executable by authenticated (explicit revoke missing)';
   exception when insufficient_privilege then null; end;
 end $$;
 

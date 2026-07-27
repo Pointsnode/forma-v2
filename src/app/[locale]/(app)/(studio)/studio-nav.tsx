@@ -9,10 +9,13 @@ import { cx } from "@/components/ui";
 // render nothing for them rather than a dead stub (absent, not fake).
 export function StudioNav() {
   const t = useTranslations("studio");
+  const tv = useTranslations("vendors");
   const path = usePathname();
-  const items: { href: "/" | "/weddings"; label: string }[] = [
+  const items: { href: "/" | "/weddings" | "/venues" | "/vendors"; label: string }[] = [
     { href: "/", label: t("overview") },
     { href: "/weddings", label: t("weddings") },
+    { href: "/venues", label: tv("venues") },
+    { href: "/vendors", label: tv("vendors") },
   ];
   return (
     <nav className="flex items-center gap-7 pb-3 text-[14px] [box-shadow:inset_0_-1px_0_var(--color-hairline)]">
