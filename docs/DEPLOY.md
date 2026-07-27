@@ -12,11 +12,17 @@ Set in Vercel (Production + Preview) and in a local `.env.local`:
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project → Settings → API → Project URL | yes (public) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → API → Project API keys → `anon` `public` | yes (public) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → API → `service_role` `secret` | **no — server only** (M3 touchpoint cron) |
+| `RESEND_API_KEY` | Resend → API Keys (domain `forma.events` verified) | **no — server only** (M3 email) |
+| `CRON_SECRET` | any long random string; Vercel sends it as `Authorization: Bearer …` to the cron | **no — server only** (M3 cron auth) |
 
-The **service-role key is NOT used in M0** and must never be added as a
-`NEXT_PUBLIC_*` var. When a later milestone needs it, it goes in a **non-public**
-`SUPABASE_SERVICE_ROLE_KEY` env, read only in allowlisted server modules
-(enforced by `scripts/check-service-role.mjs`).
+**Server-only means server-only.** `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`,
+and `CRON_SECRET` must never be added as `NEXT_PUBLIC_*` vars — `scripts/check-public-env.mjs`
+fails the build on any `NEXT_PUBLIC_*RESEND*` / `*CRON*` / `*SERVICE_ROLE*`, and the
+service-role client is confined to allowlisted modules by `scripts/check-service-role.mjs`.
+The touchpoint cron (`vercel.json` → `/api/touchpoints/run`, daily 14:00 UTC) is a
+no-op until `RESEND_API_KEY` + `CRON_SECRET` are set — sending is skipped gracefully,
+so a missing key is not a build failure.
 
 ## Staging database
 `forma-v2-staging` (`mnmiazaclhyxotodjrsx`, us-east-2). Migration `0001_foundations`

@@ -19,6 +19,8 @@ export type WeddingRow = {
   date_end: string | null;
   guest_target: number | null;
   budget_total: string | number | null;
+  rsvp_deadline?: string | null;
+  rsvp_open?: boolean | null;
 };
 
 export type EventRow = {

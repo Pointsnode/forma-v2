@@ -128,6 +128,12 @@ touchpoint_sends  touchpoint_id → touchpoints (CASCADE) · guest_id + wedding_
 - Rollups (guest tab progress board, event bars) are **views**, not stored counters: `guest_rsvp_rollup`, `event_guest_counts`. Nothing to drift.
 - Exceptions surface = view: guests with bounced/absent email, missing +1 names, unanswerable sends.
 
+### §1B amendment (M3) — deferred columns + touchpoint kinds
+`event_guests.menu_choice_id` (→ `menu_options`) and `seat_ref` (→ `seats`) reference M6 tables — they arrive **with those tables** in M6's migration (additive, widening), the same pattern as the proposal subject FKs. `event_guests` in 0005 is `PK (event_id, guest_id)` with the two composite FKs, `invited`, `rsvp_status`, `rsvp_responded_at`. The `touchpoint_kind` enum ships **complete** (all seven), but M3's engine schedules and sends only `rsvp_invite` / `rsvp_reminder` / `rsvp_close`; the rest become sendable when their content exists (menus/schedules, M6) — absent, not fake.
+
+### §1C amendment (M3) — RSVP controls live on the wedding
+`weddings` gains `rsvp_deadline date NULL` and `rsvp_open boolean NOT NULL default false` (0005). Staff set both from the guest tab; `rsvp_submit` refuses when closed (FM011) or past deadline (FM012). Setting `rsvp_deadline` seeds the touchpoint timeline idempotently (invite / reminder@−14d / close@deadline). The public RSVP surface is anon: `grant usage on schema private to anon` + EXECUTE on the two rsvp wrappers to anon (the guest is anonymous — the anon path IS the production path). The cron's `build_touchpoint_sends` is `service_role`-only.
+
 ## 5. Partners — catalog, presenting, engagements (M4 — 0005)
 
 ```
@@ -234,10 +240,12 @@ One function per transition in `private`, each writing `activity`. The phase lin
 
 ```
 0001 M0 identity/tenancy      0002 M1 weddings+events+phase fns
-0003 M2 loop                  0004 M3 guests+touchpoints+RSVP RPCs
-0005 M4 catalog+presenting    0006 M5 ledger+contracts suite
-0007 M6 operations
+0003 M2 loop                  0004 (out-of-band) private-schema grants sev-fix
+0005 M3 people (guests+touchpoints+RSVP)   0006 M4 catalog+presenting
+0007 M5 ledger+contracts suite             0008 M6 operations
 ```
+
+*§1A renumber (M3):* `0004` became the private-grants sev-fix, so every product milestone shifts up one from M3 on. **Every migration adding a `private` function must EXPLICITLY revoke EXECUTE on its internal helpers from public/anon/authenticated** — 0004's `ALTER DEFAULT PRIVILEGES` does not reliably close functions created in a later migration (the default-privilege role context differs), so it is a backstop, not the guard.
 
 Every migration PR must ship, and I gate on:
 1. **Cross-wedding rejection tests** — for every composite FK, a hermetic test that inserts wedding A's child pointing at wedding B's parent and asserts the FK (not a trigger, not app code) rejects it.
