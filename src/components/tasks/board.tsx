@@ -115,7 +115,7 @@ export function TaskBoard({ board: board0, master = false, weddingId, workspaceI
                 {cards.map((card) => (
                   <TaskChip key={card.id} card={card} col={col} master={master} t={t}
                     onOpen={() => router.push(card.href)} onEdit={() => setSheet({ mode: "edit", task: card })}
-                    onComplete={() => move(card.id, "completed")} onMove={(to) => move(card.id, to)}
+                    onComplete={() => move(card.id, "completed")} onReopen={() => move(card.id, "pending")}
                     onFlag={(on) => flag(card.id, on)} onDragStart={() => setDragId(card.id)} />
                 ))}
                 {cards.length === 0 ? <p className="px-1 py-2 text-[12px] text-muted">{urgFilter.size || wedFilter.size ? t("noneMatch") : t("colEmpty")}</p> : null}
@@ -133,48 +133,46 @@ export function TaskBoard({ board: board0, master = false, weddingId, workspaceI
   );
 }
 
-function TaskChip({ card, col, master, t, onOpen, onEdit, onComplete, onMove, onFlag, onDragStart }: {
+function TaskChip({ card, col, master, t, onOpen, onEdit, onComplete, onReopen, onFlag, onDragStart }: {
   card: TaskCardVM; col: Col; master: boolean; t: ReturnType<typeof useTranslations>;
-  onOpen: () => void; onEdit: () => void; onComplete: () => void; onMove: (to: Col) => void; onFlag: (on: boolean) => void; onDragStart: () => void;
+  onOpen: () => void; onEdit: () => void; onComplete: () => void; onReopen: () => void; onFlag: (on: boolean) => void; onDragStart: () => void;
 }) {
-  const [menu, setMenu] = useState(false);
   const done = card.status === "completed";
   return (
     <div draggable onDragStart={onDragStart}
-      className="group relative flex items-stretch gap-2 overflow-hidden rounded-xl bg-bone pr-1.5 shadow-card hover:shadow-lift">
+      className="flex items-stretch gap-2 overflow-hidden rounded-xl bg-bone shadow-card hover:shadow-lift">
       <div className={cx("w-[3px] shrink-0", RAIL[col])} />
-      <div className="min-w-0 flex-1 py-2">
-        <button onClick={onOpen} className="flex w-full items-center gap-1.5 text-left" title={card.title}>
-          {card.flagged && !done ? <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-wine" title={t("flagged")} /> : null}
-          <span className="truncate text-[13.5px] text-ink">{card.title}</span>
+      <div className="min-w-0 flex-1">
+        {/* body — clicking navigates to the linked place (§1E) */}
+        <button onClick={onOpen} className="block w-full px-1.5 pt-2 text-left" title={card.title}>
+          <span className="flex items-start gap-1.5">
+            {card.flagged && !done ? <span aria-hidden className="mt-[3px] h-2.5 w-2.5 shrink-0 rounded-[2px] bg-wine" title={t("flagged")} /> : null}
+            <span className="line-clamp-2 text-[13.5px] leading-snug text-ink">{card.title}</span>
+          </span>
+          <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            {master && card.weddingInitials ? <span className="rounded bg-paper px-1.5 py-[3px] text-[11px] font-medium uppercase tracking-[0.05em] text-muted">{card.weddingInitials}</span> : null}
+            {card.eventLabel ? <span className="rounded bg-paper px-1.5 py-[3px] text-[11px] text-taupe">{card.eventLabel}</span> : null}
+            <AssigneeChip card={card} />
+            <DuePill card={card} t={t} />
+          </span>
         </button>
-        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-          {master && card.weddingInitials ? <span className="rounded bg-paper px-1.5 py-[3px] text-[11px] font-medium uppercase tracking-[0.05em] text-muted">{card.weddingInitials}</span> : null}
-          {card.eventLabel ? <span className="rounded bg-paper px-1.5 py-[3px] text-[11px] text-taupe">{card.eventLabel}</span> : null}
-          <AssigneeChip card={card} />
-          <DuePill card={card} t={t} />
+        {/* footer — explicit, always-visible, labeled actions (separated so a thumb can't misfire onto the body) */}
+        <div className="mt-2 flex items-stretch gap-1 border-t border-hairline px-1 py-1">
+          <ActionBtn onClick={done ? onReopen : onComplete} icon={done ? "↩" : "✓"} label={done ? t("btnReopen") : t("btnDone")} tone={done ? "muted" : "sage"} />
+          <ActionBtn onClick={() => onFlag(!card.flagged)} icon="⚑" label={t("btnFlag")} tone={card.flagged ? "wine" : "muted"} active={card.flagged} />
+          <ActionBtn onClick={onEdit} icon="✎" label={t("btnEdit")} tone="muted" />
         </div>
       </div>
-      <div className="flex flex-col items-center justify-between py-1.5">
-        <div className="flex items-center gap-0.5">
-          <button onClick={onEdit} title={t("edit")} className="flex h-6 w-6 items-center justify-center rounded-lg text-[13px] text-taupe hover:bg-paper hover:text-ink">✎</button>
-          <button onClick={() => setMenu((m) => !m)} title={t("moveTo")} className="flex h-6 w-6 items-center justify-center rounded-lg text-[15px] leading-none text-taupe hover:bg-paper hover:text-ink">⋯</button>
-        </div>
-        <button onClick={onComplete} title={t("markDone")}
-          className={cx("flex h-6 w-6 items-center justify-center rounded-full border-2 text-[12px] transition-colors", done ? "border-sage bg-sage-soft text-sage-ink" : "border-hairline text-transparent hover:border-sage hover:bg-sage-soft hover:text-sage-ink")}>✓</button>
-      </div>
-      {menu ? (
-        <>
-          <button className="fixed inset-0 z-40 cursor-default" onClick={() => setMenu(false)} aria-hidden />
-          <div className="absolute right-2 top-8 z-50 flex flex-col overflow-hidden rounded-xl bg-paper py-1 shadow-lift">
-            <button onClick={() => { setMenu(false); onFlag(!card.flagged); }} className="px-3 py-1.5 text-left text-[12.5px] text-wine hover:bg-bone">{card.flagged ? t("unflag") : t("flag")}</button>
-            {COLUMNS.filter((c) => c !== col).map((c) => (
-              <button key={c} onClick={() => { setMenu(false); onMove(c); }} className="px-3 py-1.5 text-left text-[12.5px] text-ink hover:bg-bone">{t("moveToCol", { col: t(`col_${c}`) })}</button>
-            ))}
-          </div>
-        </>
-      ) : null}
     </div>
+  );
+}
+
+function ActionBtn({ onClick, icon, label, tone, active = false }: { onClick: () => void; icon: string; label: string; tone: "sage" | "wine" | "muted"; active?: boolean }) {
+  const cls = tone === "sage" ? "text-sage-ink hover:bg-sage-soft" : tone === "wine" ? "text-wine hover:bg-wine-soft" : "text-taupe hover:bg-paper hover:text-ink";
+  return (
+    <button onClick={onClick} className={cx("flex min-h-[40px] flex-1 items-center justify-center gap-1 rounded-lg text-[12px] font-medium sm:min-h-[34px]", cls, active && "bg-wine-soft")}>
+      <span aria-hidden className="text-[12.5px] leading-none">{icon}</span>{label}
+    </button>
   );
 }
 
