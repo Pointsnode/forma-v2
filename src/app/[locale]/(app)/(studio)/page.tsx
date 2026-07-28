@@ -124,10 +124,10 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
               <p className="py-4 text-center font-accent text-[15px] text-muted">{tc("chaseEmpty")}</p>
             ) : (
               chase.map((c) => (
-                <Link key={c.proposalId} href={`/wedding/${c.weddingId}/proposals`} className="block">
+                <Link key={c.id} href={c.href} className="block">
                   <Row className="-mx-2 rounded-xl px-2 hover:bg-bone">
                     <Monogram initials={c.tag || "·"} size={28} />
-                    <RowMain title={c.title} />
+                    <RowMain title={c.title} detail={c.kind === "task" ? tc("chaseTask") : undefined} />
                     <span className={cx("shrink-0 rounded-full px-2.5 py-[3px] text-[11px] font-medium", c.ageDays >= 7 ? "bg-wine-soft text-wine" : "bg-sand-soft text-taupe")}>
                       {tc("ageDays", { days: c.ageDays })}
                     </span>

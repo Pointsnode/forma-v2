@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cx } from "./cn";
 import { signOut } from "@/app/[locale]/(auth)/actions";
+import { QuickAddTask } from "@/components/tasks/quick-add";
 
 export type SwitcherWedding = { id: string; initials: string; name: string; meta: string; tone: string };
 
@@ -15,10 +16,12 @@ export function TopBar({
   workspaceName,
   weddings,
   monogram,
+  workspaceId,
 }: {
   workspaceName: string | null;
   weddings: SwitcherWedding[];
   monogram: string;
+  workspaceId?: string | null;
 }) {
   const t = useTranslations("app");
   const ts = useTranslations("studio");
@@ -45,6 +48,10 @@ export function TopBar({
       ) : null}
 
       <div className="flex-1" />
+
+      {workspaceId ? (
+        <QuickAddTask weddings={weddings.map((w) => ({ id: w.id, name: w.name }))} workspaceId={workspaceId} defaultWeddingId={activeId ?? undefined} />
+      ) : null}
 
       <div className="relative">
         <button

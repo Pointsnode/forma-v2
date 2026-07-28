@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button, cx } from "@/components/ui";
 import { statusClass, courtClass, type ViewProposal } from "@/lib/loop-view";
 import { sendProposal, withdrawProposal, postMessage } from "@/app/[locale]/(app)/wedding/[id]/loop-actions";
+import { QuickAddTask } from "@/components/tasks/quick-add";
 
 function initials(title: string) {
   return title.trim()[0]?.toUpperCase() ?? "•";
@@ -98,6 +99,9 @@ export function ProposalCard({ weddingId, p }: { weddingId: string; p: ViewPropo
               {err ? <p className="text-[13px] text-wine">{err}</p> : null}
             </div>
           ) : null}
+          <div className="mt-3 flex justify-end border-t border-hairline pt-2.5">
+            <QuickAddTask weddings={[]} workspaceId="" defaultWeddingId={weddingId} prelink={{ kind: "proposal", id: p.id, label: p.title }} variant="inline" />
+          </div>
         </div>
       ) : null}
     </div>

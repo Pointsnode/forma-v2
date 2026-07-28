@@ -11,6 +11,7 @@ import { ProposalCard } from "@/components/loop/proposal-card";
 import { NewProposal } from "@/components/loop/new-proposal";
 import { MembersInvites } from "@/components/loop/members-invites";
 import { DecisionInbox } from "@/components/loop/decision-inbox";
+import { CoupleTasks } from "@/components/tasks/couple-tasks";
 import {
   Card, Pill, StatRow, Stat, SectionTitle, GateCard, GateRow,
 } from "@/components/ui";
@@ -148,6 +149,9 @@ async function CoupleLens({
   const days = countdownDays(wedding.date_start);
   const location = [wedding.location_city, wedding.location_country].filter(Boolean).join(", ");
 
+  const { data: coupleTaskRows } = await supabase.from("tasks").select("id, title, note, due_date, status, flagged").eq("wedding_id", weddingId).order("due_date", { ascending: true, nullsFirst: false });
+  const coupleTasks = (coupleTaskRows ?? []) as { id: string; title: string; note: string | null; due_date: string | null; status: string; flagged: boolean }[];
+
   const { data: partnerRows } = await supabase.rpc("wedding_partners", { w: weddingId });
   const partners = (partnerRows ?? []) as { engagement_id: string; status: string; vendor_name: string; vendor_kind: string; description: string | null; photos: { path: string }[] }[];
   const photoUrls = await signedUrlMap(supabase, partners.flatMap((p) => (p.photos ?? []).map((ph) => ph.path)));
@@ -165,6 +169,8 @@ async function CoupleLens({
       <div className="mt-[18px]">
         <DecisionInbox weddingId={weddingId} inCourt={inCourt} settled={settled} />
       </div>
+
+      <CoupleTasks tasks={coupleTasks} />
 
       {partners.length ? (
         <>
