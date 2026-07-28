@@ -414,12 +414,22 @@
     "markDone": "Mark done",
     "moveTo": "Move",
     "moveToCol": "Move to {col}",
+    "flag": "Flag urgent",
+    "unflag": "Remove flag",
+    "flagged": "Urgent",
+    "markUrgent": "Flag as urgent",
+    "filter_flagged": "Flagged",
+    "filter_overdue": "Overdue",
+    "filter_today": "Due today",
+    "noneMatch": "Nothing matches",
     "overdueDays": "{days}d",
     "dueToday": "Today",
     "dueOn": "Due {date}",
     "yourTasks": "Your tasks",
     "yourTasksHint": "what the planner needs from you",
-    "yourTasksEmpty": "Nothing on your plate — all caught up."
+    "yourTasksEmpty": "Nothing on your plate — all caught up.",
+    "linked": "Linked",
+    "unlink": "Remove link"
   },
   "guests": {
     "tab": "Guest list",

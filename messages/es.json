@@ -414,12 +414,22 @@
     "markDone": "Marcar hecho",
     "moveTo": "Mover",
     "moveToCol": "Mover a {col}",
+    "flag": "Marcar urgente",
+    "unflag": "Quitar marca",
+    "flagged": "Urgente",
+    "markUrgent": "Marcar como urgente",
+    "filter_flagged": "Marcadas",
+    "filter_overdue": "Vencidas",
+    "filter_today": "Vence hoy",
+    "noneMatch": "Nada coincide",
     "overdueDays": "{days}d",
     "dueToday": "Hoy",
     "dueOn": "Vence {date}",
     "yourTasks": "Tus tareas",
     "yourTasksHint": "lo que la planeadora necesita de ti",
-    "yourTasksEmpty": "Nada pendiente — todo al día."
+    "yourTasksEmpty": "Nada pendiente — todo al día.",
+    "linked": "Vinculada",
+    "unlink": "Quitar vínculo"
   },
   "guests": {
     "tab": "Invitados",

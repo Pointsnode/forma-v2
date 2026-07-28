@@ -8,6 +8,7 @@ import { ensureArtifactFiled } from "@/lib/contract-artifact";
 import { WeddingShell } from "@/components/wedding/wedding-shell";
 import { SendButton, VoidButton } from "@/components/contracts/room-controls";
 import { DraftBody, FieldsEditor, SignersEditor } from "@/components/contracts/draft-editors";
+import { QuickAddTask } from "@/components/tasks/quick-add";
 import { Card, Heading, Badge, WhoBadge, Check, Row, RowMain, cx, type BadgeTone } from "@/components/ui";
 import { substituteBody } from "@/lib/merge-body";
 
@@ -51,10 +52,11 @@ export default async function ContractRoom({ params }: { params: Promise<{ local
 
   return (
     <WeddingShell wedding={wedding} events={events} role={role} active="contracts">
-      <nav className="mb-4 text-[12.5px] text-muted">
+      <nav className="mb-4 flex items-center text-[12.5px] text-muted">
         <Link href={`/wedding/${id}/contracts`} className="hover:text-ink hover:underline hover:underline-offset-2">{tc("all")}</Link>
         <span className="mx-2 text-hairline">/</span>
         <span className="font-display text-[15px] text-ink">{contract.title}</span>
+        {role === "staff" ? <span className="ml-auto"><QuickAddTask weddings={[]} workspaceId="" defaultWeddingId={id} prelink={{ kind: "contract", id: cid, label: contract.title }} variant="inline" /></span> : null}
       </nav>
 
       <div className="grid gap-[18px] lg:grid-cols-[1.6fr_1fr]">

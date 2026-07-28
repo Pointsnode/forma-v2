@@ -1,6 +1,10 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { initials } from "@/lib/wedding";
+import { taskHref } from "@/lib/task-href.mjs";
+import { compareTasks } from "@/lib/task-sort.mjs";
+
+export { taskHref };
 
 // The four columns, in board order. "waiting" is the manual twin of the chase list.
 export const TASK_COLUMNS = ["pending", "working", "waiting", "completed"] as const;
@@ -12,6 +16,7 @@ export type TaskCard = {
   title: string;
   note: string | null;
   status: TaskStatus;
+  flagged: boolean;
   due_date: string | null;
   wedding_id: string | null;
   weddingName: string | null;      // master board chip
@@ -32,27 +37,14 @@ export type TaskCard = {
 };
 
 type Row = {
-  id: string; title: string; note: string | null; status: TaskStatus; due_date: string | null;
+  id: string; title: string; note: string | null; status: TaskStatus; flagged: boolean; due_date: string | null;
   wedding_id: string | null; workspace_id: string | null; event_id: string | null; link_section: string | null;
   assignee_kind: AssigneeKind | null; assignee_member: string | null; assignee_vendor: string | null;
   proposal_id: string | null; contract_id: string | null; engagement_id: string | null; document_id: string | null;
 };
 
 const COLS =
-  "id, title, note, status, due_date, wedding_id, workspace_id, event_id, link_section, assignee_kind, assignee_member, assignee_vendor, proposal_id, contract_id, engagement_id, document_id";
-
-// Deep-link (§1E): a task is a pointer. The card body lands at its linked object's
-// room, reusing the canonical routes (no second router). Falls back to the wedding.
-export function taskHref(t: { wedding_id: string | null; eventId?: string | null; linkSection?: string | null; proposalId?: string | null; contractId?: string | null; engagementId?: string | null; documentId?: string | null }): string {
-  const w = t.wedding_id;
-  if (!w) return "/tasks";
-  if (t.contractId) return `/wedding/${w}/contracts/${t.contractId}`;
-  if (t.proposalId) return `/wedding/${w}/proposals`;
-  if (t.engagementId) return `/wedding/${w}/vendors`;
-  if (t.documentId) return `/wedding/${w}/documents`;
-  if (t.eventId) return `/wedding/${w}/event/${t.eventId}`;
-  return `/wedding/${w}`;
-}
+  "id, title, note, status, flagged, due_date, wedding_id, workspace_id, event_id, link_section, assignee_kind, assignee_member, assignee_vendor, proposal_id, contract_id, engagement_id, document_id";
 
 async function hydrate(supabase: SupabaseClient, rows: Row[]): Promise<TaskCard[]> {
   const memberIds = [...new Set(rows.map((r) => r.assignee_member).filter((x): x is string => !!x))];
@@ -77,7 +69,7 @@ async function hydrate(supabase: SupabaseClient, rows: Row[]): Promise<TaskCard[
     const assigneeVendor = r.assignee_vendor ? vendorName.get(r.assignee_vendor) ?? "—" : null;
     const assigneeLabel = r.assignee_kind === "couple" ? (wName ?? "Couple") : r.assignee_kind === "team" ? assigneeMember : r.assignee_kind === "vendor" ? assigneeVendor : null;
     return {
-      id: r.id, title: r.title, note: r.note, status: r.status, due_date: r.due_date,
+      id: r.id, title: r.title, note: r.note, status: r.status, flagged: r.flagged, due_date: r.due_date,
       wedding_id: r.wedding_id, weddingName: wName, weddingInitials: wName ? initials(wName) : null,
       eventId: r.event_id, eventLabel: r.event_id ? eventLabel.get(r.event_id) ?? null : null, linkSection: r.link_section,
       assigneeKind: r.assignee_kind, assigneeMember, assigneeVendor, assigneeLabel,
@@ -87,22 +79,11 @@ async function hydrate(supabase: SupabaseClient, rows: Row[]): Promise<TaskCard[
   });
 }
 
-// Exceptions-first: overdue rises within a column, then earliest due, then newest.
-function boardSort(a: TaskCard, b: TaskCard, today: string): number {
-  const ao = a.due_date && a.due_date < today && a.status !== "completed" ? 0 : 1;
-  const bo = b.due_date && b.due_date < today && b.status !== "completed" ? 0 : 1;
-  if (ao !== bo) return ao - bo;
-  if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
-  if (a.due_date) return -1;
-  if (b.due_date) return 1;
-  return 0;
-}
-
 export type Board = Record<TaskStatus, TaskCard[]>;
 function group(cards: TaskCard[], today: string): Board {
   const board: Board = { pending: [], working: [], waiting: [], completed: [] };
   for (const c of cards) board[c.status].push(c);
-  for (const col of TASK_COLUMNS) board[col].sort((a, b) => boardSort(a, b, today));
+  for (const col of TASK_COLUMNS) board[col].sort((a, b) => compareTasks(a, b, today));
   return board;
 }
 

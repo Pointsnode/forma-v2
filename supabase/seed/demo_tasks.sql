@@ -8,7 +8,9 @@ declare
   el uuid := 'd1a00002-0000-4000-a000-000000000002';
   planner uuid := 'feabba08-86fd-4e68-a71b-93d42c3bd405';
   vendor uuid := 'e1a00000-0000-4000-a000-000000000001';
-  pa_event uuid := 'd1a00001-0000-4000-a000-0000000000e1';
+  pa_sangeet uuid := 'd1a00001-0000-4000-a000-0000000000e3';
+  pa_floral_prop uuid := '0f100001-0000-4000-a000-000000000001';
+  pa_floral_contract uuid := 'c0117ac0-0000-4000-a000-0000000000fa';
 begin
   if not exists (select 1 from public.tasks where id = '7a5c0001-0000-4000-a000-000000000001') then
     -- P&A: team pending, working, couple-waiting, vendor-waiting (overdue), completed, event-linked
@@ -23,7 +25,12 @@ begin
     insert into public.tasks (id, wedding_id, title, status) values
       ('7a5c0001-0000-4000-a000-000000000005', pa, 'Reservar bloque de hotel', 'completed');
     insert into public.tasks (id, wedding_id, title, event_id, link_section, due_date) values
-      ('7a5c0001-0000-4000-a000-000000000006', pa, 'Revisar el menú del Sangeet', pa_event, 'menus', current_date + 8);
+      ('7a5c0001-0000-4000-a000-000000000006', pa, 'Revisar el menú del Sangeet', pa_sangeet, 'menus', current_date + 8);
+    -- §1E link exercises: one proposal-linked (flagged) + one contract-linked
+    insert into public.tasks (id, wedding_id, title, proposal_id, flagged, due_date) values
+      ('7a5c0001-0000-4000-a000-000000000007', pa, 'Perseguir la aprobación del concepto floral', pa_floral_prop, true, current_date + 1);
+    insert into public.tasks (id, wedding_id, title, contract_id, due_date) values
+      ('7a5c0001-0000-4000-a000-000000000008', pa, 'Revisar el borrador del contrato de florales', pa_floral_contract, current_date + 5);
 
     -- E&L: team pending + one completed + one couple-waiting
     insert into public.tasks (id, wedding_id, title, assignee_kind, assignee_member, due_date) values

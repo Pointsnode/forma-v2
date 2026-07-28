@@ -38,7 +38,7 @@ export default async function WeddingVendorsTab({ params }: { params: Promise<{ 
   return (
     <WeddingShell wedding={wedding} events={events} role="staff" active="vendors">
       <SectionTitle title={teng("tab")} accent={teng("hint")} className="mt-0" />
-      <EngagementLanes engagements={vms} />
+      <EngagementLanes engagements={vms} weddingId={id} />
     </WeddingShell>
   );
 }

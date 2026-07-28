@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Card, SectionTitle, Row, RowMain } from "@/components/ui";
 import { completeTask } from "@/app/[locale]/(app)/wedding/[id]/task-actions";
 
-export type CoupleTask = { id: string; title: string; note: string | null; due_date: string | null; status: string };
+export type CoupleTask = { id: string; title: string; note: string | null; due_date: string | null; status: string; flagged: boolean };
 
 // The couple's assigned tasks (RLS already scoped them to couple-assigned). Marking
 // one done calls complete_task (the couple's only write path) — it lands Completed
@@ -35,7 +35,7 @@ export function CoupleTasks({ tasks: tasks0 }: { tasks: CoupleTask[] }) {
             <button onClick={() => done(task.id)} disabled={pending}
               className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-hairline text-[11px] text-muted hover:border-sage hover:text-sage-ink"
               title={t("markDone")}>{""}</button>
-            <RowMain title={task.title} detail={task.note || (task.due_date ? t("dueOn", { date: task.due_date }) : undefined)} />
+            <RowMain title={<span className="flex items-center gap-1.5">{task.flagged ? <span aria-hidden className="h-2.5 w-2.5 rounded-[2px] bg-wine" title={t("flagged")} /> : null}{task.title}</span>} detail={task.note || (task.due_date ? t("dueOn", { date: task.due_date }) : undefined)} />
             {task.due_date ? <span className="shrink-0 text-[11.5px] text-muted">{task.due_date.slice(5)}</span> : null}
           </Row>
         ))}

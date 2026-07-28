@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Pill, Button, cx } from "@/components/ui";
 import { requestQuote, recordQuote, acceptQuote, declineQuote, bookEngagement, archiveEngagement } from "@/app/[locale]/(app)/(studio)/vendors/actions";
+import { QuickAddTask } from "@/components/tasks/quick-add";
 
 export type EngagementVM = {
   id: string; vendorName: string; vendorKind: string; status: string;
@@ -15,7 +16,7 @@ const statusKey = (s: string) => `status${s.charAt(0).toUpperCase()}${s.slice(1)
 const kindKey = (k: string) => `kind${k.charAt(0).toUpperCase()}${k.slice(1)}`;
 const inputCls = "rounded-lg bg-bone px-2.5 py-1.5 text-[13px] text-ink shadow-card outline-none";
 
-function Card({ e }: { e: EngagementVM }) {
+function Card({ e, weddingId }: { e: EngagementVM; weddingId: string }) {
   const t = useTranslations("engagement");
   const tv = useTranslations("vendors");
   const [recording, setRecording] = useState(false);
@@ -34,6 +35,9 @@ function Card({ e }: { e: EngagementVM }) {
           {e.quote ? <p className="mt-0.5 text-[12.5px] text-taupe">{t("latestQuote")}: {e.quote.amount ?? "—"}{e.quote.validUntil ? ` · ${e.quote.validUntil}` : ""}{e.quote.expired ? ` · ${t("validPast")}` : ""}</p> : null}
         </div>
         <Pill tone={e.status === "booked" ? "sage" : e.status === "declined" ? "wine" : "sand"}>{t(statusKey(e.status))}</Pill>
+      </div>
+      <div className="mt-2 flex justify-end">
+        <QuickAddTask weddings={[]} workspaceId="" defaultWeddingId={weddingId} prelink={{ kind: "engagement", id: e.id, label: e.vendorName }} variant="inline" />
       </div>
 
       {!["declined", "archived"].includes(e.status) ? (
@@ -66,7 +70,7 @@ const LANES: { key: string; statuses: string[] }[] = [
   { key: "laneBooked", statuses: ["booked"] },
 ];
 
-export function EngagementLanes({ engagements }: { engagements: EngagementVM[] }) {
+export function EngagementLanes({ engagements, weddingId }: { engagements: EngagementVM[]; weddingId: string }) {
   const t = useTranslations("engagement");
   const [showClosed, setShowClosed] = useState(false);
   const closed = engagements.filter((e) => ["declined", "archived"].includes(e.status));
@@ -78,14 +82,14 @@ export function EngagementLanes({ engagements }: { engagements: EngagementVM[] }
         return items.length ? (
           <section key={lane.key} className="flex flex-col gap-2">
             <p className={cx("text-[11px] font-medium uppercase tracking-[0.16em] text-muted")}>{t(lane.key)}</p>
-            {items.map((e) => <Card key={e.id} e={e} />)}
+            {items.map((e) => <Card key={e.id} e={e} weddingId={weddingId} />)}
           </section>
         ) : null;
       })}
       {closed.length ? (
         <div>
           <button onClick={() => setShowClosed((v) => !v)} className="text-[12.5px] text-muted hover:text-ink">{t("laneClosed")} ({closed.length})</button>
-          {showClosed ? <div className="mt-2 flex flex-col gap-2">{closed.map((e) => <Card key={e.id} e={e} />)}</div> : null}
+          {showClosed ? <div className="mt-2 flex flex-col gap-2">{closed.map((e) => <Card key={e.id} e={e} weddingId={weddingId} />)}</div> : null}
         </div>
       ) : null}
     </div>

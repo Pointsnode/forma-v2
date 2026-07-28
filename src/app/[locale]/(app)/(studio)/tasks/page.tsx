@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { SectionTitle, BentoBig, Check, heroToneAt } from "@/components/ui";
-import { countdownDays, type WeddingRow, type EventRow } from "@/lib/wedding";
+import { countdownDays, initials, type WeddingRow, type EventRow } from "@/lib/wedding";
 import { loadGoalMesh, computeGoals } from "@/lib/goals";
 import { loadMasterBoard } from "@/lib/tasks";
 import { TaskBoard, type BoardVM } from "@/components/tasks/board";
@@ -67,7 +67,8 @@ export default async function TasksPage({ params }: { params: Promise<{ locale: 
       </div>
 
       <SectionTitle title={t("masterTitle")} accent={t("masterHint")} className="mt-8" />
-      <TaskBoard board={board as BoardVM} master workspaceId={workspaceId} options={{ members: memberOpts, vendors: vendorOpts, events: [] }} />
+      <TaskBoard board={board as BoardVM} master workspaceId={workspaceId} options={{ members: memberOpts, vendors: vendorOpts, events: [] }}
+        weddingsForFilter={weddings.map((w) => ({ id: w.id, name: w.couple_display, initials: initials(w.couple_display) }))} />
     </div>
   );
 }

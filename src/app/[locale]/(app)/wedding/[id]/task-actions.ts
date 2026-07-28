@@ -13,7 +13,7 @@ function rv() {
 
 export type TaskInput = {
   wedding_id?: string | null; workspace_id?: string | null;
-  title?: string; note?: string; due_date?: string; status?: string;
+  title?: string; note?: string; due_date?: string; status?: string; flagged?: boolean;
   event_id?: string; link_section?: string;
   assignee_kind?: "team" | "couple" | "vendor" | ""; assignee_member?: string; assignee_vendor?: string;
   proposal_id?: string; contract_id?: string; engagement_id?: string; document_id?: string;
@@ -31,6 +31,7 @@ export async function createTask(input: TaskInput): Promise<TaskResult> {
   const inWedding = !!input.wedding_id;
   const { data, error } = await supabase.from("tasks").insert({
     title, note: input.note?.trim() || null, due_date: input.due_date || null,
+    flagged: input.flagged === true,
     wedding_id: input.wedding_id || null, workspace_id: inWedding ? null : (input.workspace_id || null),
     event_id: inWedding ? (input.event_id || null) : null,
     link_section: inWedding ? (input.link_section || null) : null,
@@ -54,6 +55,7 @@ export async function updateTask(taskId: string, patch: TaskInput): Promise<Task
   if (patch.note !== undefined) upd.note = patch.note?.trim() || null;
   if (patch.due_date !== undefined) upd.due_date = patch.due_date || null;
   if (patch.status !== undefined) upd.status = patch.status;
+  if (patch.flagged !== undefined) upd.flagged = patch.flagged;
   if (patch.event_id !== undefined) upd.event_id = patch.event_id || null;
   if (patch.assignee_kind !== undefined) {
     const k = patch.assignee_kind || null;
@@ -71,6 +73,14 @@ export async function moveTask(taskId: string, status: string): Promise<TaskResu
   const supabase = await createClient();
   const { error } = await supabase.from("tasks").update({ status }).eq("id", taskId);
   if (error) { console.error(`moveTask (${error.code}): ${error.message}`); return { error: "generic" }; }
+  rv();
+  return { ok: true };
+}
+
+export async function setFlag(taskId: string, flagged: boolean): Promise<TaskResult> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("tasks").update({ flagged }).eq("id", taskId);
+  if (error) { console.error(`setFlag (${error.code}): ${error.message}`); return { error: "generic" }; }
   rv();
   return { ok: true };
 }

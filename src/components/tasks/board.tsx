@@ -4,32 +4,30 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { cx } from "@/components/ui";
-import { createTask, updateTask, moveTask, deleteTask, type TaskInput } from "@/app/[locale]/(app)/wedding/[id]/task-actions";
+import { createTask, updateTask, moveTask, deleteTask, setFlag, type TaskInput } from "@/app/[locale]/(app)/wedding/[id]/task-actions";
 
 export type TaskCardVM = {
-  id: string; title: string; note: string | null; status: string; due_date: string | null;
-  wedding_id: string | null; weddingInitials: string | null;
+  id: string; title: string; note: string | null; status: string; flagged: boolean; due_date: string | null;
+  wedding_id: string | null; weddingInitials: string | null; weddingName: string | null;
   eventId: string | null; eventLabel: string | null;
-  assigneeKind: "team" | "couple" | "vendor" | null; assigneeLabel: string | null; weddingName: string | null;
+  assigneeKind: "team" | "couple" | "vendor" | null; assigneeLabel: string | null;
   proposalId: string | null; contractId: string | null; engagementId: string | null; documentId: string | null;
   href: string;
 };
 export type BoardVM = Record<string, TaskCardVM[]>;
 export type BoardOptions = { members: { id: string; name: string }[]; vendors: { id: string; name: string }[]; events: { id: string; label: string }[] };
+export type WeddingFilter = { id: string; name: string; initials: string };
 
 const COLUMNS = ["pending", "working", "waiting", "completed"] as const;
 type Col = (typeof COLUMNS)[number];
-
-// column identity (§1D): rail + header underline in the status color
 const RAIL: Record<Col, string> = { pending: "bg-muted", working: "bg-ink", waiting: "bg-wine", completed: "bg-sage" };
-const UNDER: Record<Col, string> = { pending: "bg-muted", working: "bg-ink", waiting: "bg-wine", completed: "bg-sage" };
 
 const inputCls = "w-full rounded-xl bg-bone px-3.5 py-2.5 text-[14px] text-ink shadow-card outline-none focus:shadow-lift";
 const todayISO = () => new Date().toISOString().slice(0, 10);
 const initialsOf = (s: string | null) => (s ?? "").split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("") || "·";
 
-export function TaskBoard({ board: board0, master = false, weddingId, workspaceId, options }: {
-  board: BoardVM; master?: boolean; weddingId?: string; workspaceId?: string; options: BoardOptions;
+export function TaskBoard({ board: board0, master = false, weddingId, workspaceId, options, weddingsForFilter = [] }: {
+  board: BoardVM; master?: boolean; weddingId?: string; workspaceId?: string; options: BoardOptions; weddingsForFilter?: WeddingFilter[];
 }) {
   const t = useTranslations("tasks");
   const router = useRouter();
@@ -37,16 +35,17 @@ export function TaskBoard({ board: board0, master = false, weddingId, workspaceI
   const [dragId, setDragId] = useState<string | null>(null);
   const [overCol, setOverCol] = useState<Col | null>(null);
   const [sheet, setSheet] = useState<{ mode: "new" | "edit"; task?: TaskCardVM } | null>(null);
+  const [wedFilter, setWedFilter] = useState<Set<string>>(new Set());
+  const [urgFilter, setUrgFilter] = useState<Set<"flagged" | "overdue" | "today">>(new Set());
+  const today = todayISO();
 
   function findCard(id: string): { card: TaskCardVM; col: Col } | null {
     for (const c of COLUMNS) { const card = board[c]?.find((x) => x.id === id); if (card) return { card, col: c }; }
     return null;
   }
-
   async function move(id: string, to: Col) {
     const found = findCard(id);
     if (!found || found.col === to) return;
-    // optimistic
     setBoard((b) => {
       const next: BoardVM = { pending: [...(b.pending ?? [])], working: [...(b.working ?? [])], waiting: [...(b.waiting ?? [])], completed: [...(b.completed ?? [])] };
       next[found.col] = next[found.col].filter((x) => x.id !== id);
@@ -56,39 +55,70 @@ export function TaskBoard({ board: board0, master = false, weddingId, workspaceI
     await moveTask(id, to);
     router.refresh();
   }
+  async function flag(id: string, on: boolean) {
+    setBoard((b) => {
+      const next = { ...b };
+      for (const c of COLUMNS) next[c] = (b[c] ?? []).map((x) => (x.id === id ? { ...x, flagged: on } : x));
+      return next;
+    });
+    await setFlag(id, on);
+    router.refresh();
+  }
+
+  const keep = (card: TaskCardVM): boolean => {
+    if (master && wedFilter.size && !(card.wedding_id && wedFilter.has(card.wedding_id))) return false;
+    if (urgFilter.size) {
+      const overdue = !!card.due_date && card.due_date < today && card.status !== "completed";
+      const dueToday = card.due_date === today;
+      const ok = (urgFilter.has("flagged") && card.flagged) || (urgFilter.has("overdue") && overdue) || (urgFilter.has("today") && dueToday);
+      if (!ok) return false;
+    }
+    return true;
+  };
+  const toggle = <T,>(set: Set<T>, v: T, setter: (s: Set<T>) => void) => { const n = new Set(set); if (n.has(v)) n.delete(v); else n.add(v); setter(n); };
 
   return (
     <div>
-      <div className="mb-3 flex justify-end">
-        <button onClick={() => setSheet({ mode: "new" })} className="rounded-full bg-ink px-3.5 py-2 text-[13px] text-bone">+ {t("newTask")}</button>
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        {master && weddingsForFilter.length ? weddingsForFilter.map((w) => (
+          <button key={w.id} onClick={() => toggle(wedFilter, w.id, setWedFilter)}
+            className={cx("flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11.5px]", wedFilter.has(w.id) ? "bg-ink text-bone" : "bg-bone text-muted hover:text-ink")}>
+            <span className="font-medium">{w.initials}</span>{w.name}
+          </button>
+        )) : null}
+        {(["flagged", "overdue", "today"] as const).map((u) => (
+          <button key={u} onClick={() => toggle(urgFilter, u, setUrgFilter)}
+            className={cx("rounded-full px-2.5 py-1 text-[11.5px]", urgFilter.has(u) ? "bg-wine text-bone" : "bg-wine-soft text-wine hover:opacity-80")}>
+            {t(`filter_${u}`)}
+          </button>
+        ))}
+        <button onClick={() => setSheet({ mode: "new" })} className="ml-auto rounded-full bg-ink px-3.5 py-2 text-[13px] text-bone">+ {t("newTask")}</button>
       </div>
+
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {COLUMNS.map((col) => {
-          const cards = board[col] ?? [];
+          const cards = (board[col] ?? []).filter(keep);
           return (
             <section key={col}
               onDragOver={(e) => { e.preventDefault(); setOverCol(col); }}
               onDragLeave={() => setOverCol((c) => (c === col ? null : c))}
               onDrop={() => { if (dragId) move(dragId, col); setDragId(null); setOverCol(null); }}
-              className={cx("rounded-2xl bg-paper p-3 shadow-card transition-colors", overCol === col && "ring-2 ring-hairline")}
-            >
+              className={cx("rounded-2xl bg-paper p-3 shadow-card transition-colors", overCol === col && "ring-2 ring-hairline")}>
               <header className="mb-2 px-1">
                 <div className="flex items-baseline gap-2">
                   <h3 className="font-display text-[15px] text-ink">{t(`col_${col}`)}</h3>
                   <span className="rounded-full bg-bone px-2 py-0.5 text-[11px] text-muted">{cards.length}</span>
                 </div>
-                <div className={cx("mt-1 h-[3px] w-10 rounded-full", UNDER[col])} />
+                <div className={cx("mt-1 h-[3px] w-10 rounded-full", RAIL[col])} />
               </header>
               <div className="flex flex-col gap-2">
                 {cards.map((card) => (
                   <TaskChip key={card.id} card={card} col={col} master={master} t={t}
-                    onOpen={() => router.push(card.href)}
-                    onEdit={() => setSheet({ mode: "edit", task: card })}
-                    onComplete={() => move(card.id, "completed")}
-                    onMove={(to) => move(card.id, to)}
-                    onDragStart={() => setDragId(card.id)} />
+                    onOpen={() => router.push(card.href)} onEdit={() => setSheet({ mode: "edit", task: card })}
+                    onComplete={() => move(card.id, "completed")} onMove={(to) => move(card.id, to)}
+                    onFlag={(on) => flag(card.id, on)} onDragStart={() => setDragId(card.id)} />
                 ))}
-                {cards.length === 0 ? <p className="px-1 py-2 text-[12px] text-muted">{t("colEmpty")}</p> : null}
+                {cards.length === 0 ? <p className="px-1 py-2 text-[12px] text-muted">{urgFilter.size || wedFilter.size ? t("noneMatch") : t("colEmpty")}</p> : null}
               </div>
             </section>
           );
@@ -103,38 +133,43 @@ export function TaskBoard({ board: board0, master = false, weddingId, workspaceI
   );
 }
 
-function TaskChip({ card, col, master, t, onOpen, onEdit, onComplete, onMove, onDragStart }: {
+function TaskChip({ card, col, master, t, onOpen, onEdit, onComplete, onMove, onFlag, onDragStart }: {
   card: TaskCardVM; col: Col; master: boolean; t: ReturnType<typeof useTranslations>;
-  onOpen: () => void; onEdit: () => void; onComplete: () => void; onMove: (to: Col) => void; onDragStart: () => void;
+  onOpen: () => void; onEdit: () => void; onComplete: () => void; onMove: (to: Col) => void; onFlag: (on: boolean) => void; onDragStart: () => void;
 }) {
   const [menu, setMenu] = useState(false);
   const done = card.status === "completed";
   return (
     <div draggable onDragStart={onDragStart}
-      className="group relative flex items-stretch gap-2 overflow-hidden rounded-xl bg-bone pr-2 shadow-card hover:shadow-lift">
+      className="group relative flex items-stretch gap-2 overflow-hidden rounded-xl bg-bone pr-1.5 shadow-card hover:shadow-lift">
       <div className={cx("w-[3px] shrink-0", RAIL[col])} />
       <div className="min-w-0 flex-1 py-2">
-        <button onClick={onOpen} className="block w-full truncate text-left text-[13.5px] text-ink" title={card.title}>{card.title}</button>
+        <button onClick={onOpen} className="flex w-full items-center gap-1.5 text-left" title={card.title}>
+          {card.flagged && !done ? <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-[2px] bg-wine" title={t("flagged")} /> : null}
+          <span className="truncate text-[13.5px] text-ink">{card.title}</span>
+        </button>
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-          {master && card.weddingInitials ? <span className="rounded bg-paper px-1.5 py-0.5 text-[10px] uppercase tracking-[0.06em] text-muted">{card.weddingInitials}</span> : null}
-          {card.eventLabel ? <span className="rounded bg-paper px-1.5 py-0.5 text-[10.5px] text-taupe">{card.eventLabel}</span> : null}
+          {master && card.weddingInitials ? <span className="rounded bg-paper px-1.5 py-[3px] text-[11px] font-medium uppercase tracking-[0.05em] text-muted">{card.weddingInitials}</span> : null}
+          {card.eventLabel ? <span className="rounded bg-paper px-1.5 py-[3px] text-[11px] text-taupe">{card.eventLabel}</span> : null}
           <AssigneeChip card={card} />
           <DuePill card={card} t={t} />
         </div>
       </div>
       <div className="flex flex-col items-center justify-between py-1.5">
-        <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-          <button onClick={onEdit} title={t("edit")} className="text-[12px] text-muted hover:text-ink">✎</button>
-          <button onClick={() => setMenu((m) => !m)} title={t("moveTo")} className="text-[12px] text-muted hover:text-ink">⋯</button>
+        <div className="flex items-center gap-0.5">
+          <button onClick={onEdit} title={t("edit")} className="flex h-6 w-6 items-center justify-center rounded-lg text-[13px] text-taupe hover:bg-paper hover:text-ink">✎</button>
+          <button onClick={() => setMenu((m) => !m)} title={t("moveTo")} className="flex h-6 w-6 items-center justify-center rounded-lg text-[15px] leading-none text-taupe hover:bg-paper hover:text-ink">⋯</button>
         </div>
-        <button onClick={onComplete} title={t("markDone")} className={cx("flex h-5 w-5 items-center justify-center rounded-full border text-[11px]", done ? "border-sage bg-sage-soft text-sage-ink" : "border-hairline text-muted hover:border-sage hover:text-sage-ink")}>{done ? "✓" : ""}</button>
+        <button onClick={onComplete} title={t("markDone")}
+          className={cx("flex h-6 w-6 items-center justify-center rounded-full border-2 text-[12px] transition-colors", done ? "border-sage bg-sage-soft text-sage-ink" : "border-hairline text-transparent hover:border-sage hover:bg-sage-soft hover:text-sage-ink")}>✓</button>
       </div>
       {menu ? (
         <>
           <button className="fixed inset-0 z-40 cursor-default" onClick={() => setMenu(false)} aria-hidden />
           <div className="absolute right-2 top-8 z-50 flex flex-col overflow-hidden rounded-xl bg-paper py-1 shadow-lift">
+            <button onClick={() => { setMenu(false); onFlag(!card.flagged); }} className="px-3 py-1.5 text-left text-[12.5px] text-wine hover:bg-bone">{card.flagged ? t("unflag") : t("flag")}</button>
             {COLUMNS.filter((c) => c !== col).map((c) => (
-              <button key={c} onClick={() => { setMenu(false); onMove(c); }} className="px-3 py-1.5 text-left text-[12.5px] text-ink hover:bg-bone">{t(`moveToCol`, { col: t(`col_${c}`) })}</button>
+              <button key={c} onClick={() => { setMenu(false); onMove(c); }} className="px-3 py-1.5 text-left text-[12.5px] text-ink hover:bg-bone">{t("moveToCol", { col: t(`col_${c}`) })}</button>
             ))}
           </div>
         </>
@@ -146,21 +181,20 @@ function TaskChip({ card, col, master, t, onOpen, onEdit, onComplete, onMove, on
 function AssigneeChip({ card }: { card: TaskCardVM }) {
   if (!card.assigneeKind) return null;
   const label = card.assigneeLabel ?? "";
-  if (card.assigneeKind === "team") return <span className="flex h-[18px] items-center rounded-full bg-ink px-1.5 text-[10px] font-medium text-bone" title={label}>{initialsOf(label)}</span>;
-  if (card.assigneeKind === "couple") return <span className="flex h-[18px] items-center rounded-full border border-wine px-1.5 text-[10px] font-medium text-wine" title={label}>{initialsOf(card.weddingName ?? label)}</span>;
-  return <span className="flex h-[18px] items-center rounded bg-sand-soft px-1.5 text-[10px] font-medium text-taupe" title={label}>{initialsOf(label)}</span>; // vendor = square
+  if (card.assigneeKind === "team") return <span className="flex h-[19px] items-center rounded-full bg-ink px-1.5 text-[11px] font-medium text-bone" title={label}>{initialsOf(label)}</span>;
+  if (card.assigneeKind === "couple") return <span className="flex h-[19px] items-center rounded-full border border-wine px-1.5 text-[11px] font-medium text-wine" title={label}>{initialsOf(card.weddingName ?? label)}</span>;
+  return <span className="flex h-[19px] items-center rounded bg-sand-soft px-1.5 text-[11px] font-medium text-taupe" title={label}>{initialsOf(label)}</span>;
 }
 
 function DuePill({ card, t }: { card: TaskCardVM; t: ReturnType<typeof useTranslations> }) {
-  if (card.status === "completed") return null;
-  if (!card.due_date) return null;
+  if (card.status === "completed" || !card.due_date) return null;
   const today = todayISO();
   if (card.due_date < today) {
     const days = Math.max(1, Math.round((Date.parse(today) - Date.parse(card.due_date)) / 86_400_000));
-    return <span className="rounded-full bg-wine px-1.5 py-0.5 text-[10px] font-medium text-bone">{t("overdueDays", { days })}</span>;
+    return <span className="rounded-full bg-wine px-1.5 py-[3px] text-[11px] font-medium text-bone">{t("overdueDays", { days })}</span>;
   }
-  if (card.due_date === today) return <span className="rounded-full border border-wine px-1.5 py-0.5 text-[10px] text-wine">{t("dueToday")}</span>;
-  return <span className="text-[10.5px] text-muted">{card.due_date.slice(5)}</span>;
+  if (card.due_date === today) return <span className="rounded-full border border-wine px-1.5 py-[2px] text-[11px] text-wine">{t("dueToday")}</span>;
+  return <span className="text-[11px] text-muted">{card.due_date.slice(5)}</span>;
 }
 
 function TaskSheet({ mode, task, weddingId, workspaceId, options, onClose, onDone, t }: {
@@ -175,16 +209,13 @@ function TaskSheet({ mode, task, weddingId, workspaceId, options, onClose, onDon
   const [vendor, setVendor] = useState(options.vendors[0]?.id ?? "");
   const [eventId, setEventId] = useState(task?.eventId ?? "");
   const [status, setStatus] = useState(task?.status ?? "pending");
+  const [flagged, setFlagged] = useState(task?.flagged ?? false);
   const [busy, setBusy] = useState(false);
 
   async function save() {
     if (!title.trim() || busy) return;
     setBusy(true);
-    const base: TaskInput = {
-      title, note, due_date: due, assignee_kind: kind,
-      assignee_member: member, assignee_vendor: vendor,
-      event_id: weddingId ? eventId : undefined,
-    };
+    const base: TaskInput = { title, note, due_date: due, flagged, assignee_kind: kind, assignee_member: member, assignee_vendor: vendor, event_id: weddingId ? eventId : undefined };
     const r = mode === "new"
       ? await createTask({ ...base, wedding_id: weddingId ?? null, workspace_id: weddingId ? null : (workspaceId ?? null) })
       : await updateTask(task!.id, { ...base, status });
@@ -202,10 +233,7 @@ function TaskSheet({ mode, task, weddingId, workspaceId, options, onClose, onDon
         <div className="grid grid-cols-2 gap-3">
           <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("assignee")}</span>
             <select value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} className={inputCls}>
-              <option value="">{t("unassigned")}</option>
-              <option value="team">{t("assignTeam")}</option>
-              <option value="couple">{t("assignCouple")}</option>
-              <option value="vendor">{t("assignVendor")}</option>
+              <option value="">{t("unassigned")}</option><option value="team">{t("assignTeam")}</option><option value="couple">{t("assignCouple")}</option><option value="vendor">{t("assignVendor")}</option>
             </select></label>
           <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("due")}</span>
             <input type="date" value={due} onChange={(e) => setDue(e.target.value)} className={inputCls} /></label>
@@ -221,8 +249,7 @@ function TaskSheet({ mode, task, weddingId, workspaceId, options, onClose, onDon
         {weddingId && options.events.length ? (
           <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("event")}</span>
             <select value={eventId} onChange={(e) => setEventId(e.target.value)} className={inputCls}>
-              <option value="">{t("noEvent")}</option>
-              {options.events.map((e) => <option key={e.id} value={e.id}>{e.label}</option>)}
+              <option value="">{t("noEvent")}</option>{options.events.map((e) => <option key={e.id} value={e.id}>{e.label}</option>)}
             </select></label>
         ) : null}
         {mode === "edit" ? (
@@ -231,6 +258,7 @@ function TaskSheet({ mode, task, weddingId, workspaceId, options, onClose, onDon
         ) : null}
         <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("note")}</span>
           <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className={inputCls} /></label>
+        <label className="flex items-center gap-2 text-[13px] text-ink"><input type="checkbox" checked={flagged} onChange={(e) => setFlagged(e.target.checked)} /> <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[2px] bg-wine" />{t("markUrgent")}</span></label>
         <div className="flex items-center gap-2">
           <button onClick={save} disabled={busy || !title.trim()} className="rounded-full bg-ink px-4 py-2 text-[13px] text-bone disabled:opacity-40">{t("save")}</button>
           <button onClick={onClose} className="rounded-full px-3 py-2 text-[13px] text-muted hover:text-ink">{t("cancel")}</button>

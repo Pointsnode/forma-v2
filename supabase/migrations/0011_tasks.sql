@@ -19,6 +19,7 @@ alter table public.tasks add column if not exists assignee_vendor uuid reference
 alter table public.tasks add column if not exists document_id uuid references public.documents (id) on delete set null;
 alter table public.tasks add column if not exists link_section text;
 alter table public.tasks add column if not exists note text;
+alter table public.tasks add column if not exists flagged boolean not null default false;
 
 create index if not exists tasks_status_idx on public.tasks (status);
 create index if not exists tasks_assignee_member_idx on public.tasks (assignee_member);
@@ -165,7 +166,7 @@ drop function if exists public.concierge_add_task(uuid, uuid, text, date);
 drop function if exists private.concierge_add_task(uuid, uuid, text, date);
 create or replace function private.concierge_add_task(
   p_wedding uuid, p_workspace uuid, p_title text, p_due date,
-  p_assignee_kind text, p_assignee_member uuid, p_assignee_vendor uuid, p_event uuid)
+  p_assignee_kind text, p_assignee_member uuid, p_assignee_vendor uuid, p_event uuid, p_flagged boolean)
 returns uuid language plpgsql security definer set search_path = public as $$
 declare v_id uuid; v_kind public.task_assignee_kind;
 begin
@@ -178,21 +179,22 @@ begin
   v_kind := (case when p_assignee_kind in ('team','couple','vendor') then p_assignee_kind else null end)::public.task_assignee_kind;
   perform set_config('forma.acting_as_concierge', 'on', true);
   insert into public.tasks (title, due_date, wedding_id, workspace_id, event_id,
-      assignee_kind, assignee_member, assignee_vendor)
+      assignee_kind, assignee_member, assignee_vendor, flagged)
     values (btrim(p_title), p_due, p_wedding, case when p_wedding is null then p_workspace else null end,
       case when p_wedding is not null then p_event else null end,
       v_kind,
       case when v_kind = 'team' then p_assignee_member else null end,
-      case when v_kind = 'vendor' then p_assignee_vendor else null end)
+      case when v_kind = 'vendor' then p_assignee_vendor else null end,
+      coalesce(p_flagged, false))
     returning id into v_id;  -- on_task_activity logs task_created with actor_kind='concierge' (flag set)
   perform set_config('forma.acting_as_concierge', 'off', true);
   return v_id;
 end $$;
 create or replace function public.concierge_add_task(
   p_wedding uuid, p_workspace uuid, p_title text, p_due date,
-  p_assignee_kind text, p_assignee_member uuid, p_assignee_vendor uuid, p_event uuid)
+  p_assignee_kind text, p_assignee_member uuid, p_assignee_vendor uuid, p_event uuid, p_flagged boolean)
 returns uuid language sql security invoker set search_path = public as $$
-  select private.concierge_add_task(p_wedding, p_workspace, p_title, p_due, p_assignee_kind, p_assignee_member, p_assignee_vendor, p_event); $$;
+  select private.concierge_add_task(p_wedding, p_workspace, p_title, p_due, p_assignee_kind, p_assignee_member, p_assignee_vendor, p_event, p_flagged); $$;
 
 -- ── RLS: staff full CRUD stays; restrict the member SELECT to couple-assigned only
 -- (couple/family see their tasks; day_of sees none — is_wedding_billing_member
@@ -205,11 +207,11 @@ create policy tasks_wedding_member on public.tasks for select to authenticated
 revoke execute on function
   private.guard_task_links(), private.task_state_sync(), private.on_task_activity(),
   private.complete_task(uuid), public.complete_task(uuid),
-  private.concierge_add_task(uuid, uuid, text, date, text, uuid, uuid, uuid),
-  public.concierge_add_task(uuid, uuid, text, date, text, uuid, uuid, uuid)
+  private.concierge_add_task(uuid, uuid, text, date, text, uuid, uuid, uuid, boolean),
+  public.concierge_add_task(uuid, uuid, text, date, text, uuid, uuid, uuid, boolean)
   from public, anon;
 grant execute on function
   private.complete_task(uuid), public.complete_task(uuid),
-  private.concierge_add_task(uuid, uuid, text, date, text, uuid, uuid, uuid),
-  public.concierge_add_task(uuid, uuid, text, date, text, uuid, uuid, uuid)
+  private.concierge_add_task(uuid, uuid, text, date, text, uuid, uuid, uuid, boolean),
+  public.concierge_add_task(uuid, uuid, text, date, text, uuid, uuid, uuid, boolean)
   to authenticated;

@@ -5,6 +5,7 @@ import { loadWeddingContext } from "@/lib/load-wedding";
 import { WeddingShell } from "@/components/wedding/wedding-shell";
 import { DocUpload } from "@/components/wedding/doc-upload";
 import { Card, SectionTitle, Row, RowMain, Icon } from "@/components/ui";
+import { QuickAddTask } from "@/components/tasks/quick-add";
 
 const BUCKET: Record<string, string> = { contract_artifact: "contract-artifacts", upload: "wedding-docs", vendor_file: "vendor-media", touchpoint: "wedding-docs" };
 
@@ -40,13 +41,18 @@ export default async function DocumentsTab({ params }: { params: Promise<{ local
             const url = urls.get(d.id);
             const detail = [d.source === "contract_artifact" ? t("srcContract") : d.source === "upload" ? t("srcUpload") : d.source, d.event_id ? eventLabel.get(d.event_id) : null].filter(Boolean).join(" · ");
             const inner = (
-              <Row className={url ? "-mx-2 rounded-xl px-2 hover:bg-bone" : undefined}>
+              <>
                 <Icon>{d.title.trim()[0]?.toUpperCase() ?? "D"}</Icon>
                 <RowMain title={d.title} detail={detail} />
                 {url ? <span className="shrink-0 text-[12px] text-wine">{t("open")} ↓</span> : null}
+              </>
+            );
+            return (
+              <Row key={d.id} className="-mx-2 rounded-xl px-2 hover:bg-bone">
+                {url ? <a href={url} target="_blank" rel="noopener" className="flex min-w-0 flex-1 items-center gap-3">{inner}</a> : <span className="flex min-w-0 flex-1 items-center gap-3">{inner}</span>}
+                {role === "staff" ? <QuickAddTask weddings={[]} workspaceId="" defaultWeddingId={id} prelink={{ kind: "document", id: d.id, label: d.title }} variant="inline" /> : null}
               </Row>
             );
-            return url ? <a key={d.id} href={url} target="_blank" rel="noopener" className="block">{inner}</a> : <div key={d.id}>{inner}</div>;
           })
         )}
       </Card>
