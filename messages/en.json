@@ -60,7 +60,8 @@
     "switcherStudioHint": "Overview, catalog, weddings",
     "statWeddings": "Weddings under management",
     "statChase": "To chase",
-    "profile": "Profile"
+    "profile": "Profile",
+    "calendar": "Calendar"
   },
   "wedding": {
     "wholeWedding": "Whole wedding",
@@ -364,7 +365,8 @@
     "archive": "Archive",
     "close": "Close",
     "replySubject": "About your wedding",
-    "convertError": "Couldn't convert — please try again."
+    "convertError": "Couldn't convert — please try again.",
+    "nextMeeting": "Next meeting:"
   },
   "concierge": {
     "name": "AI Concierge",
@@ -1109,5 +1111,34 @@
     "calendlyHint": "Paste your Calendly link — couples book a call without leaving your profile.",
     "instagram": "Instagram",
     "website": "Website"
+  },
+  "calendar": {
+    "prev": "Previous",
+    "next": "Next",
+    "today": "Today",
+    "month": "Month",
+    "year": "Year",
+    "species_meeting": "Meetings",
+    "species_wedding": "Wedding days",
+    "species_task": "Due work",
+    "filterWedding": "Filter by wedding",
+    "more": "+{n} more",
+    "emptyMonth": "Nothing this month.",
+    "quiet": "Quiet",
+    "meeting": "Meeting",
+    "canceled": "Canceled",
+    "join": "Join",
+    "reschedule": "Reschedule",
+    "cancelMeeting": "Cancel",
+    "calendlyTitle": "Calendly",
+    "connected": "Connected",
+    "notConnected": "Not connected",
+    "notConfigured": "Calendly isn't configured yet — the calendar still shows your wedding days and due work.",
+    "connectedAs": "Connected as {who}. New bookings appear here automatically.",
+    "connectHint": "Connect Calendly so every booking lands on your calendar automatically.",
+    "connect": "Connect Calendly",
+    "disconnect": "Disconnect",
+    "bannerConnected": "Calendly connected — your bookings are syncing.",
+    "bannerError": "Something went wrong connecting Calendly. Please try again."
   }
 }

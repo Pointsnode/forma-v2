@@ -14,6 +14,9 @@ const ALLOWLIST = new Set([
   // M10: the public directory's reads go through the service-role admin client +
   // the public_planner_* DEFINER fns (granted to service_role only, never anon).
   "src/lib/directory.ts",
+  // M11: the Calendly webhook has no session — it verifies the signature then writes
+  // the meeting via service-role (Stripe-webhook precedent).
+  "src/app/api/calendly/webhook/route.ts",
 ]);
 const PATTERNS = [/SUPABASE_SERVICE_ROLE_KEY/, /createAdminClient/];
 function* walk(dir) {
