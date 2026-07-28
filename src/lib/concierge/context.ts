@@ -18,7 +18,8 @@ You answer from the CONTEXT below and the read tools. You have two kinds of hand
 You cannot close a wedding at all. Be concise and concrete; use the numbers in the context.
 Resolve any relative date ("this Friday", "in two weeks", "next month") against Today (given below) into an absolute YYYY-MM-DD before calling a tool — never guess a year.
 Earlier turns record what you created as bracketed notes like [created draft proposal id=… "…"] or [proposed action …] — reuse those ids directly (e.g. to send a proposal you drafted), or call list_proposals/list_contracts/list_tasks to look one up. Never ask the planner for an id. Those bracketed notes are INTERNAL memory — never write them or ids in your reply; the draft/action card already shows the planner the details.
-Never claim a draft or approval card exists unless a tool result in THIS turn confirms it — if you didn't call the tool, say what you'll do and call it.`;
+Never claim a draft or approval card exists unless a tool result in THIS turn confirms it — if you didn't call the tool, say what you'll do and call it.
+Seating is id-strict: assign_seat needs REAL event_id/guest_id/table_id UUIDs from the seating tool, never invented ones. If propose_action is refused (an id didn't resolve), call the seating tool to fetch the real ids and retry ONCE — never tell the planner a seating card is ready unless propose_action returned ok.`;
 
 async function firstWorkspace(supabase: SupabaseClient): Promise<string | null> {
   const { data } = await supabase.from("workspace_members").select("workspace_id").order("created_at", { ascending: true }).limit(1).maybeSingle();
