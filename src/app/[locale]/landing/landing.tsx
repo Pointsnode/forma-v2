@@ -52,7 +52,8 @@ export function Landing({ locale, cards, regions }: { locale: Locale; cards: Dir
               <img src={IMG[s]} alt="" className="absolute inset-0 h-full w-full object-cover grayscale transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-ink/55" />
               <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/10 to-ink/45" />
-              <div className="relative p-6 text-bone">
+              {/* md:pb-16 clears the fixed bottom marquee line so EXPLORE never collides with it */}
+              <div className="relative p-6 text-bone md:pb-16">
                 <div className="font-accent text-[15px] italic text-bone/70">0{i + 1}</div>
                 <h2 className="mt-1 font-display text-[26px] leading-tight">{t(`side_${s}_name`)}</h2>
                 <p className="mt-2 font-accent text-[17px] leading-snug text-bone/85">{t(`side_${s}_tag1`)}<br />{t(`side_${s}_tag2`)}</p>
