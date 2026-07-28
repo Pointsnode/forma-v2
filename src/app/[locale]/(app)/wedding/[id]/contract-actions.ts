@@ -96,6 +96,11 @@ export async function createContract(
   const { error: bodyErr } = await supabase.from("contract_draft_content").insert({ contract_id: contract.id, body });
   if (bodyErr) console.error(`createContract body (${bodyErr.code}): ${bodyErr.message}`);
 
+  // Audit the creation (wedding-scoped; renders in the room audit trail + cockpit
+  // feed). Non-fatal — a missing audit line never blocks the create.
+  const { error: logErr } = await supabase.rpc("log_contract_created", { p_contract: contract.id });
+  if (logErr) console.error(`log_contract_created (${logErr.code}): ${logErr.message}`);
+
   revalidatePath("/[locale]/wedding/[id]", "layout");
   redirect({ href: `/wedding/${weddingId}/contracts/${contract.id}`, locale: await getLocale() });
   return { ok: true, id: contract.id };

@@ -622,6 +622,7 @@
     "draftHoldError": "Este contrato está retenido hasta que se apruebe su propuesta.",
     "error": "Algo salió mal.",
     "audit": "Registro de auditoría",
+    "verb_contract_created": "Creado — {name}",
     "verb_contract_sent": "Enviado — {name}",
     "verb_contract_signed": "Firmado — {name}",
     "verb_contract_completed": "Completado — {name}",

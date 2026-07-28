@@ -171,6 +171,38 @@ do $$ begin
   exception when foreign_key_violation then null; end;
 end $$;
 
+-- ── (9) 0009 guards: status is function-only; a new contract is born a draft ──
+-- The proven hole: a plain staff UPDATE flipping status must now be rejected.
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"11111111-0000-0000-0000-000000000001","role":"authenticated"}';
+do $$ begin
+  -- direct status write by staff → FM028 (the guard). 'b1' is 'sent' at this point.
+  begin update public.contracts set status = 'completed' where id = 'c0117ac0-0000-0000-0000-0000000000b1';
+    raise exception 'TEST FAIL: direct status write bypassed the guard';
+  exception when sqlstate 'FM028' then null; end;
+  -- a completed contract is untouched by the failed write
+  if (select status from public.contracts where id = 'c0117ac0-0000-0000-0000-0000000000a1') <> 'completed' then
+    raise exception 'TEST FAIL: completed contract mutated'; end if;
+  -- direct insert at a non-draft status → FM029 (insert guard)
+  begin insert into public.contracts (wedding_id, kind, status, title)
+    values ('cccccccc-0000-0000-0000-0000000000c1','vendor','completed','Sneaky pre-signed');
+    raise exception 'TEST FAIL: inserted a non-draft contract';
+  exception when sqlstate 'FM029' then null; end;
+  -- a legitimate draft insert still lands (the create leg's shape)
+  insert into public.contracts (id, wedding_id, kind, status, title)
+    values ('c0117ac0-0000-0000-0000-0000000000e9','cccccccc-0000-0000-0000-0000000000c1','vendor','draft','Created via UI');
+end $$;
+
+-- ── (10) contract_created activity: the UI-shape create logs an audit row ─────
+do $$ begin
+  perform public.log_contract_created('c0117ac0-0000-0000-0000-0000000000e9');
+  if not exists (select 1 from public.activity where verb = 'contract_created'
+      and (subject->>'contract_id') = 'c0117ac0-0000-0000-0000-0000000000e9') then
+    raise exception 'TEST FAIL: contract_created activity not logged'; end if;
+end $$;
+
+-- (sections 4–5 already prove the flag-wrapped lifecycle sends→signs→completes.)
+
 reset role;
 select 'contracts: ALL TESTS PASSED' as result;
 rollback;

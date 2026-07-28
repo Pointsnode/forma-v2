@@ -622,6 +622,7 @@
     "draftHoldError": "This contract is held until its proposal is approved.",
     "error": "Something went wrong.",
     "audit": "Audit trail",
+    "verb_contract_created": "Created — {name}",
     "verb_contract_sent": "Sent — {name}",
     "verb_contract_signed": "Signed — {name}",
     "verb_contract_completed": "Completed — {name}",
