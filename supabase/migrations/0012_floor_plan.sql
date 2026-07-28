@@ -140,13 +140,14 @@ end $$;
 -- the couple's locked move (staff move geometry direct under RLS; this is the couple lane)
 create or replace function private.move_floor_item(p_kind text, p_id uuid, p_x numeric, p_y numeric, p_rotation numeric)
 returns void language plpgsql security definer set search_path = public as $$
-declare w uuid; plan uuid; can_couple boolean;
+declare w uuid; plan uuid; can_couple boolean; v_staff boolean; v_name text;
 begin
-  if p_kind = 'table' then select wedding_id, floor_plan_id into w, plan from public.seating_tables where id = p_id;
-  elsif p_kind = 'element' then select wedding_id, floor_plan_id into w, plan from public.floor_elements where id = p_id;
+  if p_kind = 'table' then select wedding_id, floor_plan_id, name into w, plan, v_name from public.seating_tables where id = p_id;
+  elsif p_kind = 'element' then select wedding_id, floor_plan_id, coalesce(label, kind::text) into w, plan, v_name from public.floor_elements where id = p_id;
   else raise exception 'bad kind' using errcode = 'FV000'; end if;
   if w is null then raise exception 'no such item' using errcode = 'FV000'; end if;
-  if not private.is_wedding_staff(w) then
+  v_staff := private.is_wedding_staff(w);
+  if not v_staff then
     select couple_can_edit into can_couple from public.floor_plans where id = plan;
     if not (coalesce(can_couple, false) and private.is_wedding_billing_member(w)) then
       raise exception 'not permitted' using errcode = 'FV230';
@@ -154,7 +155,13 @@ begin
   end if;
   if p_kind = 'table' then update public.seating_tables set x = p_x, y = p_y, rotation = coalesce(p_rotation, rotation) where id = p_id;
   else update public.floor_elements set x = p_x, y = p_y, rotation = coalesce(p_rotation, rotation) where id = p_id; end if;
-  perform private.log_activity(w, (select auth.uid()), 'floor_plan_updated', null, jsonb_build_object('floor_plan_id', plan));
+  -- log only the couple's moves (a planner wants to know the couple rearranged the
+  -- room); staff geometry (incl. transform/resize via direct RLS) doesn't log —
+  -- avoids flooding the feed with a drag session's dozens of saves. summary = the
+  -- moved item's name (never null — activity.summary is NOT NULL).
+  if not v_staff then
+    perform private.log_activity(w, (select auth.uid()), 'floor_plan_updated', coalesce(v_name, p_kind), jsonb_build_object('floor_plan_id', plan, 'kind', p_kind));
+  end if;
 end $$;
 
 create or replace function private.set_couple_can_edit(p_plan uuid, p_on boolean)

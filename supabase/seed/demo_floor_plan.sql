@@ -17,9 +17,11 @@ begin
     update public.floor_plans set couple_can_edit = true where id = v_plan;
   end if;
 
-  -- a fuller attending pool for the stress case
+  -- a fuller attending pool for the stress case — but PRESERVE any 'no' (the
+  -- exception guest stays declined across re-seeds).
   update public.event_guests set invited = true, rsvp_status = 'yes'
-    where event_id = v_sangeet and guest_id in (select guest_id from public.event_guests where event_id = v_sangeet order by guest_id limit 45);
+    where event_id = v_sangeet and rsvp_status <> 'no'
+      and guest_id in (select guest_id from public.event_guests where event_id = v_sangeet order by guest_id limit 45);
 
   -- spread + reshape existing tables (round · round · banquet · rect, cycling)
   with ranked as (select id, (row_number() over (order by sort, created_at) - 1)::int as rn from public.seating_tables where floor_plan_id = v_plan)
@@ -55,14 +57,18 @@ begin
       and (select count(*) from public.seats where table_id = st.id) < st.capacity
       order by (select count(*) from public.seats where table_id = st.id) limit 1;
     exit when tbl is null;
-    select count(*) into seatn from public.seats where table_id = tbl;
+    -- the LOWEST FREE chair (heals A,B,C rather than leaving gaps from cascades)
+    select coalesce(min(gs), 0) into seatn from generate_series(0, (select capacity from public.seating_tables where id = tbl) - 1) gs
+      where gs not in (select seat_no from public.seats where table_id = tbl);
     insert into public.seats (wedding_id, table_id, event_id, guest_id, seat_no) values (v_wed, tbl, v_sangeet, g.guest_id, seatn) on conflict (event_id, guest_id) do nothing;
     last_g := g.guest_id;
   end loop;
 
-  -- one seated-then-declined guest → the RSVP-flip exception chip
-  if not exists (select 1 from public.seats se join public.event_guests eg on eg.event_id = se.event_id and eg.guest_id = se.guest_id where se.event_id = v_sangeet and eg.rsvp_status <> 'yes') and last_g is not null then
-    update public.event_guests set rsvp_status = 'no' where event_id = v_sangeet and guest_id = last_g;
+  -- one seated-then-declined guest → the exception chip. Deterministic (smallest
+  -- guest_id among the seated) so it survives re-seeds; the widen above preserves 'no'.
+  if not exists (select 1 from public.seats se join public.event_guests eg on eg.event_id = se.event_id and eg.guest_id = se.guest_id where se.event_id = v_sangeet and eg.rsvp_status <> 'yes') then
+    update public.event_guests set rsvp_status = 'no' where event_id = v_sangeet
+      and guest_id = (select guest_id from public.seats where event_id = v_sangeet order by guest_id limit 1);
   end if;
 
   -- Reception: a sparse plan on the OTHER event proves per-event isolation
