@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { exchangeCode, getMe, createWebhookSubscription } from "@/lib/calendly/api";
 import { encryptToken } from "@/lib/calendly/crypto.mjs";
 import { backfillMeetings } from "@/lib/calendly/backfill";
-import { SITE_URL } from "@/lib/env";
+import { APP_URL } from "@/lib/env";
 
 // OAuth callback: verify CSRF state, exchange the code, read the Calendly user (uri /
 // org / timezone), create the invitee webhook subscription (callback carries ?w= so
@@ -30,12 +30,14 @@ export async function GET(req: NextRequest) {
   const workspaceId = mem.workspace_id as string;
 
   try {
-    const tokens = await exchangeCode(code, `${SITE_URL}/api/calendly/callback`);
+    // APP_URL (not SITE_URL): the redirect URI must match connect's, and the webhook
+    // callback must stay on the app origin across the cutover (see env.ts).
+    const tokens = await exchangeCode(code, `${APP_URL}/api/calendly/callback`);
     const me = await getMe(tokens.accessToken);
     const sub = await createWebhookSubscription(tokens.accessToken, {
       orgUri: me.orgUri,
       userUri: me.uri,
-      callbackUrl: `${SITE_URL}/api/calendly/webhook?w=${workspaceId}`,
+      callbackUrl: `${APP_URL}/api/calendly/webhook?w=${workspaceId}`,
     });
     await supabase.from("calendly_connections").upsert(
       {

@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { randomBytes } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
 import { authorizeUrl, calendlyConfigured } from "@/lib/calendly/api";
-import { SITE_URL } from "@/lib/env";
+import { APP_URL } from "@/lib/env";
 
 // Start OAuth: set a CSRF state cookie, then bounce to Calendly's consent screen.
 // Runs under the planner's session (no service role — connect is a member action).
@@ -16,5 +16,7 @@ export async function GET(req: NextRequest) {
   const state = randomBytes(16).toString("hex");
   const jar = await cookies();
   jar.set("cal_oauth_state", state, { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 600 });
-  return NextResponse.redirect(authorizeUrl(`${SITE_URL}/api/calendly/callback`, state));
+  // APP_URL (not SITE_URL): the Calendly redirect URI is pinned to the app origin and
+  // must not move when SITE_URL flips to the marketing domain at cutover.
+  return NextResponse.redirect(authorizeUrl(`${APP_URL}/api/calendly/callback`, state));
 }

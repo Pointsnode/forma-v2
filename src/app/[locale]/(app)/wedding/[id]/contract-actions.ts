@@ -28,7 +28,9 @@ async function contractIdOf(supabase: Awaited<ReturnType<typeof createClient>>, 
 }
 
 async function baseUrl(): Promise<string> {
-  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+  // APP_URL first — signing/return URLs stay on the app origin across the cutover.
+  const app = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL;
+  if (app) return app;
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host");
   return host ? `${(h.get("x-forwarded-proto") ?? "https")}://${host}` : "http://localhost:3000";

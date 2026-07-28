@@ -14,6 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { slugs, regions } = await getPlannerSlugs();
 
   const paths = [
+    "/", // the landing (M12) — the page search engines should index first
     "/planners",
     ...[...new Set(regions.map((r) => slugifyRegion(r.region)))].filter(Boolean).map((r) => `/planners/${r}`),
     ...slugs.map((s) => `/p/${s}`),
@@ -22,7 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return paths.map((path) => ({
     url: localeUrl("en", path),
     changeFrequency: "weekly",
-    priority: path === "/planners" ? 1 : 0.8,
+    priority: path === "/" ? 1 : path === "/planners" ? 0.9 : 0.8,
     alternates: {
       languages: {
         en: localeUrl("en", path),
