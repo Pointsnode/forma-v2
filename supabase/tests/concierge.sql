@@ -130,10 +130,14 @@ set local request.jwt.claims = '{"sub":"11111111-0000-0000-0000-000000000001","r
 do $$ declare v_prop uuid; begin
   -- a fresh DRAFT proposal (via the concierge draft tool)
   v_prop := public.concierge_draft_proposal('c0000000-0000-0000-0000-0000000000c1','Venue deposit proposal', null, 12000, null);
-  -- the propose_action card is a concierge_message with action_ref (staff writes it)
+  -- TWO propose_action cards in one turn each persist as their own row (finding 2)
   insert into public.concierge_messages (thread_id, role, content, action_ref) values
     ('d0000000-0000-0000-0000-0000000000d2','concierge','Prepared for your approval',
-     jsonb_build_object('fn','send_proposal','args', jsonb_build_object('proposal_id', v_prop), 'summary','Send the venue deposit proposal','status','pending'));
+     jsonb_build_object('fn','send_proposal','args', jsonb_build_object('proposal_id', v_prop), 'summary','Send the venue deposit proposal','status','pending')),
+    ('d0000000-0000-0000-0000-0000000000d2','concierge','And one more',
+     jsonb_build_object('fn','advance_phase','args', jsonb_build_object('wedding_id','c0000000-0000-0000-0000-0000000000c1'), 'summary','Advance the phase','status','pending'));
+  if (select count(*) from public.concierge_messages where thread_id='d0000000-0000-0000-0000-0000000000d2' and action_ref is not null) <> 2 then
+    raise exception 'TEST FAIL: two proposed actions did not both persist'; end if;
 
   -- APPROVE = the endpoint's exact call shape (send_proposal as the planner). No
   -- acting_as_concierge flag → the resulting activity is stamped 'user'.

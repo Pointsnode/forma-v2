@@ -2,6 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ChatMessage, DraftRef } from "./agent";
 import type { Scope } from "./context";
+import { foldHistory } from "./history.mjs";
 
 export type Budget = { enabled: boolean; used: number; cap: number; over: boolean };
 
@@ -35,11 +36,10 @@ export async function loadThread(
     if (error || !data) throw new Error(`thread create: ${error?.message}`);
     return { threadId: data.id as string, history: [] };
   }
-  const { data: rows } = await supabase.from("concierge_messages").select("role, content").eq("thread_id", threadId).order("created_at", { ascending: true });
-  const history = ((rows ?? []) as { role: string; content: string }[]).map((m) => ({
-    role: (m.role === "concierge" ? "assistant" : "user") as ChatMessage["role"],
-    content: m.content,
-  }));
+  // Fold each row's draft_ref/action_ref into the transcript so the model remembers
+  // the ids of what it created earlier (finding 1) and no proposed card is lost (2).
+  const { data: rows } = await supabase.from("concierge_messages").select("role, content, draft_ref, action_ref").eq("thread_id", threadId).order("created_at", { ascending: true });
+  const history = foldHistory(rows ?? []) as ChatMessage[];
   return { threadId, history };
 }
 

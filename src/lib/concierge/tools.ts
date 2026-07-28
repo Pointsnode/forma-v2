@@ -18,6 +18,9 @@ export function conciergeTools(scope: Scope): ToolDef[] {
     return [
       { name: "guests_pending", description: "List guests who have not yet answered their RSVP.", input_schema: s({}) },
       { name: "ledger", description: "List this wedding's money ledger lines (title, amount, status, due date).", input_schema: s({}) },
+      { name: "list_proposals", description: "List this wedding's proposals with their id, title and status — use this to find the id of a proposal to send.", input_schema: s({}) },
+      { name: "list_contracts", description: "List this wedding's contracts with their id, title and status — use this to find the id of a contract to send.", input_schema: s({}) },
+      { name: "list_tasks", description: "List this wedding's tasks with their id, title and done state.", input_schema: s({}) },
       { name: "draft_proposal", description: "Create a DRAFT proposal for the couple (never sent). Returns a draft the planner sends from the proposal room.", input_schema: s({ title: { type: "string" }, note: { type: "string" }, estimate_amount: { type: "number" } }, ["title"]) },
       { name: "add_task", description: "Add a task for this wedding.", input_schema: s({ title: { type: "string" }, due_date: { type: "string", description: "YYYY-MM-DD" } }, ["title"]) },
       { name: "draft_contract", description: "Create a DRAFT contract from a studio template (never sent). template is the template name; kind is planner_agreement|vendor|venue.", input_schema: s({ title: { type: "string" }, template: { type: "string" }, kind: { type: "string" } }, ["title"]) },
@@ -65,6 +68,21 @@ export async function execTool(ctx: ToolCtx, name: string, input: Record<string,
       const { data } = await supabase.from("ledger_lines").select("title, amount, status, due_date").eq("wedding_id", wid).order("due_date", { ascending: true, nullsFirst: false });
       const rows = (data ?? []) as { title: string; amount: number; status: string; due_date: string | null }[];
       return { content: rows.length ? rows.map((r) => `${r.title}: ${r.amount} (${r.status}${r.due_date ? `, due ${r.due_date}` : ""})`).join("\n") : "No ledger lines yet." };
+    }
+    case "list_proposals": {
+      const { data } = await supabase.from("proposals").select("id, title, status").eq("wedding_id", wid).order("created_at", { ascending: false });
+      const rows = (data ?? []) as { id: string; title: string; status: string }[];
+      return { content: rows.length ? rows.map((r) => `${r.id} · ${r.title} · ${r.status}`).join("\n") : "No proposals yet." };
+    }
+    case "list_contracts": {
+      const { data } = await supabase.from("contracts").select("id, title, status").eq("wedding_id", wid).order("created_at", { ascending: false });
+      const rows = (data ?? []) as { id: string; title: string; status: string }[];
+      return { content: rows.length ? rows.map((r) => `${r.id} · ${r.title} · ${r.status}`).join("\n") : "No contracts yet." };
+    }
+    case "list_tasks": {
+      const { data } = await supabase.from("tasks").select("id, title, done_at").eq("wedding_id", wid).order("created_at", { ascending: false });
+      const rows = (data ?? []) as { id: string; title: string; done_at: string | null }[];
+      return { content: rows.length ? rows.map((r) => `${r.id} · ${r.title} · ${r.done_at ? "done" : "open"}`).join("\n") : "No tasks yet." };
     }
     case "draft_proposal": {
       const id = await rpcId(supabase, "concierge_draft_proposal", { p_wedding: wid, p_title: input.title, p_note: input.note ?? null, p_estimate: input.estimate_amount ?? null, p_event_ref: null });

@@ -120,8 +120,8 @@ export function ConciergeBubble({ weddings, usage: usage0 }: ConciergeBubbleProp
           const ev = JSON.parse(l) as Record<string, unknown>;
           if (ev.type === "thread") setConvo((c) => ({ ...c, threadId: ev.threadId as string }));
           else if (ev.type === "token") setConvo((c) => appendToken(c, ev.text as string));
-          else if (ev.type === "draft") setConvo((c) => attachDraft(c, ev as unknown as DraftCard));
-          else if (ev.type === "action") setConvo((c) => attachAction(c, { messageId: ev.messageId as string, fn: ev.fn as string, summary: ev.summary as string, status: "pending" }));
+          else if (ev.type === "draft") setConvo((c) => pushCard(c, { draft: { kind: ev.kind as string, id: ev.id as string, title: ev.title as string } }));
+          else if (ev.type === "action") setConvo((c) => pushCard(c, { action: { messageId: ev.messageId as string, fn: ev.fn as string, summary: ev.summary as string, status: "pending" } }));
           else if (ev.type === "done") { if (typeof ev.used === "number") setUsage((u) => ({ ...u, used: ev.used as number })); }
           else if (ev.type === "error") setConvo((c) => appendToken(c, `\n[${t("error")}]`));
         }
@@ -245,17 +245,10 @@ function appendToken(c: Convo, text: string): Convo {
   else msgs.push({ role: "concierge", content: text });
   return { ...c, messages: msgs };
 }
-function attachDraft(c: Convo, d: DraftCard): Convo {
-  const msgs = c.messages.slice();
-  const last = msgs[msgs.length - 1];
-  if (last && last.role === "concierge") msgs[msgs.length - 1] = { ...last, draft: d };
-  return { ...c, messages: msgs };
-}
-function attachAction(c: Convo, a: ActionCard): Convo {
-  const msgs = c.messages.slice();
-  const last = msgs[msgs.length - 1];
-  if (last && last.role === "concierge") msgs[msgs.length - 1] = { ...last, action: a };
-  return { ...c, messages: msgs };
+// each draft/action is its own bubble message (mirrors per-row persistence, so a
+// turn with several cards never collapses them).
+function pushCard(c: Convo, card: { draft?: DraftCard; action?: ActionCard }): Convo {
+  return { ...c, messages: [...c.messages, { role: "concierge", content: "", ...card }] };
 }
 function setAction(c: Convo, messageId: string, fn: (a: ActionCard) => ActionCard): Convo {
   return { ...c, messages: c.messages.map((m) => (m.action?.messageId === messageId ? { ...m, action: fn(m.action) } : m)) };

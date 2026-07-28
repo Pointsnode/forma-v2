@@ -3,8 +3,18 @@ import { createClient } from "@/lib/supabase/server";
 import { conciergeConfigured } from "@/lib/concierge/config";
 import { assembleContext, type Scope } from "@/lib/concierge/context";
 import { conciergeTools, execTool } from "@/lib/concierge/tools";
-import { runConciergeTurn, type DraftRef } from "@/lib/concierge/agent";
+import { runConciergeTurn } from "@/lib/concierge/agent";
 import { loadBudget, loadThread, saveMessage, assertIsolation, listThreads, loadThreadMessages } from "@/lib/concierge/session";
+
+// Planner-facing text shouldn't show raw markup — strip emphasis/headings/code ticks.
+function plain(t: string): string {
+  return t
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/__(.+?)__/g, "$1")
+    .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+    .replace(/`([^`]+)`/g, "$1")
+    .trim();
+}
 
 async function firstWorkspace(supabase: Awaited<ReturnType<typeof createClient>>): Promise<string | null> {
   // NOTE: single-studio assumption — a planner's first workspace membership. When a
@@ -96,16 +106,20 @@ export async function POST(req: NextRequest) {
           exec: (name, input) => execTool({ supabase, scope, workspaceId }, name, input),
         });
 
-        const draft: DraftRef | null = result.drafts[result.drafts.length - 1] ?? null;
-        const action = result.actions[result.actions.length - 1] ?? null;
-        const msgId = await saveMessage(supabase, threadId, "concierge", result.text, { draft, action });
+        // Persist EACH draft and EACH proposed action as its own message row — no
+        // card is droppable when the model creates several in one turn (finding 2).
+        const answer = plain(result.text);
+        if (answer) await saveMessage(supabase, threadId, "concierge", answer);
+        for (const d of result.drafts) await saveMessage(supabase, threadId, "concierge", "", { draft: d });
+        const actionRows: { action: (typeof result.actions)[number]; id: string | null }[] = [];
+        for (const a of result.actions) actionRows.push({ action: a, id: await saveMessage(supabase, threadId, "concierge", "", { action: a }) });
         await supabase.rpc("concierge_record_usage", { p_workspace: workspaceId, p_in: result.tokensIn, p_out: result.tokensOut });
 
-        // stream the answer in word chunks for a live feel
-        const words = result.text.split(/(\s+)/);
+        // stream: the answer text, then a card event per draft/action (each its own bubble message)
+        const words = answer.split(/(\s+)/);
         for (const w of words) if (w) emit({ type: "token", text: w });
         for (const d of result.drafts) emit({ type: "draft", ...d });
-        if (action) emit({ type: "action", messageId: msgId, ...action });
+        for (const { action, id } of actionRows) emit({ type: "action", messageId: id, ...action });
         emit({ type: "done", used: budget.used + result.tokensIn + result.tokensOut, cap: budget.cap });
         controller.close();
       } catch (e) {
