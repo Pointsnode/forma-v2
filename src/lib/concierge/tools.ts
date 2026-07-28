@@ -27,7 +27,7 @@ export function conciergeTools(scope: Scope): ToolDef[] {
       { name: "add_task", description: "Add a task for this wedding. Optionally assign it — assignee='couple' to give it to the couple, or assignee_member (a team member's name), or assignee_vendor (a vendor's name) — attach it to an event by label, and set flagged=true to mark it urgent. Couple/vendor tasks start in 'waiting'. Resolve any relative due date against Today.", input_schema: s({ title: { type: "string" }, due_date: { type: "string", description: "YYYY-MM-DD, resolved against Today" }, assignee: { type: "string", description: "'couple' to assign the couple; omit otherwise" }, assignee_member: { type: "string" }, assignee_vendor: { type: "string" }, event: { type: "string" }, flagged: { type: "boolean" } }, ["title"]) },
       { name: "draft_contract", description: "Create a DRAFT contract from a studio template (never sent). template is the template name; kind is planner_agreement|vendor|venue.", input_schema: s({ title: { type: "string" }, template: { type: "string" }, kind: { type: "string" } }, ["title"]) },
       { name: "add_ledger_line", description: "Add a manual EXPECTED ledger line (an anticipated cost). Never marks anything paid.", input_schema: s({ title: { type: "string" }, amount: { type: "number" }, due_date: { type: "string" } }, ["title", "amount"]) },
-      { name: "propose_action", description: "Propose a leave-the-studio action for the planner to APPROVE — you NEVER execute it. Use this whenever asked to send, sign, pay, book, request/accept/decline a quote, lock a menu, advance a phase, or schedule a touchpoint. fn ∈ [send_proposal, send_contract, request_quote, record_quote, accept_quote, decline_quote, book_engagement, lock_menu, advance_phase, schedule_touchpoint, mark_line_paid, assign_seat (args event_id, guest_id, table_id, seat_no — seat a guest on a specific chair)]. args carries the ids (e.g. {proposal_id} or {contract_id}); summary is a one-line human description of what will happen.", input_schema: s({ fn: { type: "string" }, args: { type: "object" }, summary: { type: "string" } }, ["fn", "summary"]) },
+      { name: "propose_action", description: "Propose a leave-the-studio action for the planner to APPROVE — you NEVER execute it. Use this whenever asked to send, sign, pay, book, request/accept/decline a quote, lock a menu, advance a phase, or schedule a touchpoint. fn ∈ [send_proposal, send_contract, request_quote, record_quote, accept_quote, decline_quote, book_engagement, lock_menu, advance_phase, schedule_touchpoint, mark_line_paid, assign_seat (args event_id, guest_id, table_id — all real UUIDs from the seating tool — and seat_no, the 0-based chair number A=0 B=1 C=2… as an integer; call the seating tool first to get the ids)]. args carries the ids (e.g. {proposal_id} or {contract_id}); summary is a one-line human description of what will happen.", input_schema: s({ fn: { type: "string" }, args: { type: "object" }, summary: { type: "string" } }, ["fn", "summary"]) },
     ];
   }
   return [
@@ -87,18 +87,37 @@ export async function execTool(ctx: ToolCtx, name: string, input: Record<string,
       return { content: rows.length ? rows.map((r) => `${r.id} · ${r.title} · ${r.done_at ? "done" : "open"}`).join("\n") : "No tasks yet." };
     }
     case "seating": {
-      const { data: tbls } = await supabase.from("seating_tables").select("id, name, capacity").eq("wedding_id", wid).order("sort");
-      const tables = (tbls ?? []) as { id: string; name: string; capacity: number }[];
-      if (!tables.length) return { content: "No seating tables yet." };
-      const { data: seatRows } = await supabase.from("seats").select("table_id, seat_no, guest_id").in("table_id", tables.map((t) => t.id));
+      // Return the ids the model needs to propose a seat: event_id per plan,
+      // table_id + capacity per table, chair number + guest_id per occupant, and
+      // the unseated attending guests (with ids). No ids → it can't seat anyone.
+      const { data: planRows } = await supabase.from("floor_plans").select("id, event_id").eq("wedding_id", wid);
+      const plans = (planRows ?? []) as { id: string; event_id: string }[];
+      if (!plans.length) return { content: "No floor plans yet." };
+      const eventIds = [...new Set(plans.map((p) => p.event_id))];
+      const [{ data: evs }, { data: tbls }, { data: egs }] = await Promise.all([
+        supabase.from("wedding_events").select("id, label").in("id", eventIds),
+        supabase.from("seating_tables").select("id, name, capacity, floor_plan_id").in("floor_plan_id", plans.map((p) => p.id)).order("sort"),
+        supabase.from("event_guests").select("event_id, guest_id, rsvp_status, guests(full_name)").in("event_id", eventIds),
+      ]);
+      const eventLabel = new Map(((evs ?? []) as { id: string; label: string }[]).map((e) => [e.id, e.label]));
+      const tables = (tbls ?? []) as { id: string; name: string; capacity: number; floor_plan_id: string }[];
+      const egsAll = (egs ?? []) as unknown as { event_id: string; guest_id: string; rsvp_status: string; guests: { full_name: string } | null }[];
+      const nameBy = new Map(egsAll.map((e) => [e.guest_id, e.guests?.full_name ?? "—"]));
+      const { data: seatRows } = tables.length ? await supabase.from("seats").select("table_id, seat_no, guest_id").in("table_id", tables.map((t) => t.id)) : { data: [] };
       const seats = (seatRows ?? []) as { table_id: string; seat_no: number; guest_id: string }[];
-      const gids = [...new Set(seats.map((se) => se.guest_id))];
-      const nameBy = new Map<string, string>();
-      if (gids.length) { const { data: g } = await supabase.from("guests").select("id, full_name").in("id", gids); for (const x of (g ?? []) as { id: string; full_name: string }[]) nameBy.set(x.id, x.full_name); }
-      return { content: tables.map((tb) => {
-        const occ = seats.filter((se) => se.table_id === tb.id).sort((a, b) => a.seat_no - b.seat_no).map((se) => `${seatLabel(se.seat_no)}=${nameBy.get(se.guest_id) ?? "—"}`);
-        return `${tb.name} (${occ.length}/${tb.capacity}): ${occ.join(", ") || "empty"}`;
-      }).join("\n") };
+      const out = plans.map((p) => {
+        const evTables = tables.filter((t) => t.floor_plan_id === p.id);
+        const seatedIds = new Set(seats.filter((s) => evTables.some((t) => t.id === s.table_id)).map((s) => s.guest_id));
+        const lines = [`Event ${eventLabel.get(p.event_id) ?? "—"} (event_id=${p.event_id}):`];
+        for (const tb of evTables) {
+          const occ = seats.filter((s) => s.table_id === tb.id).sort((a, b) => a.seat_no - b.seat_no).map((s) => `${seatLabel(s.seat_no)}[seat_no=${s.seat_no}]=${nameBy.get(s.guest_id) ?? "—"}[guest_id=${s.guest_id}]`);
+          lines.push(`  ${tb.name} (table_id=${tb.id}, cap ${tb.capacity}): ${occ.join(", ") || "empty"}`);
+        }
+        const unseated = egsAll.filter((e) => e.event_id === p.event_id && e.rsvp_status === "yes" && !seatedIds.has(e.guest_id)).map((e) => `${e.guests?.full_name ?? "—"}[guest_id=${e.guest_id}]`);
+        lines.push(`  Unseated attending: ${unseated.join(", ") || "none"}`);
+        return lines.join("\n");
+      });
+      return { content: out.join("\n\n") };
     }
     case "draft_proposal": {
       const id = await rpcId(supabase, "concierge_draft_proposal", { p_wedding: wid, p_title: input.title, p_note: input.note ?? null, p_estimate: input.estimate_amount ?? null, p_event_ref: null });

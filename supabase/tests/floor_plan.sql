@@ -107,6 +107,28 @@ do $$ begin
   begin perform public.assign_seat('e0000000-0000-0000-0000-0000000000e1','91110000-0000-0000-0000-000000000001','7ab10000-0000-0000-0000-0000000000a1', 0);
     raise exception 'TEST FAIL: day_of seated a guest';
   exception when sqlstate 'FV230' then null; end;
+  begin perform public.move_floor_item('table','7ab10000-0000-0000-0000-0000000000a1', 200, 200, 0);
+    raise exception 'TEST FAIL: day_of moved a table';
+  exception when sqlstate 'FV230' then null; end;
+end $$;
+
+-- ── (8) move_floor_item SUCCESS legs: staff move lands (no crash, no log);
+-- couple move lands + logs floor_plan_updated with the couple as actor ───────
+set local request.jwt.claims = '{"sub":"11111111-0000-0000-0000-000000000001","role":"authenticated"}';
+do $$ begin
+  perform public.move_floor_item('table','7ab10000-0000-0000-0000-0000000000a1', 300, 150, 45);
+  if (select x from public.seating_tables where id='7ab10000-0000-0000-0000-0000000000a1') <> 300 then raise exception 'TEST FAIL: staff move did not persist'; end if;
+  if (select rotation from public.seating_tables where id='7ab10000-0000-0000-0000-0000000000a1') <> 45 then raise exception 'TEST FAIL: staff move rotation not persisted'; end if;
+  -- staff self-moves do NOT log (avoids feed flood)
+  if exists (select 1 from public.activity where verb='floor_plan_updated' and actor_id='11111111-0000-0000-0000-000000000001') then
+    raise exception 'TEST FAIL: staff move logged activity'; end if;
+end $$;
+set local request.jwt.claims = '{"sub":"22222222-0000-0000-0000-000000000002","role":"authenticated"}';
+do $$ begin
+  perform public.move_floor_item('table','7ab10000-0000-0000-0000-0000000000a1', 120, 90, 0);  -- couple, lens on
+  if (select x from public.seating_tables where id='7ab10000-0000-0000-0000-0000000000a1') <> 120 then raise exception 'TEST FAIL: couple move did not persist'; end if;
+  if (select actor_id from public.activity where verb='floor_plan_updated' order by created_at desc limit 1) <> '22222222-0000-0000-0000-000000000002' then
+    raise exception 'TEST FAIL: couple move not logged with the couple as actor'; end if;
 end $$;
 
 reset role;

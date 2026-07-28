@@ -24,12 +24,24 @@ export function isApprovable(fn) {
   return Object.prototype.hasOwnProperty.call(APPROVAL_FNS, fn);
 }
 
-// Validate a proposed action: fn must be in the lane and every required arg present.
+const UUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
+// Validate a proposed action: fn must be in the lane, every required arg present,
+// and typed args must actually be the right type. The typed checks teach the model
+// (the failure message instructs it to fetch real ids) — so it can't propose a card
+// built from invented slugs, and a bad seat_no can't silently execute as chair A.
 export function validateAction(fn, args) {
   if (!isApprovable(fn)) return { ok: false, error: `not an approvable action: ${fn}` };
   const a = args && typeof args === "object" ? args : {};
   for (const k of APPROVAL_FNS[fn].args) {
     if (a[k] === undefined || a[k] === null || a[k] === "") return { ok: false, error: `missing ${k}` };
+  }
+  if (fn === "assign_seat") {
+    for (const k of ["event_id", "guest_id", "table_id"]) {
+      if (!UUID.test(String(a[k]))) return { ok: false, error: `${k} must be a real id (a UUID from the seating tool), not a name or slug — call the seating tool first to look them up` };
+    }
+    const n = Number(a.seat_no);
+    if (!Number.isInteger(n) || n < 0) return { ok: false, error: "seat_no must be the 0-based chair number (A=0, B=1, C=2, …), an integer — not a letter" };
   }
   return { ok: true };
 }
