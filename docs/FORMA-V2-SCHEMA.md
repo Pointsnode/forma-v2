@@ -326,3 +326,22 @@ Couples and day_of are **wedding_members, not workspace_members** — so `is_wor
 | Orchestrator: per-wedding lines + upcoming dues | `weddings` + `money_radar` |
 
 **Runtime.** A serverless agent loop inside Next.js (`/api/concierge`, Node runtime, planner session — not on the service-role allowlist). Anthropic Haiku-class default via `CONCIERGE_MODEL`/`CONCIERGE_API_KEY` (server-only env; the studio's key, never the builder's). The stable context block is prompt-cached. A soft monthly `monthly_token_cap` yields an honest refusal instead of silently eating margin.
+
+## 14. Tasks — the four-column board (M8, migration `0011_tasks`, additive on `tasks`)
+
+The board: **`task_status` = pending | working | waiting | completed**. "Waiting on" is the manual-task twin of the chase list's "someone else's court". Additive on the 0008 `tasks` table (which already carries the XOR wedding/workspace scope + composite-FK links).
+
+**Columns added:** `status` (default `pending`); `assignee_kind` (`team|couple|vendor`, null = unassigned) + `assignee_member → profiles` + `assignee_vendor → vendors`; `document_id → documents`; `link_section` (event-page anchor: schedule|menus|seating|guests|budget|design); `note`. (`done_at` stays the completion timestamp, kept in sync with `status` by a trigger — one source of truth.)
+
+**Invariants (DB-enforced — the board writes tables directly):**
+- `tasks_assignee_shape` CHECK — assignee is exactly one shape: `team`⇔member set, `vendor`⇔vendor set, `couple`⇔neither (the couple is the wedding's couple side, not a person row).
+- `tasks_one_link` CHECK — at most one subject link (`proposal_id | contract_id | engagement_id | document_id`); `event_id` + `link_section` is the separate event-section anchor. Every wedding-scoped link carries a **composite FK** so it can't cross weddings; all `ON DELETE SET NULL` so a deleted target degrades the task to unlinked, never dangles.
+- `guard_task_links` trigger — an assignee vendor must belong to the task's workspace; a linked document must belong to the task's wedding.
+- `task_state_sync` trigger — assigning to couple/vendor auto-moves `pending → waiting` (overridable by an explicit status write); `status='completed'` ⇔ `done_at`.
+- `on_task_activity` trigger — one activity path for staff (direct writes), the concierge (RPC), and couple completion: `task_created` / `task_assigned` / `task_completed`, actor = `auth.uid()`, actor_kind from the concierge flag.
+
+**RLS lanes:** staff of the wedding's workspace — full CRUD (board drag = a direct `status` update). Couple/family members — **SELECT only `assignee_kind='couple'` tasks on their wedding**; completion ONLY via `complete_task(p_task)` (staff always; couple only for couple-assigned on their wedding; no direct couple UPDATE). `day_of` — zero task access (`is_wedding_billing_member` excludes them). Nothing anon — the CI matrix stays exactly the 9.
+
+**Concierge** `add_task` gained `assignee` (`couple` / team member / vendor by name) + `event` (by label); creation stays auto-lane, completion is not a concierge tool. The verb reconciled to `task_created` for both staff and concierge.
+
+**Subject deep-link (§1E):** the card body lands at the linked object's room via `taskHref` (contract room / proposals / vendors / documents / event page), reusing the canonical routes. **Chase:** open `waiting` tasks assigned to couple or vendor join the cockpit chase list with age badges, alongside proposals.

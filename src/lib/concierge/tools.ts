@@ -22,7 +22,7 @@ export function conciergeTools(scope: Scope): ToolDef[] {
       { name: "list_contracts", description: "List this wedding's contracts with their id, title and status — use this to find the id of a contract to send.", input_schema: s({}) },
       { name: "list_tasks", description: "List this wedding's tasks with their id, title and done state.", input_schema: s({}) },
       { name: "draft_proposal", description: "Create a DRAFT proposal for the couple (never sent). Returns a draft the planner sends from the proposal room.", input_schema: s({ title: { type: "string" }, note: { type: "string" }, estimate_amount: { type: "number" } }, ["title"]) },
-      { name: "add_task", description: "Add a task for this wedding.", input_schema: s({ title: { type: "string" }, due_date: { type: "string", description: "YYYY-MM-DD" } }, ["title"]) },
+      { name: "add_task", description: "Add a task for this wedding. Optionally assign it — assignee='couple' to give it to the couple, or assignee_member (a team member's name), or assignee_vendor (a vendor's name) — and optionally attach it to an event by label. Couple/vendor tasks start in 'waiting'.", input_schema: s({ title: { type: "string" }, due_date: { type: "string", description: "YYYY-MM-DD" }, assignee: { type: "string", description: "'couple' to assign the couple; omit otherwise" }, assignee_member: { type: "string" }, assignee_vendor: { type: "string" }, event: { type: "string" } }, ["title"]) },
       { name: "draft_contract", description: "Create a DRAFT contract from a studio template (never sent). template is the template name; kind is planner_agreement|vendor|venue.", input_schema: s({ title: { type: "string" }, template: { type: "string" }, kind: { type: "string" } }, ["title"]) },
       { name: "add_ledger_line", description: "Add a manual EXPECTED ledger line (an anticipated cost). Never marks anything paid.", input_schema: s({ title: { type: "string" }, amount: { type: "number" }, due_date: { type: "string" } }, ["title", "amount"]) },
       { name: "propose_action", description: "Propose a leave-the-studio action for the planner to APPROVE — you NEVER execute it. Use this whenever asked to send, sign, pay, book, request/accept/decline a quote, lock a menu, advance a phase, or schedule a touchpoint. fn ∈ [send_proposal, send_contract, request_quote, record_quote, accept_quote, decline_quote, book_engagement, lock_menu, advance_phase, schedule_touchpoint, mark_line_paid]. args carries the ids (e.g. {proposal_id} or {contract_id}); summary is a one-line human description of what will happen.", input_schema: s({ fn: { type: "string" }, args: { type: "object" }, summary: { type: "string" } }, ["fn", "summary"]) },
@@ -89,11 +89,26 @@ export async function execTool(ctx: ToolCtx, name: string, input: Record<string,
       return { content: `Draft proposal created (id ${id}). The planner sends it from the proposal room.`, draft: { kind: "proposal", id, title: String(input.title) } };
     }
     case "add_task": {
-      const id = await rpcId(supabase, "concierge_add_task", { p_wedding: wid, p_workspace: null, p_title: input.title, p_due: input.due_date ?? null });
-      return { content: `Task added (id ${id}).`, draft: { kind: "task", id, title: String(input.title) } };
+      let kind: string | null = null, member: string | null = null, vendor: string | null = null;
+      if (String(input.assignee ?? "").toLowerCase() === "couple") kind = "couple";
+      else if (input.assignee_member && workspaceId) {
+        const { data } = await supabase.from("workspace_members").select("user_id, profiles(display_name)").eq("workspace_id", workspaceId);
+        const hit = ((data ?? []) as unknown as { user_id: string; profiles: { display_name: string | null } | null }[]).find((m) => (m.profiles?.display_name ?? "").toLowerCase().includes(String(input.assignee_member).toLowerCase()));
+        if (hit) { kind = "team"; member = hit.user_id; }
+      } else if (input.assignee_vendor && workspaceId) {
+        const { data } = await supabase.from("vendors").select("id").eq("workspace_id", workspaceId).ilike("name", `%${String(input.assignee_vendor)}%`).limit(1).maybeSingle();
+        if (data) { kind = "vendor"; vendor = data.id as string; }
+      }
+      let eventId: string | null = null;
+      if (input.event && wid) {
+        const { data } = await supabase.from("wedding_events").select("id").eq("wedding_id", wid).ilike("label", `%${String(input.event)}%`).limit(1).maybeSingle();
+        eventId = (data?.id as string) ?? null;
+      }
+      const id = await rpcId(supabase, "concierge_add_task", { p_wedding: wid, p_workspace: null, p_title: input.title, p_due: input.due_date ?? null, p_assignee_kind: kind, p_assignee_member: member, p_assignee_vendor: vendor, p_event: eventId });
+      return { content: `Task added (id ${id})${kind ? `, assigned to ${kind}` : ""}.`, draft: { kind: "task", id, title: String(input.title) } };
     }
     case "add_studio_task": {
-      const id = await rpcId(supabase, "concierge_add_task", { p_wedding: null, p_workspace: workspaceId, p_title: input.title, p_due: input.due_date ?? null });
+      const id = await rpcId(supabase, "concierge_add_task", { p_wedding: null, p_workspace: workspaceId, p_title: input.title, p_due: input.due_date ?? null, p_assignee_kind: null, p_assignee_member: null, p_assignee_vendor: null, p_event: null });
       return { content: `Studio task added (id ${id}).`, draft: { kind: "task", id, title: String(input.title) } };
     }
     case "draft_contract": {

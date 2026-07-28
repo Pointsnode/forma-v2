@@ -70,9 +70,9 @@ do $$ declare v_prop uuid; v_task uuid; v_led uuid; v_con uuid; begin
   if (select actor_kind from public.activity where verb='proposal_drafted' and (subject->>'proposal_id')=v_prop::text) <> 'concierge' then
     raise exception 'TEST FAIL: proposal_drafted not stamped concierge'; end if;
 
-  v_task := public.concierge_add_task('c0000000-0000-0000-0000-0000000000c1', null, 'Chase the florist', current_date + 7);
-  if (select actor_kind from public.activity where verb='task_drafted' and (subject->>'task_id')=v_task::text) <> 'concierge' then
-    raise exception 'TEST FAIL: task_drafted not stamped concierge'; end if;
+  v_task := public.concierge_add_task('c0000000-0000-0000-0000-0000000000c1', null, 'Chase the florist', current_date + 7, null, null, null, null);
+  if (select actor_kind from public.activity where verb='task_created' and (subject->>'task_id')=v_task::text) <> 'concierge' then
+    raise exception 'TEST FAIL: concierge task_created not stamped concierge'; end if;
 
   v_led := public.concierge_add_ledger_line('c0000000-0000-0000-0000-0000000000c1','Overtime estimate', 450, null);
   if (select status from public.ledger_lines where id = v_led) <> 'expected' then raise exception 'TEST FAIL: ledger line not expected'; end if;

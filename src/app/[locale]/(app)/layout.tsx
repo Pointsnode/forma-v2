@@ -60,7 +60,7 @@ export default async function AppLayout({
 
   return (
     <div>
-      {user ? <TopBar workspaceName={workspaceName} weddings={switcher} monogram={monogram} /> : null}
+      {user ? <TopBar workspaceName={workspaceName} weddings={switcher} monogram={monogram} workspaceId={workspaceId} /> : null}
       <main>{children}</main>
       {user && concierge && workspaceId ? (
         <ConciergeBubble weddings={concierge.weddings} usage={concierge.usage} initialPending={concierge.pending} />
