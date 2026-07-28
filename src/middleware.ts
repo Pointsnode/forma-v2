@@ -5,9 +5,10 @@ import { signInRedirectPath } from "@/lib/auth-redirect.mjs";
 import { updateSession } from "@/lib/supabase/middleware";
 
 const intl = createIntlMiddleware(routing);
-// /planners + /p are the M10 public directory (logged-out, crawlable). /menu and
-// /sign remain tokenized-public via their own guards; the directory is fully open.
-const PUBLIC = ["/sign-in", "/sign-up", "/reset", "/styleguide", "/rsvp", "/planners", "/p"];
+// "/" is the M12 landing (the storefront) for signed-out visitors — crawlable.
+// /planners + /p are the M10 public directory. /menu and /sign remain tokenized-
+// public via their own guards; the directory + landing are fully open.
+const PUBLIC = ["/", "/sign-in", "/sign-up", "/reset", "/styleguide", "/rsvp", "/planners", "/p"];
 
 export async function middleware(request: NextRequest) {
   // 1. next-intl handles locale routing and returns the base response.
@@ -15,13 +16,38 @@ export async function middleware(request: NextRequest) {
   // 2. Refresh the Supabase session onto that response.
   const user = await updateSession(request, response);
   // 3. Protect the app shell: unauthenticated users off public routes -> sign-in.
+  const prefix = request.nextUrl.pathname.match(/^\/(en|es)(?=\/|$)/)?.[0] ?? "";
   const path = request.nextUrl.pathname.replace(/^\/(en|es)(?=\/|$)/, "") || "/";
-  const isPublic = PUBLIC.some((p) => path === p || path.startsWith(`${p}/`));
+
+  // The landing is never exposed as its own URL: a DIRECT hit on /landing (any locale,
+  // signed-in or out) redirects to the locale root, which serves the landing (signed-
+  // out) or the cockpit (signed-in) at the canonical "/".
+  if (path === "/landing") {
+    const url = request.nextUrl.clone();
+    url.pathname = prefix || "/";
+    return NextResponse.redirect(url);
+  }
+
+  const isPublic = PUBLIC.some((p) => (p === "/" ? path === "/" : path === p || path.startsWith(`${p}/`)));
   if (!isPublic && !user) {
     const url = request.nextUrl.clone();
     // Locale-aware bounce: /es/* -> /es/sign-in, unprefixed -> /sign-in.
     url.pathname = signInRedirectPath(request.nextUrl.pathname, routing.locales, routing.defaultLocale);
     return NextResponse.redirect(url);
+  }
+  // Signed-out root → the public landing (internal rewrite; the URL stays "/").
+  // Only the CANONICAL roots rewrite — "/" (default locale) and "/es"; a bare "/en"
+  // is left to next-intl's as-needed redirect to "/", so there's no /en duplicate.
+  // Signed-in root falls through to the cockpit. The rewrite target MUST carry a
+  // locale segment: "/" rewrites to `/{defaultLocale}/landing`, else the single
+  // "landing" segment is read as the [locale] param and hasLocale() 404s (the gate blocker).
+  const prefixedRoots = routing.locales.filter((l) => l !== routing.defaultLocale).map((l) => `/${l}`);
+  const isCanonicalRoot = request.nextUrl.pathname === "/" || prefixedRoots.includes(request.nextUrl.pathname);
+  if (isCanonicalRoot && !user) {
+    const loc = request.nextUrl.pathname === "/" ? routing.defaultLocale : request.nextUrl.pathname.slice(1);
+    const url = request.nextUrl.clone();
+    url.pathname = `/${loc}/landing`;
+    return NextResponse.rewrite(url);
   }
   return response;
 }

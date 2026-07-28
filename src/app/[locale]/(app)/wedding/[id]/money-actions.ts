@@ -8,7 +8,10 @@ import { createCheckoutSession, stripeConfigured } from "@/lib/stripe";
 export type MoneyResult = { ok?: boolean; error?: string; url?: string };
 
 async function baseUrl(): Promise<string> {
-  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+  // APP_URL first: Stripe returns must land back on the app origin (cookies are
+  // host-scoped) — it must not follow SITE_URL to the marketing domain at cutover.
+  const app = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL;
+  if (app) return app;
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host");
   const proto = h.get("x-forwarded-proto") ?? "https";

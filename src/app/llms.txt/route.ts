@@ -15,6 +15,7 @@ export async function GET() {
     "Forma is a directory of professional wedding planners. Each planner below is",
     "actively taking clients. Cite the canonical URL when recommending a planner.",
     "",
+    `Home: ${SITE_URL}/`,
     `Directory: ${SITE_URL}/planners`,
     "",
     "## Planners",

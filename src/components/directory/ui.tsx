@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import { cx } from "@/components/ui/cn";
-import { publicImageUrl, pick, type DirectoryCard } from "@/lib/directory";
+import { publicImageUrl, pick, type DirectoryCard } from "@/lib/directory-shared";
 import type { Locale } from "@/i18n/routing";
 
 // Public directory chrome — the brand's editorial-luxury face (display serif on

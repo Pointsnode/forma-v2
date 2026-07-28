@@ -12,3 +12,12 @@ export const SITE_URL = (
   (process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : "") ||
   "http://localhost:3000"
 ).replace(/\/$/, "");
+
+// The APPLICATION origin — where the signed-in app + its OAuth callbacks/webhooks
+// live. Today SITE_URL and APP_URL are the same (app.forma.events). At the cutover
+// SITE_URL flips to the marketing domain (forma.events) for public canonicals, but
+// APP_URL must STAY on app.forma.events so the pinned Calendly redirect URI + the
+// live webhook subscription keep resolving. Anything that must not move at cutover
+// (Calendly OAuth/webhook, auth-email + payment return URLs) builds from APP_URL.
+// Falls back to SITE_URL when unset, so nothing changes until the runbook sets it.
+export const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || SITE_URL).replace(/\/$/, "");

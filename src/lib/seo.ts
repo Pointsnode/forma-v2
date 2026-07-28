@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/env";
 import type { Locale } from "@/i18n/routing";
-import type { DirectoryCard, PlannerProfile, ProfileContent, Area } from "@/lib/directory";
-import { pick, publicImageUrl, slugifyRegion } from "@/lib/directory";
+import type { DirectoryCard, PlannerProfile, ProfileContent, Area } from "@/lib/directory-shared";
+import { pick, publicImageUrl, slugifyRegion } from "@/lib/directory-shared";
 
 // SEO / answer-engine machinery for the M10 directory. Every public page is
 // server-rendered with a canonical URL, hreflang alternates for both locales, an
