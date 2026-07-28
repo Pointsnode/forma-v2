@@ -7,8 +7,9 @@ import {
 import { CreateWorkspaceForm } from "../workspace-forms";
 import { TouchLastSeen } from "./touch-last-seen";
 import { countdownLabel, formatMoney, initials, phaseLabel, PHASE_ORDER, type Phase, type WeddingRow } from "@/lib/wedding";
-import { loadCockpit } from "@/lib/cockpit";
+import { loadCockpit, loadInquiries } from "@/lib/cockpit";
 import { loadMoneyRadar } from "@/lib/money";
+import { InquiriesCard } from "./inquiries-card";
 
 export default async function StudioOverview({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -51,6 +52,8 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
     .order("date_start", { ascending: true, nullsFirst: false });
   const weddings = (data ?? []) as WeddingRow[];
   const { feed, chase } = await loadCockpit(supabase, user!.id, weddings.map((w) => ({ id: w.id, couple_display: w.couple_display })));
+  const inquiries = await loadInquiries(supabase);
+  const newInquiries = inquiries.filter((i) => i.isNew).length;
 
   // Stat tile subs — the tiles whose data exists this milestone. Money (M5) and
   // appointments (M6) are absent, not stubbed.
@@ -86,11 +89,20 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
           sub={oldest ? tc("oldestChase", { days: oldest.ageDays }) : undefined}
         />
         {radar.length ? <Stat value={fmt(due60)} label={tmoney("due60")} sub={tmoney("due60Sub", { count: radar.length })} /> : null}
+        {inquiries.length ? (
+          <Stat
+            value={inquiries.length}
+            valueClassName={newInquiries ? "text-wine" : undefined}
+            label={tc("statInquiries")}
+            sub={newInquiries ? tc("statInquiriesNew", { count: newInquiries }) : undefined}
+          />
+        ) : null}
       </StatRow>
 
       <div className="mt-[18px] grid gap-[18px] lg:grid-cols-[1.6fr_1fr]">
-        {/* left — since you were away + the chase list */}
+        {/* left — since you were away + the chase list + the directory inbox */}
         <div className="flex flex-col gap-[18px]">
+          {inquiries.length ? <InquiriesCard inquiries={inquiries} /> : null}
           <Card>
             <Heading className="text-[19px]">{tc("sinceAway")}</Heading>
             <p className="mb-3 mt-0.5 text-[12.5px] text-muted">{tc("sinceAwayHint")}</p>

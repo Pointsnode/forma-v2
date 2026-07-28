@@ -5,7 +5,9 @@ import { signInRedirectPath } from "@/lib/auth-redirect.mjs";
 import { updateSession } from "@/lib/supabase/middleware";
 
 const intl = createIntlMiddleware(routing);
-const PUBLIC = ["/sign-in", "/sign-up", "/reset", "/styleguide", "/rsvp"];
+// /planners + /p are the M10 public directory (logged-out, crawlable). /menu and
+// /sign remain tokenized-public via their own guards; the directory is fully open.
+const PUBLIC = ["/sign-in", "/sign-up", "/reset", "/styleguide", "/rsvp", "/planners", "/p"];
 
 export async function middleware(request: NextRequest) {
   // 1. next-intl handles locale routing and returns the base response.

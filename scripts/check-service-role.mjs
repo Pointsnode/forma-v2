@@ -11,6 +11,9 @@ const ALLOWLIST = new Set([
   "src/app/api/touchpoints/run/route.ts",
   "src/app/api/stripe/webhook/route.ts",
   "src/app/[locale]/sign/[token]/actions.ts",
+  // M10: the public directory's reads go through the service-role admin client +
+  // the public_planner_* DEFINER fns (granted to service_role only, never anon).
+  "src/lib/directory.ts",
 ]);
 const PATTERNS = [/SUPABASE_SERVICE_ROLE_KEY/, /createAdminClient/];
 function* walk(dir) {

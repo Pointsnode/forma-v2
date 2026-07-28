@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { WEDDING_DOCS_MIMES, DESIGN_MEDIA_MIMES } from "./bucket-mime.mjs";
+import { WEDDING_DOCS_MIMES, DESIGN_MEDIA_MIMES, PLANNER_PROFILES_MIMES } from "./bucket-mime.mjs";
 
 // Every bucket's declared allowed_mime_types must equal its shared constant, so
 // the code and the bucket can never drift (the M5 text/html-vs-pdf class of bug).
@@ -13,5 +13,6 @@ function sqlMimes(file) {
 
 assert.deepEqual(new Set(sqlMimes("wedding-docs.sql")), new Set(WEDDING_DOCS_MIMES), "wedding-docs bucket mimes != constant");
 assert.deepEqual(new Set(sqlMimes("design-media.sql")), new Set(DESIGN_MEDIA_MIMES), "design-media bucket mimes != constant");
+assert.deepEqual(new Set(sqlMimes("planner-profiles.sql")), new Set(PLANNER_PROFILES_MIMES), "planner-profiles bucket mimes != constant");
 
-console.log("bucket-mime: wedding-docs & design-media SQL agree with the constants");
+console.log("bucket-mime: wedding-docs, design-media & planner-profiles SQL agree with the constants");
