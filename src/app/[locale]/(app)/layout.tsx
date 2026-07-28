@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { TopBar, type SwitcherWedding, heroTone } from "@/components/ui";
 import { countdownDays, initials, phaseOrdinal, type Phase } from "@/lib/wedding";
 import { ConciergeBubble } from "@/components/concierge/concierge-bubble";
-import { loadBudget } from "@/lib/concierge/session";
+import { loadBudget, loadPendingCount } from "@/lib/concierge/session";
 
 // Shared app chrome: the dark top bar (wordmark · workspace · wedding switcher ·
 // planner monogram) wraps every studio and wedding surface. The studio nav row
@@ -29,7 +29,7 @@ export default async function AppLayout({
   let plannerName = "";
   let switcher: SwitcherWedding[] = [];
   let workspaceId: string | null = null;
-  let concierge: { weddings: { id: string; name: string }[]; usage: { used: number; cap: number } } | null = null;
+  let concierge: { weddings: { id: string; name: string }[]; usage: { used: number; cap: number }; pending: number } | null = null;
 
   if (user) {
     const [{ data: prof }, { data: ws }, { data: weds }] = await Promise.all([
@@ -52,7 +52,8 @@ export default async function AppLayout({
     if (workspaceId) {
       const budget = await loadBudget(supabase, workspaceId);
       if (budget.enabled) {
-        concierge = { weddings: weddingRows.map((w) => ({ id: w.id, name: w.couple_display })), usage: { used: budget.used, cap: budget.cap } };
+        const pending = await loadPendingCount(supabase);
+        concierge = { weddings: weddingRows.map((w) => ({ id: w.id, name: w.couple_display })), usage: { used: budget.used, cap: budget.cap }, pending };
       }
     }
   }
@@ -62,7 +63,7 @@ export default async function AppLayout({
       {user ? <TopBar workspaceName={workspaceName} weddings={switcher} monogram={monogram} /> : null}
       <main>{children}</main>
       {user && concierge && workspaceId ? (
-        <ConciergeBubble weddings={concierge.weddings} usage={concierge.usage} />
+        <ConciergeBubble weddings={concierge.weddings} usage={concierge.usage} initialPending={concierge.pending} />
       ) : null}
     </div>
   );

@@ -6,13 +6,17 @@ import { conciergeTools, execTool } from "@/lib/concierge/tools";
 import { runConciergeTurn } from "@/lib/concierge/agent";
 import { loadBudget, loadThread, saveMessage, assertIsolation, listThreads, loadThreadMessages } from "@/lib/concierge/session";
 
-// Planner-facing text shouldn't show raw markup — strip emphasis/headings/code ticks.
+// Planner-facing text shouldn't show raw markup or the internal id-note format —
+// strip emphasis/headings/code ticks and any [created draft …]/[proposed action …]
+// notes the model may echo from its transcript memory.
 function plain(t: string): string {
   return t
+    .replace(/\[(?:created draft|proposed action)[^\]]*\]/gi, "")
     .replace(/\*\*(.+?)\*\*/g, "$1")
     .replace(/__(.+?)__/g, "$1")
     .replace(/^\s{0,3}#{1,6}\s+/gm, "")
     .replace(/`([^`]+)`/g, "$1")
+    .replace(/[ \t]{2,}/g, " ")
     .trim();
 }
 

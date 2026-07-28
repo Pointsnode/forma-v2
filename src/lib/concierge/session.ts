@@ -6,6 +6,18 @@ import { foldHistory } from "./history.mjs";
 
 export type Budget = { enabled: boolean; used: number; cap: number; over: boolean };
 
+// Pending approval-card count across the workspace's threads — RLS already scopes
+// concierge_messages to the planner's workspace, so the count is theirs. Seeds the
+// bubble's count-dot on cold load, before any client state exists (DoD-2 signal
+// must survive reload); live state supersedes it once the panel is used.
+export async function loadPendingCount(supabase: SupabaseClient): Promise<number> {
+  const { count } = await supabase
+    .from("concierge_messages")
+    .select("id", { count: "exact", head: true })
+    .filter("action_ref->>status", "eq", "pending");
+  return count ?? 0;
+}
+
 // Month-to-date usage vs the workspace cap (Decision F — the honest meter).
 export async function loadBudget(supabase: SupabaseClient, workspaceId: string): Promise<Budget> {
   const now = new Date();

@@ -10,7 +10,7 @@ type Msg = { role: "planner" | "concierge"; content: string; draft?: DraftCard |
 type ThreadSummary = { id: string; title: string };
 type Convo = { threadId: string | null; messages: Msg[]; threads: ThreadSummary[]; loaded: boolean };
 
-export type ConciergeBubbleProps = { weddings: { id: string; name: string }[]; usage: { used: number; cap: number } };
+export type ConciergeBubbleProps = { weddings: { id: string; name: string }[]; usage: { used: number; cap: number }; initialPending?: number };
 
 function fmtTokens(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -38,7 +38,7 @@ const toMsg = (m: { id: string; role: string; content: string; draft_ref: unknow
   action: m.action_ref ? { messageId: m.id, ...(m.action_ref as Omit<ActionCard, "messageId">) } : null,
 });
 
-export function ConciergeBubble({ weddings, usage: usage0 }: ConciergeBubbleProps) {
+export function ConciergeBubble({ weddings, usage: usage0, initialPending = 0 }: ConciergeBubbleProps) {
   const t = useTranslations("concierge");
   const locale = useLocale();
   const path = usePathname();
@@ -53,7 +53,11 @@ export function ConciergeBubble({ weddings, usage: usage0 }: ConciergeBubbleProp
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const convo = convos[scopeKey] ?? EMPTY;
-  const pendingTotal = Object.values(convos).reduce((n, c) => n + c.messages.filter((m) => m.action?.status === "pending").length, 0);
+  // Cold load shows the server-seeded count; once any scope's history/live state
+  // exists, the live pending count supersedes it (DoD-2: the dot survives reload).
+  const anyLoaded = Object.values(convos).some((c) => c.loaded || c.messages.length > 0);
+  const livePending = Object.values(convos).reduce((n, c) => n + c.messages.filter((m) => m.action?.status === "pending").length, 0);
+  const pendingTotal = anyLoaded ? livePending : initialPending;
 
   const setConvo = useCallback((updater: (c: Convo) => Convo) => {
     setConvos((prev) => ({ ...prev, [scopeKey]: updater(prev[scopeKey] ?? EMPTY) }));
