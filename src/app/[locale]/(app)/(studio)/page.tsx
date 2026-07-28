@@ -103,7 +103,11 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
                   <RowMain
                     title={
                       <>
-                        <span className="font-medium">{f.actorName ?? "Forma"}</span> {tc(`verb.${f.verb}`)}
+                        {f.actorKind === "concierge" ? (
+                          <span className="font-medium"><span aria-hidden className="mr-1 inline-flex h-4 w-4 -translate-y-px items-center justify-center rounded-full bg-ink align-middle text-[10px] leading-none text-bone">c</span>{tc("byConcierge", { planner: f.actorName ?? "" })}</span>
+                        ) : (
+                          <span className="font-medium">{f.actorName ?? "Forma"}</span>
+                        )} {tc(`verb.${f.verb}`)}
                         {f.summary ? <span className="font-normal text-muted"> — {f.summary}</span> : null}
                       </>
                     }
