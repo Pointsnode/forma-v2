@@ -153,8 +153,12 @@ end $$;
 -- ── (7) documents backfill is idempotent (re-run inserts nothing new) ───────
 do $$ declare before int; begin
   select count(*) into before from public.documents where source='contract_artifact';
+  -- fixture plants an already-completed contract; the 0009 insert-guard demands
+  -- the lifecycle flag for a non-draft insert.
+  perform set_config('forma.status_via_fn', 'on', true);
   insert into public.contracts (id, wedding_id, kind, status, title, artifact_path)
     values ('c0117ac0-0000-0000-0000-0000000000d1','cccccccc-0000-0000-0000-0000000000c1','vendor','completed','Doc test', 'cccccccc-0000-0000-0000-0000000000c1/c0117ac0-0000-0000-0000-0000000000d1.html');
+  perform set_config('forma.status_via_fn', 'off', true);
   insert into public.documents (wedding_id, title, source, storage_path, contract_id)
     select wedding_id, title, 'contract_artifact', artifact_path, id from public.contracts where id='c0117ac0-0000-0000-0000-0000000000d1'
     on conflict (contract_id) where (source='contract_artifact') do nothing;

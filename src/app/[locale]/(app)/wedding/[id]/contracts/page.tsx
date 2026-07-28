@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { loadWeddingContext } from "@/lib/load-wedding";
 import { loadContracts } from "@/lib/contracts";
 import { WeddingShell } from "@/components/wedding/wedding-shell";
+import { NewContract } from "@/components/contracts/new-contract";
 import { Card, SectionTitle, Row, RowMain, Badge, Icon, type BadgeTone } from "@/components/ui";
 
 const STATUS_TONE: Record<string, BadgeTone> = {
@@ -20,10 +21,14 @@ export default async function ContractsTab({ params }: { params: Promise<{ local
   const { wedding, events, role } = ctx;
   const tc = await getTranslations("contract");
   const contracts = await loadContracts(supabase, id);
+  const templates = role === "staff" && wedding.workspace_id
+    ? ((await supabase.from("contract_templates").select("id, name, kind").eq("workspace_id", wedding.workspace_id).order("created_at")).data ?? [])
+    : [];
 
   return (
     <WeddingShell wedding={wedding} events={events} role={role} active="contracts">
       <SectionTitle title={tc("all")} accent={tc("allHint")} className="mt-0" />
+      {role === "staff" ? <div className="mb-3"><NewContract weddingId={id} templates={templates as { id: string; name: string; kind: string }[]} /></div> : null}
       <Card>
         {contracts.length === 0 ? (
           <p className="py-6 text-center font-accent text-[15px] text-muted">{tc("empty")}</p>

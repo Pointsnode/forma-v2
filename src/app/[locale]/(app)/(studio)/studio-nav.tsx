@@ -12,12 +12,14 @@ export function StudioNav() {
   const t = useTranslations("studio");
   const tv = useTranslations("vendors");
   const tops = useTranslations("ops");
+  const tc = useTranslations("contract");
   const path = usePathname();
-  const items: { href: "/" | "/weddings" | "/venues" | "/vendors" | "/tasks"; label: string }[] = [
+  const items: { href: "/" | "/weddings" | "/venues" | "/vendors" | "/contracts" | "/tasks"; label: string }[] = [
     { href: "/", label: t("overview") },
     { href: "/weddings", label: t("weddings") },
     { href: "/venues", label: tv("venues") },
     { href: "/vendors", label: tv("vendors") },
+    { href: "/contracts", label: tc("tab") },
     { href: "/tasks", label: tops("tasksTab") },
   ];
   return (

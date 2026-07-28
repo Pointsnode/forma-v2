@@ -7,6 +7,7 @@ import { loadContractRoom } from "@/lib/contracts";
 import { ensureArtifactFiled } from "@/lib/contract-artifact";
 import { WeddingShell } from "@/components/wedding/wedding-shell";
 import { SendButton, VoidButton } from "@/components/contracts/room-controls";
+import { DraftBody, FieldsEditor, SignersEditor } from "@/components/contracts/draft-editors";
 import { Card, Heading, Badge, WhoBadge, Check, Row, RowMain, cx, type BadgeTone } from "@/components/ui";
 import { substituteBody } from "@/lib/merge-body";
 
@@ -29,6 +30,7 @@ export default async function ContractRoom({ params }: { params: Promise<{ local
   if (!room || room.contract.wedding_id !== id) notFound();
   const { contract, body, fields, signers, blockingTitle } = room;
   const held = !!contract.blocking_proposal_id && contract.status === "draft";
+  const editable = role === "staff" && contract.status === "draft";
   const renderedBody = substituteBody(body, Object.fromEntries(fields.map((f) => [f.field_key, f.resolved])));
 
   // A completed contract's stamped copy — self-heal it (staff can upload under RLS;
@@ -65,10 +67,14 @@ export default async function ContractRoom({ params }: { params: Promise<{ local
               {artifactUrl ? <a href={artifactUrl} target="_blank" rel="noopener" className="ml-auto text-[12.5px] text-wine hover:underline hover:underline-offset-2">{tc("downloadCopy")} ↓</a> : null}
             </div>
             <p className="mb-4 font-accent text-[15px] italic text-taupe">{tc("draftSub")}</p>
-            {renderedBody ? <p className="mb-4 whitespace-pre-wrap text-[13.5px] leading-[1.7] text-ink-soft">{renderedBody}</p> : null}
-            {fields.length ? (
+            {editable ? (
+              <DraftBody contractId={cid} body={body} />
+            ) : renderedBody ? (
+              <p className="mb-4 whitespace-pre-wrap text-[13.5px] leading-[1.7] text-ink-soft">{renderedBody}</p>
+            ) : null}
+            {editable ? null : fields.length ? (
               <>
-                <p className="mb-2 text-[11px] uppercase tracking-[0.12em] text-muted">{tc("mergeFields")}</p>
+                <p className="mb-2 mt-4 text-[11px] uppercase tracking-[0.12em] text-muted">{tc("mergeFields")}</p>
                 <div className="flex flex-wrap gap-2">
                   {fields.map((f) => (
                     <span key={f.id} className={cx(
@@ -83,6 +89,12 @@ export default async function ContractRoom({ params }: { params: Promise<{ local
               </>
             ) : null}
           </Card>
+
+          {editable ? (
+            <Card>
+              <FieldsEditor contractId={cid} fields={fields.map((f) => ({ id: f.id, field_key: f.field_key, label: f.label, merge_source: f.merge_source, signer_order: f.signer_order, required: f.required }))} />
+            </Card>
+          ) : null}
 
           {held ? (
             <Card>
@@ -100,18 +112,24 @@ export default async function ContractRoom({ params }: { params: Promise<{ local
         {/* signing ceremony + controls + audit */}
         <div className="flex flex-col gap-[18px]">
           <Card>
-            <Heading className="text-[18px]">{tc("ceremony")}</Heading>
-            <p className="mb-3 mt-0.5 text-[12.5px] text-muted">{tc("ceremonyHint")}</p>
-            {signers.map((s) => (
-              <Row key={s.id}>
-                <span className="font-accent text-[14px] italic text-taupe">{s.sign_order}</span>
-                <WhoBadge who={whoFor(s.role)}>{(s.name.trim()[0] ?? "?").toUpperCase()}</WhoBadge>
-                <RowMain title={s.name} detail={s.email ?? tc(`role_${s.role}`)} />
-                {s.declined_at ? <Badge tone="wine">{tc("declined")}</Badge>
-                  : s.signed_at ? <Badge tone="sage">{tc("signed")}</Badge>
-                  : <Badge tone="sand">{tc("queued")}</Badge>}
-              </Row>
-            ))}
+            {editable ? (
+              <SignersEditor contractId={cid} signers={signers.map((s) => ({ id: s.id, sign_order: s.sign_order, role: s.role, name: s.name, email: s.email }))} />
+            ) : (
+              <>
+                <Heading className="text-[18px]">{tc("ceremony")}</Heading>
+                <p className="mb-3 mt-0.5 text-[12.5px] text-muted">{tc("ceremonyHint")}</p>
+                {signers.map((s) => (
+                  <Row key={s.id}>
+                    <span className="font-accent text-[14px] italic text-taupe">{s.sign_order}</span>
+                    <WhoBadge who={whoFor(s.role)}>{(s.name.trim()[0] ?? "?").toUpperCase()}</WhoBadge>
+                    <RowMain title={s.name} detail={s.email ?? tc(`role_${s.role}`)} />
+                    {s.declined_at ? <Badge tone="wine">{tc("declined")}</Badge>
+                      : s.signed_at ? <Badge tone="sage">{tc("signed")}</Badge>
+                      : <Badge tone="sand">{tc("queued")}</Badge>}
+                  </Row>
+                ))}
+              </>
+            )}
             {role === "staff" ? (
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {contract.status === "draft" ? <SendButton contractId={cid} held={held} /> : null}
