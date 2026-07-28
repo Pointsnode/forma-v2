@@ -2,7 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { initials } from "@/lib/wedding";
 
-export type FeedItem = { id: string; verb: string; summary: string; actorName: string | null; tag: string };
+export type FeedItem = { id: string; verb: string; summary: string; actorName: string | null; tag: string; actorKind: "user" | "concierge" };
 export type ChaseItem = { proposalId: string; title: string; weddingId: string; tag: string; ageDays: number };
 
 // The two cockpit cards, scoped by RLS to the viewer's weddings. `weddings` is the
@@ -21,12 +21,12 @@ export async function loadCockpit(
   // Since you were away — activity since last visit, others' actions only.
   const { data: acts } = await supabase
     .from("activity")
-    .select("id, wedding_id, actor_id, verb, summary, created_at")
+    .select("id, wedding_id, actor_id, verb, summary, created_at, actor_kind")
     .gt("created_at", since)
     .order("created_at", { ascending: false })
     .limit(24);
-  const feedRaw = ((acts ?? []) as { id: string; wedding_id: string; actor_id: string | null; verb: string; summary: string }[])
-    .filter((a) => a.actor_id !== userId);
+  const feedRaw = ((acts ?? []) as { id: string; wedding_id: string; actor_id: string | null; verb: string; summary: string; actor_kind: "user" | "concierge" }[])
+    .filter((a) => a.actor_id !== userId || a.actor_kind === "concierge");
   const actorIds = [...new Set(feedRaw.map((a) => a.actor_id).filter((x): x is string => !!x))];
   const actorNames = new Map<string, string | null>();
   if (actorIds.length) {
@@ -39,6 +39,7 @@ export async function loadCockpit(
     summary: a.summary,
     actorName: a.actor_id ? actorNames.get(a.actor_id) ?? "—" : null,
     tag: tag(a.wedding_id),
+    actorKind: a.actor_kind,
   }));
 
   // The chase list — proposals in the couple's court, oldest first.

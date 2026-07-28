@@ -45,7 +45,7 @@ export default async function ContractRoom({ params }: { params: Promise<{ local
 
   // audit trail — this contract's activity
   const { data: acts } = await supabase
-    .from("activity").select("id, verb, summary, created_at, actor_id")
+    .from("activity").select("id, verb, summary, created_at, actor_id, actor_kind")
     .eq("wedding_id", id).contains("subject", { contract_id: cid })
     .order("created_at", { ascending: true });
 
@@ -142,9 +142,12 @@ export default async function ContractRoom({ params }: { params: Promise<{ local
             <Card>
               <Heading className="text-[18px]">{tc("audit")}</Heading>
               <div className="mt-2">
-                {((acts ?? []) as { id: string; verb: string; summary: string; created_at: string }[]).map((a) => (
+                {((acts ?? []) as { id: string; verb: string; summary: string; created_at: string; actor_kind: "user" | "concierge" }[]).map((a) => (
                   <Row key={a.id}>
-                    <RowMain title={tc(`verb_${a.verb}`, { name: a.summary })} detail={new Date(a.created_at).toLocaleDateString(lang === "es" ? "es-ES" : "en-US")} />
+                    <RowMain
+                      title={<>{a.actor_kind === "concierge" ? <span aria-hidden className="mr-1 inline-flex h-4 w-4 -translate-y-px items-center justify-center rounded-full bg-ink align-middle text-[10px] leading-none text-bone">c</span> : null}{tc(`verb_${a.verb}`, { name: a.summary })}</>}
+                      detail={new Date(a.created_at).toLocaleDateString(lang === "es" ? "es-ES" : "en-US")}
+                    />
                   </Row>
                 ))}
               </div>

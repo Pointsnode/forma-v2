@@ -294,3 +294,35 @@ Every surface in v1.12, traced to its data. This is the "everything links" audit
 | Contract room (fields, ceremony, audit, draft-hold) | contracts suite + `merge_source` resolution + `blocking_proposal_id` |
 | Day-of run of show + extras + close | `schedule_items.done_at` · `day_of_extra` lines · `close_wedding` predicate |
 ```
+
+## 13. Concierge (M7 — the agent layer, migration `0010_concierge`)
+
+An opted-in studio gets a concierge: an **orchestrator** (studio floor) over a mesh of **one-wedding agents** (one per wedding), mirroring the product's two-story shape. It reads the §12 surfaces and **drafts** — it never sends, signs, pays, advances, or closes. Draft-first is the *toolset*, not a prompt rule: the send/sign/pay/advance/close functions are simply absent from the registry, and the 0009 status guards + function grants stand behind that.
+
+**Tables**
+
+| Table | Shape | RLS |
+|---|---|---|
+| `concierge_settings` | `workspace_id` PK · `enabled` (default false) · `model_tier` · `monthly_token_cap` (default 20M) · timestamps | staff of workspace SELECT; writes are the studio's lever (service/manual) |
+| `concierge_threads` | `id` · `workspace_id` · `wedding_id` NULL + **composite FK** `(wedding_id, workspace_id)→weddings(id, workspace_id)` (NULL = orchestrator; two-story shape) · `title` · `created_by` · timestamps | staff of workspace ALL |
+| `concierge_messages` | `id` · `thread_id` · `role` ('planner'\|'concierge') · `content` · `draft_ref` jsonb (the draft this turn created) · `created_at` | staff via thread's workspace |
+| `concierge_usage` | `(workspace_id, day)` PK · `tokens_in` · `tokens_out` — the honest meter | staff SELECT; writes via `concierge_record_usage` |
+
+Couples and day_of are **wedding_members, not workspace_members** — so `is_workspace_member` RLS shuts them out of every concierge table (verified in `concierge.sql`: couple + day_of see zero with rows present).
+
+**Identity & actor_kind.** The concierge acts through the planner's own RLS session — no new auth user, no service-role in the loop. `activity` gains `actor_kind` enum `('user','concierge')` (additive, default 'user'); `private.log_activity` stamps it from a transaction-local `forma.acting_as_concierge` flag (the 0009 pattern). Feeds render concierge rows as "Concierge (para {planner})".
+
+**Draft-write tools** (SECURITY DEFINER, staff-checked, flag-wrapped): `concierge_draft_proposal` · `concierge_add_task` · `concierge_draft_contract` · `concierge_add_ledger_line` (all → a draft/expected row + a stamped activity verb: `proposal_drafted` / `task_drafted` / `contract_created` / `ledger_drafted`), plus `concierge_record_usage`. Reads run as the planner's session (RLS). Nothing here is anon — the anon matrix stays exactly 9.
+
+**§12 → context mapping** (the agent's reading list, assembled server-side per scope — a wedding scope emits ONLY that wedding's rows; isolation is by construction + RLS, never prompt):
+
+| Context line | Reads |
+|---|---|
+| Wedding facts / phase / countdown | `weddings` + `wedding_events` |
+| Open gate items | `gateItems()` over the mesh (mirrors `advance_wedding_phase`) |
+| Money (budget/paid/committed/open) | `wedding_money_rollup` |
+| Guest progress | `guest_rsvp_rollup`; unanswered names via `guest_exceptions` |
+| Vendors / contracts / run-of-show | goal mesh (`wedding_vendors`, `contracts`, `schedule_items`) |
+| Orchestrator: per-wedding lines + upcoming dues | `weddings` + `money_radar` |
+
+**Runtime.** A serverless agent loop inside Next.js (`/api/concierge`, Node runtime, planner session — not on the service-role allowlist). Anthropic Haiku-class default via `CONCIERGE_MODEL`/`CONCIERGE_API_KEY` (server-only env; the studio's key, never the builder's). The stable context block is prompt-cached. A soft monthly `monthly_token_cap` yields an honest refusal instead of silently eating margin.

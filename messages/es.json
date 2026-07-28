@@ -334,13 +334,37 @@
       "menu_locked": "bloqueó un menú",
       "guest_menu_chosen": "eligió un menú",
       "document_filed": "archivó un documento",
-      "day_of_extra_added": "añadió un extra del día"
+      "day_of_extra_added": "añadió un extra del día",
+      "proposal_drafted": "redactó una propuesta",
+      "task_drafted": "agregó una tarea",
+      "ledger_drafted": "agregó un costo previsto",
+      "contract_created": "redactó un contrato"
     },
+    "byConcierge": "Concierge (para {planner})",
     "greetingTitle": "Buenos días, {name}",
     "greetingDate": "{date} — el estudio de un vistazo",
     "nInPhase": "{count} en {phase}",
     "oldestChase": "El más antiguo lleva {days} días en manos de alguien",
     "ageDays": "{days}d"
+  },
+  "concierge": {
+    "name": "AI Concierge",
+    "helper": "Habla con tu concierge",
+    "orchestratorHint": "En todas tus bodas",
+    "scoped": "Concierge · {name}",
+    "scopedHint": "Solo esta boda",
+    "collapse": "Contraer",
+    "emptyStudio": "Pregunta por cualquier boda — qué vence, quién espera, qué sigue.",
+    "emptyWedding": "Pregunta por {name} — solo conozco esta boda.",
+    "placeholder": "Pregunta, o pídeme un borrador…",
+    "send": "Enviar",
+    "meter": "Este mes: {used} de {cap}",
+    "error": "algo salió mal",
+    "openDraft": "Abrir borrador",
+    "draftKind_proposal": "Propuesta",
+    "draftKind_task": "Tarea",
+    "draftKind_contract": "Contrato",
+    "draftKind_ledger": "Cuenta"
   },
   "guests": {
     "tab": "Invitados",

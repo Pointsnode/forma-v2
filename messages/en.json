@@ -334,13 +334,37 @@
       "menu_locked": "locked a menu",
       "guest_menu_chosen": "chose a menu",
       "document_filed": "filed a document",
-      "day_of_extra_added": "added a day-of extra"
+      "day_of_extra_added": "added a day-of extra",
+      "proposal_drafted": "drafted a proposal",
+      "task_drafted": "added a task",
+      "ledger_drafted": "added an expected cost",
+      "contract_created": "drafted a contract"
     },
+    "byConcierge": "Concierge (for {planner})",
     "greetingTitle": "Good morning, {name}",
     "greetingDate": "{date} — the studio at a glance",
     "nInPhase": "{count} in {phase}",
     "oldestChase": "Oldest is {days} days in someone's court",
     "ageDays": "{days}d"
+  },
+  "concierge": {
+    "name": "AI Concierge",
+    "helper": "Talk to your concierge",
+    "orchestratorHint": "Across all your weddings",
+    "scoped": "Concierge · {name}",
+    "scopedHint": "This wedding only",
+    "collapse": "Collapse",
+    "emptyStudio": "Ask about any wedding — what's due, who's waiting, what's next.",
+    "emptyWedding": "Ask about {name} — I know this wedding only.",
+    "placeholder": "Ask, or ask me to draft…",
+    "send": "Send",
+    "meter": "This month: {used} of {cap}",
+    "error": "something went wrong",
+    "openDraft": "Open draft",
+    "draftKind_proposal": "Proposal",
+    "draftKind_task": "Task",
+    "draftKind_contract": "Contract",
+    "draftKind_ledger": "Ledger"
   },
   "guests": {
     "tab": "Guest list",
