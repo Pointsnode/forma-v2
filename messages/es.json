@@ -60,7 +60,8 @@
     "switcherStudioHint": "Resumen, catálogo, bodas",
     "statWeddings": "Bodas en gestión",
     "statChase": "Por atender",
-    "profile": "Perfil"
+    "profile": "Perfil",
+    "calendar": "Calendario"
   },
   "wedding": {
     "wholeWedding": "Boda completa",
@@ -364,7 +365,8 @@
     "archive": "Archivar",
     "close": "Cerrar",
     "replySubject": "Sobre tu boda",
-    "convertError": "No se pudo convertir; inténtalo de nuevo."
+    "convertError": "No se pudo convertir; inténtalo de nuevo.",
+    "nextMeeting": "Próxima reunión:"
   },
   "concierge": {
     "name": "AI Concierge",
@@ -1109,5 +1111,34 @@
     "calendlyHint": "Pega tu enlace de Calendly: las parejas agendan sin salir de tu perfil.",
     "instagram": "Instagram",
     "website": "Sitio web"
+  },
+  "calendar": {
+    "prev": "Anterior",
+    "next": "Siguiente",
+    "today": "Hoy",
+    "month": "Mes",
+    "year": "Año",
+    "species_meeting": "Reuniones",
+    "species_wedding": "Días de boda",
+    "species_task": "Pendientes",
+    "filterWedding": "Filtrar por boda",
+    "more": "+{n} más",
+    "emptyMonth": "Nada este mes.",
+    "quiet": "Tranquilo",
+    "meeting": "Reunión",
+    "canceled": "Cancelada",
+    "join": "Unirse",
+    "reschedule": "Reagendar",
+    "cancelMeeting": "Cancelar",
+    "calendlyTitle": "Calendly",
+    "connected": "Conectado",
+    "notConnected": "Sin conectar",
+    "notConfigured": "Calendly aún no está configurado; el calendario sigue mostrando tus días de boda y pendientes.",
+    "connectedAs": "Conectado como {who}. Las nuevas citas aparecen aquí automáticamente.",
+    "connectHint": "Conecta Calendly para que cada cita llegue a tu calendario automáticamente.",
+    "connect": "Conectar Calendly",
+    "disconnect": "Desconectar",
+    "bannerConnected": "Calendly conectado: tus citas se están sincronizando.",
+    "bannerError": "Algo salió mal al conectar Calendly. Inténtalo de nuevo."
   }
 }

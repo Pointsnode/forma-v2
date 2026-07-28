@@ -9,6 +9,7 @@ import { TouchLastSeen } from "./touch-last-seen";
 import { countdownLabel, formatMoney, initials, phaseLabel, PHASE_ORDER, type Phase, type WeddingRow } from "@/lib/wedding";
 import { loadCockpit, loadInquiries } from "@/lib/cockpit";
 import { loadMoneyRadar } from "@/lib/money";
+import { loadNextMeeting } from "@/lib/calendar";
 import { InquiriesCard } from "./inquiries-card";
 
 export default async function StudioOverview({ params }: { params: Promise<{ locale: string }> }) {
@@ -71,6 +72,12 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
   const due60 = radar.reduce((s, r) => s + Number(r.amount), 0);
   const fmt = (n: number) => formatMoney(n, lang) ?? "—";
 
+  // The calendar's whisper — the soonest meeting in the next 7 days (exceptions-first).
+  const soon = await loadNextMeeting(supabase);
+  const soonWhen = soon
+    ? new Intl.DateTimeFormat(lang === "es" ? "es-ES" : "en-US", { weekday: "short", hour: "numeric", minute: "2-digit", timeZone: soon.timezone }).format(new Date(soon.startAt))
+    : null;
+
   return (
     <div>
       <TouchLastSeen />
@@ -98,6 +105,15 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
           />
         ) : null}
       </StatRow>
+
+      {soon && soonWhen ? (
+        <Link href="/calendar" className="mt-3 inline-flex items-center gap-2 rounded-full bg-paper px-3.5 py-1.5 text-[13px] shadow-card transition-shadow hover:shadow-lift">
+          <span className="h-2 w-2 rounded-full bg-ink" />
+          <span className="text-muted">{tc("nextMeeting")}</span>
+          <span className="font-medium text-ink">{soon.invitee}</span>
+          <span className="text-taupe">· {soonWhen}</span>
+        </Link>
+      ) : null}
 
       <div className="mt-[18px] grid gap-[18px] lg:grid-cols-[1.6fr_1fr]">
         {/* left — since you were away + the chase list + the directory inbox */}

@@ -14,13 +14,14 @@ export function StudioNav() {
   const tops = useTranslations("ops");
   const tc = useTranslations("contract");
   const path = usePathname();
-  const items: { href: "/" | "/weddings" | "/venues" | "/vendors" | "/contracts" | "/tasks" | "/profile"; label: string }[] = [
+  const items: { href: "/" | "/weddings" | "/venues" | "/vendors" | "/contracts" | "/tasks" | "/calendar" | "/profile"; label: string }[] = [
     { href: "/", label: t("overview") },
     { href: "/weddings", label: t("weddings") },
     { href: "/venues", label: tv("venues") },
     { href: "/vendors", label: tv("vendors") },
     { href: "/contracts", label: tc("tab") },
     { href: "/tasks", label: tops("tasksTab") },
+    { href: "/calendar", label: t("calendar") },
     { href: "/profile", label: t("profile") },
   ];
   return (
