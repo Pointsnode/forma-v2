@@ -4,6 +4,48 @@ import { initials } from "@/lib/wedding";
 
 export type FeedItem = { id: string; verb: string; summary: string; actorName: string | null; tag: string; actorKind: "user" | "concierge" };
 export type ChaseItem = { id: string; title: string; weddingId: string; tag: string; ageDays: number; href: string; kind: "proposal" | "task" };
+export type InquiryItem = {
+  id: string;
+  name: string;
+  partnerName: string | null;
+  email: string;
+  phone: string | null;
+  message: string;
+  weddingDate: string | null;
+  status: "new" | "replied";
+  ageDays: number;
+  isNew: boolean;
+};
+
+// The directory's inbox card — open inquiries (new + replied) across the viewer's
+// workspaces, RLS-scoped, exceptions-first (new before replied, then newest). The
+// "new" flag drives the wine badge, matching the chase card's overdue idiom.
+export async function loadInquiries(supabase: SupabaseClient): Promise<InquiryItem[]> {
+  const { data } = await supabase
+    .from("inquiries")
+    .select("id, name, partner_name, email, phone, message, wedding_date, status, created_at")
+    .in("status", ["new", "replied"])
+    .order("created_at", { ascending: false })
+    .limit(12);
+  const now = Date.now();
+  const rows = ((data ?? []) as {
+    id: string; name: string; partner_name: string | null; email: string; phone: string | null;
+    message: string; wedding_date: string | null; status: "new" | "replied"; created_at: string;
+  }[]).map((r) => ({
+    id: r.id,
+    name: r.name,
+    partnerName: r.partner_name,
+    email: r.email,
+    phone: r.phone,
+    message: r.message,
+    weddingDate: r.wedding_date,
+    status: r.status,
+    ageDays: Math.max(0, Math.floor((now - new Date(r.created_at).getTime()) / 86_400_000)),
+    isNew: r.status === "new",
+  }));
+  // Exceptions-first: unreplied (new) rise to the top, then most-recent.
+  return rows.sort((a, b) => Number(b.isNew) - Number(a.isNew));
+}
 
 // The two cockpit cards, scoped by RLS to the viewer's weddings. `weddings` is the
 // already-loaded studio list (id → couple_display) used only for the wedding tag.
