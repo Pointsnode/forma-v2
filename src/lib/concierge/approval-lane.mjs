@@ -17,6 +17,7 @@ export const APPROVAL_FNS = {
   advance_phase: { args: ["wedding_id"] },
   schedule_touchpoint: { args: ["wedding_id", "kind"] },
   mark_line_paid: { args: ["line_id"] },
+  assign_seat: { args: ["event_id", "guest_id", "table_id", "seat_no"] },
 };
 
 export function isApprovable(fn) {

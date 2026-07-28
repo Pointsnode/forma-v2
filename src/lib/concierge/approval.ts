@@ -33,6 +33,7 @@ export async function executeApproval(sb: SupabaseClient, fn: string, args: Reco
     case "advance_phase": return rpc(sb, "advance_phase", { w: S("wedding_id") });
     case "schedule_touchpoint": { const r = await sendTouchpoint(S("wedding_id"), S("kind") as "menu_collect" | "day_of_schedule"); return r.error ? { error: r.error } : { ok: true }; }
     case "mark_line_paid": { const r = await setLineStatus(S("line_id"), "paid"); return r.error ? { error: r.error } : { ok: true }; }
+    case "assign_seat": return rpc(sb, "assign_seat", { p_event: S("event_id"), p_guest: S("guest_id"), p_table: S("table_id"), p_seat_no: Number(args.seat_no) || 0 });
     default: return { error: "invalid" };
   }
 }

@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ToolDef, DraftRef, ActionRef } from "./agent";
 import type { Scope } from "./context";
 import { validateAction } from "./approval-lane.mjs";
+import { seatLabel } from "@/lib/seat-geometry.mjs";
 
 // The registry IS the draft-first guarantee (Decision C): reads + draft-writes
 // only. No send/sign/pay/advance/close tool exists — so even a jailbroken prompt
@@ -21,11 +22,12 @@ export function conciergeTools(scope: Scope): ToolDef[] {
       { name: "list_proposals", description: "List this wedding's proposals with their id, title and status — use this to find the id of a proposal to send.", input_schema: s({}) },
       { name: "list_contracts", description: "List this wedding's contracts with their id, title and status — use this to find the id of a contract to send.", input_schema: s({}) },
       { name: "list_tasks", description: "List this wedding's tasks with their id, title and done state.", input_schema: s({}) },
+      { name: "seating", description: "The seating for this wedding's events — each table with its capacity and who sits in which chair. Use to answer 'who sits at table 5'.", input_schema: s({}) },
       { name: "draft_proposal", description: "Create a DRAFT proposal for the couple (never sent). Returns a draft the planner sends from the proposal room.", input_schema: s({ title: { type: "string" }, note: { type: "string" }, estimate_amount: { type: "number" } }, ["title"]) },
       { name: "add_task", description: "Add a task for this wedding. Optionally assign it — assignee='couple' to give it to the couple, or assignee_member (a team member's name), or assignee_vendor (a vendor's name) — attach it to an event by label, and set flagged=true to mark it urgent. Couple/vendor tasks start in 'waiting'. Resolve any relative due date against Today.", input_schema: s({ title: { type: "string" }, due_date: { type: "string", description: "YYYY-MM-DD, resolved against Today" }, assignee: { type: "string", description: "'couple' to assign the couple; omit otherwise" }, assignee_member: { type: "string" }, assignee_vendor: { type: "string" }, event: { type: "string" }, flagged: { type: "boolean" } }, ["title"]) },
       { name: "draft_contract", description: "Create a DRAFT contract from a studio template (never sent). template is the template name; kind is planner_agreement|vendor|venue.", input_schema: s({ title: { type: "string" }, template: { type: "string" }, kind: { type: "string" } }, ["title"]) },
       { name: "add_ledger_line", description: "Add a manual EXPECTED ledger line (an anticipated cost). Never marks anything paid.", input_schema: s({ title: { type: "string" }, amount: { type: "number" }, due_date: { type: "string" } }, ["title", "amount"]) },
-      { name: "propose_action", description: "Propose a leave-the-studio action for the planner to APPROVE — you NEVER execute it. Use this whenever asked to send, sign, pay, book, request/accept/decline a quote, lock a menu, advance a phase, or schedule a touchpoint. fn ∈ [send_proposal, send_contract, request_quote, record_quote, accept_quote, decline_quote, book_engagement, lock_menu, advance_phase, schedule_touchpoint, mark_line_paid]. args carries the ids (e.g. {proposal_id} or {contract_id}); summary is a one-line human description of what will happen.", input_schema: s({ fn: { type: "string" }, args: { type: "object" }, summary: { type: "string" } }, ["fn", "summary"]) },
+      { name: "propose_action", description: "Propose a leave-the-studio action for the planner to APPROVE — you NEVER execute it. Use this whenever asked to send, sign, pay, book, request/accept/decline a quote, lock a menu, advance a phase, or schedule a touchpoint. fn ∈ [send_proposal, send_contract, request_quote, record_quote, accept_quote, decline_quote, book_engagement, lock_menu, advance_phase, schedule_touchpoint, mark_line_paid, assign_seat (args event_id, guest_id, table_id, seat_no — seat a guest on a specific chair)]. args carries the ids (e.g. {proposal_id} or {contract_id}); summary is a one-line human description of what will happen.", input_schema: s({ fn: { type: "string" }, args: { type: "object" }, summary: { type: "string" } }, ["fn", "summary"]) },
     ];
   }
   return [
@@ -83,6 +85,20 @@ export async function execTool(ctx: ToolCtx, name: string, input: Record<string,
       const { data } = await supabase.from("tasks").select("id, title, done_at").eq("wedding_id", wid).order("created_at", { ascending: false });
       const rows = (data ?? []) as { id: string; title: string; done_at: string | null }[];
       return { content: rows.length ? rows.map((r) => `${r.id} · ${r.title} · ${r.done_at ? "done" : "open"}`).join("\n") : "No tasks yet." };
+    }
+    case "seating": {
+      const { data: tbls } = await supabase.from("seating_tables").select("id, name, capacity").eq("wedding_id", wid).order("sort");
+      const tables = (tbls ?? []) as { id: string; name: string; capacity: number }[];
+      if (!tables.length) return { content: "No seating tables yet." };
+      const { data: seatRows } = await supabase.from("seats").select("table_id, seat_no, guest_id").in("table_id", tables.map((t) => t.id));
+      const seats = (seatRows ?? []) as { table_id: string; seat_no: number; guest_id: string }[];
+      const gids = [...new Set(seats.map((se) => se.guest_id))];
+      const nameBy = new Map<string, string>();
+      if (gids.length) { const { data: g } = await supabase.from("guests").select("id, full_name").in("id", gids); for (const x of (g ?? []) as { id: string; full_name: string }[]) nameBy.set(x.id, x.full_name); }
+      return { content: tables.map((tb) => {
+        const occ = seats.filter((se) => se.table_id === tb.id).sort((a, b) => a.seat_no - b.seat_no).map((se) => `${seatLabel(se.seat_no)}=${nameBy.get(se.guest_id) ?? "—"}`);
+        return `${tb.name} (${occ.length}/${tb.capacity}): ${occ.join(", ") || "empty"}`;
+      }).join("\n") };
     }
     case "draft_proposal": {
       const id = await rpcId(supabase, "concierge_draft_proposal", { p_wedding: wid, p_title: input.title, p_note: input.note ?? null, p_estimate: input.estimate_amount ?? null, p_event_ref: null });

@@ -71,9 +71,22 @@ export async function addTable(planId: string, weddingId: string, form: FormData
   const { error } = await supabase.from("seating_tables").insert({ floor_plan_id: planId, wedding_id: weddingId, name, capacity: num(form.get("capacity")) || 8 });
   if (error) return { error: "generic" }; rv(); return { ok: true };
 }
-export async function assignSeat(eventId: string, guestId: string, tableId: string): Promise<OpsResult> {
+export async function assignSeat(eventId: string, guestId: string, tableId: string, seatNo?: number): Promise<OpsResult> {
   const supabase = await createClient();
-  const { error } = await supabase.rpc("assign_seat", { p_event: eventId, p_guest: guestId, p_table: tableId });
+  // Canvas passes a specific chair; the list view auto-picks the lowest free chair.
+  let seat = seatNo;
+  if (seat == null) {
+    const [{ data: tbl }, { data: taken }] = await Promise.all([
+      supabase.from("seating_tables").select("capacity").eq("id", tableId).maybeSingle(),
+      supabase.from("seats").select("seat_no").eq("table_id", tableId),
+    ]);
+    const used = new Set(((taken ?? []) as { seat_no: number }[]).map((s) => s.seat_no));
+    const cap = (tbl?.capacity as number) ?? 8;
+    seat = 0;
+    while (seat < cap && used.has(seat)) seat++;
+    if (seat >= cap) return { error: "FS042" }; // table full
+  }
+  const { error } = await supabase.rpc("assign_seat", { p_event: eventId, p_guest: guestId, p_table: tableId, p_seat_no: seat });
   if (error) return { error: error.code || "generic" }; rv(); return { ok: true };
 }
 export async function unseat(eventId: string, guestId: string): Promise<OpsResult> {
