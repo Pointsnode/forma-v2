@@ -18,10 +18,12 @@
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
+    "konva": "^9.3.22",
     "next": "16.2.12",
     "next-intl": "^4.13.4",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-konva": "^18.2.16"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.2.12",

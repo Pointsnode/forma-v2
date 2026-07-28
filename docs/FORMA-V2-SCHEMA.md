@@ -347,3 +347,20 @@ The board: **`task_status` = pending | working | waiting | completed**. "Waiting
 **Subject deep-link (§1E):** the card body lands at the linked object's room via `taskHref` (contract room / proposals / vendors / documents / event page, honoring an `#link_section` anchor), reusing the canonical routes. Contextual "+ Task" affordances on proposal cards, the contract room, the engagement lane and document rows open the quick-add **pre-linked** (the link rides in as a removable chip). **Chase:** open `waiting` tasks assigned to couple or vendor join the cockpit chase list with age badges, alongside proposals.
 
 **Urgency:** `flagged boolean` (default false) — a flagged card shows a solid-wine flag and sorts ABOVE overdue at the top of its column; toggled from the card menu / edit sheet / concierge `add_task`; the couple sees the flag but can't set it. The master board carries filter chips (by wedding, multi-select monograms + Flagged / Overdue / Due today, additive); the wedding board carries the urgency filters only.
+
+## 15. Floor plan & seating (M9, migration `0012_floor_plan`, additive on 0008)
+
+v1's react-konva seating editor, rebuilt on v2's per-event foundations — closing v1's five connectivity holes. Placement: the event page's **Seating section** (canvas ↔ list toggle), per event.
+
+**The five holes → closed:**
+- **H1 wedding-scoped seating** — already healed: 0008 `floor_plans` are event-owned, `seats` are keyed `(event_id, guest_id)` with a composite FK to `event_guests`, so a guest can't be seated at an event they're not on.
+- **H2 canvas ≠ list** — ONE entity: `seating_tables` gains geometry (`shape round|rect|banquet`, `x y rotation width height`) — the table IS the canvas object. Décor lives in new `floor_elements` (kind + geometry + label, **no capacity, no chairs**).
+- **H3 lawless chair** — `seats.seat_no` is NOT NULL + `unique (table_id, seat_no)`; `guard_table_capacity` bounds it (`0 ≤ seat_no < capacity`); `guard_capacity_shrink` refuses shrinking below an occupied chair ("chair E is taken"). One shared `seatLabel(seat_no)` (0→A) feeds canvas, list, exports, escort cards.
+- **H4 seatable ignored RSVPs** — `assign_seat` re-validates `rsvp_status='yes'` for THIS event (FS040); the sidebar/panel list only that event's attending guests; a seated-then-declined guest surfaces as an **exception chip**, never a silent lie; totals read "seated X of Y attending."
+- **H5 couple editing bolted-on** — couple writes are **function-only from day one**: `assign_seat`/`unseat`/`move_floor_item` gain a couple lane gated by `is_wedding_billing_member` **and** `floor_plans.couple_can_edit` (staff toggle via `set_couple_can_edit`); day_of is excluded by construction; geometry create/resize/rotate/delete stays staff.
+
+**Functions:** `assign_seat(p_event, p_guest, p_table, p_seat_no)` (widened; attending + capacity + double-book + lane checks; logs `seat_assigned`), `unseat` (+ couple lane, `seat_unseated`), `move_floor_item(kind, id, x, y, rotation)` (the couple's locked move, `floor_plan_updated`), `set_couple_can_edit(plan, on)` (staff). Nothing anon — the matrix stays 9.
+
+**RLS:** staff CRUD on `floor_plans`/`seating_tables`/`seats`/`floor_elements`; any wedding member SELECT — **day_of sees names on the chart** (they run the room on the day; documented — email/contact stays blind per M6). Couple writes are function-only.
+
+**Editor:** react-konva Stage (client-only, dynamic `ssr:false`) — v1's mechanics: 10px grid snap, 15° rotation snap, transformer resize/rotate, Delete-key, debounced save whisper, chairs derived from `seatPositions` (ring / two long sides), empty chair = paper dot + letter, occupied = wine dot + initials, click-a-chair assignment panel over the attending checklist. **Exports:** PNG (2× via `stage.toDataURL`); a print route (`/…/seating/print`) for the PDF title block + escort cards (name · table · chair · dietary). **Concierge:** a read-only `seating` tool answers "who sits at table 5"; `assign_seat` is in the approval lane (propose-only), never seated directly.

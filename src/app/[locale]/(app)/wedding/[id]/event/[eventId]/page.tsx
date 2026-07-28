@@ -6,8 +6,10 @@ import { loadWeddingContext } from "@/lib/load-wedding";
 import { WeddingShell } from "@/components/wedding/wedding-shell";
 import { EventEditor } from "@/components/wedding/event-forms";
 import { EventPruning } from "@/components/guests/event-pruning";
-import { ScheduleCard, MenusCard, SeatingCard } from "@/components/wedding/event-ops";
+import { ScheduleCard, MenusCard } from "@/components/wedding/event-ops";
+import { FloorSection } from "@/components/floor/floor-section";
 import { loadEventOps } from "@/lib/event-ops";
+import { loadFloorPlan } from "@/lib/floor-plan";
 import { Card, Heading, StatRow, Stat } from "@/components/ui";
 import { dayNumber, formatTime, formatMoney } from "@/lib/wedding";
 
@@ -21,7 +23,7 @@ export default async function EventPage({
   const supabase = await createClient();
   const ctx = await loadWeddingContext(supabase, id);
   if (!ctx || ctx.role === "none") notFound();
-  const { wedding, events, role } = ctx;
+  const { wedding, events, role, userId } = ctx;
 
   // Single-event law: with no event layer, an event page has no standing.
   if (events.length < 2) redirect({ href: `/wedding/${id}`, locale });
@@ -51,6 +53,14 @@ export default async function EventPage({
 
   const ops = await loadEventOps(supabase, id, event.id);
   const live = wedding.phase === "wedding_days";
+
+  // Seating editor — per event. Couple gets the lens (billing member); day_of read-only.
+  const floor = await loadFloorPlan(supabase, event.id);
+  let floorRole: "staff" | "couple" | "view" = "staff";
+  if (role === "member") {
+    const { data: m } = await supabase.from("wedding_members").select("role").eq("wedding_id", id).eq("user_id", userId).maybeSingle();
+    floorRole = (m?.role as string) === "day_of" ? "view" : "couple";
+  }
 
   // event Budget slice (tagged ledger lines + trace) — role permitting (day_of blind)
   const { data: sliceLines } = await supabase.from("ledger_lines").select("id, title, amount, status, engagement_id, wedding_vendors(vendors(name))").eq("wedding_id", id).eq("event_id", event.id).order("created_at");
@@ -119,7 +129,12 @@ export default async function EventPage({
 
         <section id="schedule"><ScheduleCard weddingId={id} eventId={event.id} items={ops.schedule} live={live} /></section>
         <section id="menus"><MenusCard weddingId={id} eventId={event.id} menus={ops.menus} /></section>
-        <section id="seating"><SeatingCard weddingId={id} eventId={event.id} seating={ops.seating} /></section>
+        <section id="seating">
+          <FloorSection eventId={event.id} weddingId={id} eventLabel={event.label}
+            planId={floor.plan?.id ?? null} canvas={floor.plan?.canvas ?? { w: 2000, h: 1200 }} coupleCanEdit={floor.plan?.coupleCanEdit ?? false}
+            tables={floor.tables} elements={floor.elements} attendees={floor.attendees} exceptions={floor.exceptions}
+            seatedCount={floor.seatedCount} attendingCount={floor.attendingCount} role={floorRole} />
+        </section>
 
         {budgetLines.length ? (
           <section id="slice">

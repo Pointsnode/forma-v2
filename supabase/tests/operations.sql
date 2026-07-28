@@ -60,16 +60,16 @@ insert into public.documents (wedding_id, title, source) values ('cccccccc-0000-
 
 -- ── (1) cross-wedding seat: W2's table under W1 → composite FK rejects ────────
 do $$ begin
-  begin insert into public.seats (wedding_id, table_id, event_id, guest_id)
-    values ('cccccccc-0000-0000-0000-0000000000c1','7ab1e111-0000-0000-0000-0000000000b1','eeee0000-0000-0000-0000-0000000000e1','9111a111-0000-0000-0000-000000000001');
+  begin insert into public.seats (wedding_id, table_id, event_id, guest_id, seat_no)
+    values ('cccccccc-0000-0000-0000-0000000000c1','7ab1e111-0000-0000-0000-0000000000b1','eeee0000-0000-0000-0000-0000000000e1','9111a111-0000-0000-0000-000000000001', 0);
     raise exception 'TEST FAIL: seated at a cross-wedding table';
   exception when foreign_key_violation then null; end;
 end $$;
 
 -- ── (2) seat at the wrong event: guest not invited to E1 → FK rejects ────────
 do $$ begin
-  begin insert into public.seats (wedding_id, table_id, event_id, guest_id)
-    values ('cccccccc-0000-0000-0000-0000000000c1','7ab1e111-0000-0000-0000-0000000000a1','eeee0000-0000-0000-0000-0000000000e1','9111a111-0000-0000-0000-00000000000a');
+  begin insert into public.seats (wedding_id, table_id, event_id, guest_id, seat_no)
+    values ('cccccccc-0000-0000-0000-0000000000c1','7ab1e111-0000-0000-0000-0000000000a1','eeee0000-0000-0000-0000-0000000000e1','9111a111-0000-0000-0000-00000000000a', 0);
     raise exception 'TEST FAIL: seated a guest at an event they are not in';
   exception when foreign_key_violation then null; end;
 end $$;
@@ -78,7 +78,7 @@ end $$;
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"11111111-0000-0000-0000-000000000001","role":"authenticated"}';
 do $$ declare s uuid; begin
-  s := public.assign_seat('eeee0000-0000-0000-0000-0000000000e1','9111a111-0000-0000-0000-000000000001','7ab1e111-0000-0000-0000-0000000000a1');
+  s := public.assign_seat('eeee0000-0000-0000-0000-0000000000e1','9111a111-0000-0000-0000-000000000001','7ab1e111-0000-0000-0000-0000000000a1', 0);
   if s is null then raise exception 'TEST FAIL: assign_seat returned null'; end if;
 end $$;
 reset role;
