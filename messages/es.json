@@ -364,7 +364,13 @@
     "draftKind_proposal": "Propuesta",
     "draftKind_task": "Tarea",
     "draftKind_contract": "Contrato",
-    "draftKind_ledger": "Cuenta"
+    "draftKind_ledger": "Cuenta",
+    "approve": "Aprobar",
+    "dismiss": "Descartar",
+    "statusApproved": "Aprobado — listo",
+    "statusDismissed": "Descartado",
+    "actionFailed": "No se pudo completar",
+    "newThread": "Nuevo"
   },
   "guests": {
     "tab": "Invitados",

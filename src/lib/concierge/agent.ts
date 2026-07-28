@@ -7,8 +7,9 @@ import { CONCIERGE_API_KEY, CONCIERGE_API_URL, CONCIERGE_MODEL, CONCIERGE_MAX_TO
 
 export type ChatMessage = { role: "user" | "assistant"; content: unknown };
 export type ToolDef = { name: string; description: string; input_schema: Record<string, unknown> };
-export type ToolExec = (name: string, input: Record<string, unknown>) => Promise<{ content: string; draft?: DraftRef }>;
+export type ToolExec = (name: string, input: Record<string, unknown>) => Promise<{ content: string; draft?: DraftRef; action?: ActionRef }>;
 export type DraftRef = { kind: string; id: string; title: string };
+export type ActionRef = { fn: string; args: Record<string, unknown>; summary: string; status: "pending" };
 
 type Block =
   | { type: "text"; text: string }
@@ -40,7 +41,7 @@ async function callAnthropic(system: string, messages: ChatMessage[], tools: Too
   return (await res.json()) as ApiResponse;
 }
 
-export type TurnResult = { text: string; drafts: DraftRef[]; tokensIn: number; tokensOut: number };
+export type TurnResult = { text: string; drafts: DraftRef[]; actions: ActionRef[]; tokensIn: number; tokensOut: number };
 
 // Run one planner turn to completion: the model may call read/write tools; we
 // execute them (each already RLS/staff-scoped) and loop until it answers. Draft
@@ -55,6 +56,7 @@ export async function runConciergeTurn(opts: {
 }): Promise<TurnResult> {
   const messages: ChatMessage[] = [...opts.history, { role: "user", content: opts.userText }];
   const drafts: DraftRef[] = [];
+  const actions: ActionRef[] = [];
   let tokensIn = 0, tokensOut = 0;
   const maxSteps = opts.maxSteps ?? 6;
 
@@ -71,6 +73,7 @@ export async function runConciergeTurn(opts: {
         try {
           const out = await opts.exec(tu.name, tu.input ?? {});
           if (out.draft) drafts.push(out.draft);
+          if (out.action) actions.push(out.action);
           results.push({ type: "tool_result", tool_use_id: tu.id, content: out.content });
         } catch (e) {
           results.push({ type: "tool_result", tool_use_id: tu.id, content: `error: ${e instanceof Error ? e.message : "failed"}` });
@@ -81,7 +84,7 @@ export async function runConciergeTurn(opts: {
     }
 
     const text = res.content.filter((b): b is Extract<Block, { type: "text" }> => b.type === "text").map((b) => b.text).join("").trim();
-    return { text, drafts, tokensIn, tokensOut };
+    return { text, drafts, actions, tokensIn, tokensOut };
   }
-  return { text: "", drafts, tokensIn, tokensOut };
+  return { text: "", drafts, actions, tokensIn, tokensOut };
 }

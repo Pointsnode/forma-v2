@@ -364,7 +364,13 @@
     "draftKind_proposal": "Proposal",
     "draftKind_task": "Task",
     "draftKind_contract": "Contract",
-    "draftKind_ledger": "Ledger"
+    "draftKind_ledger": "Ledger",
+    "approve": "Approve",
+    "dismiss": "Dismiss",
+    "statusApproved": "Approved — done",
+    "statusDismissed": "Dismissed",
+    "actionFailed": "Couldn't complete",
+    "newThread": "New"
   },
   "guests": {
     "tab": "Guest list",

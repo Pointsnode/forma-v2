@@ -46,4 +46,14 @@ begin
       (pa_thread, 'concierge', 'El contrato sigue retenido hasta que la pareja apruebe el concepto "Bougainvillea & brass". Lo que falta es enviar la revisión floral. Te dejé una tarea para perseguirla — tú decides cuándo enviarla.',
         jsonb_build_object('kind','task','id',pa_task,'title','Perseguir la revisión floral (desbloquea el contrato)'));
   end if;
+
+  -- a pending APPROVAL card (the second lane): the concierge proposes sending the
+  -- florals contract; Approve would hit the draft-hold and surface the function's
+  -- own refusal on the card — the exceptions-first count-dot lights for this.
+  if not exists (select 1 from public.concierge_messages where thread_id = pa_thread and action_ref is not null) then
+    insert into public.concierge_messages (thread_id, role, content, action_ref) values
+      (pa_thread, 'concierge', 'Cuando la pareja apruebe el concepto, esto queda listo para enviar a firma. ¿Lo apruebas?',
+        jsonb_build_object('fn','send_contract','args', jsonb_build_object('contract_id','c0117ac0-0000-4000-a000-0000000000fa'),
+          'summary','Enviar el contrato de florales de P&A para firma','status','pending'));
+  end if;
 end $$;

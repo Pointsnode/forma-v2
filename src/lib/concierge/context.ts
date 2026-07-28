@@ -12,9 +12,10 @@ export type Scope = { kind: "wedding"; weddingId: string } | { kind: "orchestrat
 export type AssembledContext = { system: string; weddingIds: string[]; workspaceId: string | null };
 
 const GUIDE = `You are the Forma concierge, an assistant for a wedding planner working inside their studio software.
-You answer from the CONTEXT below and the read tools, and you DRAFT work (proposals, tasks, contracts from templates, ledger lines) using the draft tools.
-You NEVER send, sign, pay, advance a phase, or close a wedding — those are the planner's to click. If asked to send/sign/pay, politely decline, create the relevant draft instead, and point to the button in the app.
-Be concise and concrete. Use the numbers in the context. Reply in the planner's language.`;
+You answer from the CONTEXT below and the read tools. You have two kinds of hands:
+- DRAFT tools (create draft proposal / task / contract-from-template / expected ledger line) — these make safe drafts directly.
+- propose_action — for anything that would LEAVE the studio (send, sign, pay, book, request/accept/decline a quote, lock a menu, advance a phase, schedule a touchpoint). You NEVER execute these; you propose them and the planner approves with a tap. If asked to "just send it", do NOT refuse and do NOT send — call propose_action so an approval card appears, and say so.
+You cannot close a wedding at all. Be concise and concrete; use the numbers in the context.`;
 
 async function firstWorkspace(supabase: SupabaseClient): Promise<string | null> {
   const { data } = await supabase.from("workspace_members").select("workspace_id").order("created_at", { ascending: true }).limit(1).maybeSingle();
@@ -58,12 +59,13 @@ async function weddingBlock(supabase: SupabaseClient, id: string): Promise<{ tex
   return { text: lines.join("\n"), name: wedding.couple_display };
 }
 
-export async function assembleContext(supabase: SupabaseClient, scope: Scope): Promise<AssembledContext> {
+export async function assembleContext(supabase: SupabaseClient, scope: Scope, locale = "en"): Promise<AssembledContext> {
   const workspaceId = await firstWorkspace(supabase);
+  const langLine = `\n\nThe planner's language is "${locale}". Reply in it.`;
   if (scope.kind === "wedding") {
     const block = await weddingBlock(supabase, scope.weddingId);
-    if (!block) return { system: GUIDE + "\n\n(no wedding in scope)", weddingIds: [], workspaceId };
-    const system = `${GUIDE}\n\nSCOPE: you are the agent for ONE wedding — ${block.name}. You know this wedding only; you have no access to any other wedding.\n\nCONTEXT:\n${block.text}`;
+    if (!block) return { system: GUIDE + langLine + "\n\n(no wedding in scope)", weddingIds: [], workspaceId };
+    const system = `${GUIDE}${langLine}\n\nSCOPE: you are the agent for ONE wedding — ${block.name}. You know this wedding only; you have no access to any other wedding.\n\nCONTEXT:\n${block.text}`;
     return { system, weddingIds: [scope.weddingId], workspaceId };
   }
 
@@ -81,6 +83,6 @@ export async function assembleContext(supabase: SupabaseClient, scope: Scope): P
     return `- ${w.couple_display} (id ${w.id}) · phase ${w.phase}${days != null ? ` · ${days >= 0 ? `${days}d to day one` : `${-days}d ago`}` : ""} · budget ${formatMoney(w.budget_total ?? 0, "en") ?? "—"}`;
   });
   const dues = radarRows.slice(0, 12).map((r) => `- ${r.couple_display}: ${r.title} ${formatMoney(r.amount, "en") ?? ""} due ${r.due_date} (${r.status})`);
-  const system = `${GUIDE}\n\nSCOPE: you are the studio orchestrator — you see workspace-level rollups across all weddings, and per-wedding summaries. For deep work inside one wedding, the planner opens that wedding.\n\nWEDDINGS (${weddings.length}):\n${lines.join("\n") || "none"}\n\nUPCOMING DUES (next 60 days):\n${dues.join("\n") || "none"}`;
+  const system = `${GUIDE}${langLine}\n\nSCOPE: you are the studio orchestrator — you see workspace-level rollups across all weddings, and per-wedding summaries. For deep work inside one wedding, the planner opens that wedding.\n\nWEDDINGS (${weddings.length}):\n${lines.join("\n") || "none"}\n\nUPCOMING DUES (next 60 days):\n${dues.join("\n") || "none"}`;
   return { system, weddingIds: weddings.map((w) => w.id), workspaceId };
 }

@@ -4,16 +4,43 @@ import { conciergeConfigured } from "@/lib/concierge/config";
 import { assembleContext, type Scope } from "@/lib/concierge/context";
 import { conciergeTools, execTool } from "@/lib/concierge/tools";
 import { runConciergeTurn, type DraftRef } from "@/lib/concierge/agent";
-import { loadBudget, loadThread, saveMessage, assertIsolation } from "@/lib/concierge/session";
+import { loadBudget, loadThread, saveMessage, assertIsolation, listThreads, loadThreadMessages } from "@/lib/concierge/session";
+
+async function firstWorkspace(supabase: Awaited<ReturnType<typeof createClient>>): Promise<string | null> {
+  // NOTE: single-studio assumption — a planner's first workspace membership. When a
+  // planner can belong to two studios this must scope by the current surface (the
+  // layout already knows it). Documented in the PR body.
+  const { data } = await supabase.from("workspace_members").select("workspace_id").order("created_at", { ascending: true }).limit(1).maybeSingle();
+  return (data?.workspace_id as string) ?? null;
+}
 
 // Node runtime (server session + no edge). The concierge acts through the signed-in
 // planner's RLS session — no service-role here, so this route is NOT on the
 // service-role allowlist.
 export const dynamic = "force-dynamic";
 
-type Body = { threadId?: string | null; scope?: { weddingId?: string | null } | null; message?: string };
+type Body = { threadId?: string | null; scope?: { weddingId?: string | null } | null; message?: string; locale?: string };
 
 const line = (o: unknown) => new TextEncoder().encode(JSON.stringify(o) + "\n");
+
+// GET — the panel's history: the scope's threads + the requested (or most recent)
+// thread's messages. RLS scopes to the planner's workspace.
+export async function GET(req: NextRequest) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const url = new URL(req.url);
+  const weddingId = url.searchParams.get("weddingId");
+  const wantThread = url.searchParams.get("threadId");
+  const scope: Scope = weddingId ? { kind: "wedding", weddingId } : { kind: "orchestrator" };
+  const workspaceId = await firstWorkspace(supabase);
+  if (!workspaceId) return NextResponse.json({ threads: [], threadId: null, messages: [] });
+
+  const threads = await listThreads(supabase, scope, workspaceId);
+  const threadId = wantThread ?? threads[0]?.id ?? null;
+  const messages = threadId ? await loadThreadMessages(supabase, threadId) : [];
+  return NextResponse.json({ threads, threadId, messages });
+}
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -24,9 +51,9 @@ export async function POST(req: NextRequest) {
   const message = (body.message ?? "").trim();
   if (!message) return NextResponse.json({ error: "empty" }, { status: 400 });
   const scope: Scope = body.scope?.weddingId ? { kind: "wedding", weddingId: body.scope.weddingId } : { kind: "orchestrator" };
+  const locale = body.locale === "es" ? "es" : "en";
 
-  const { data: wsRow } = await supabase.from("workspace_members").select("workspace_id").order("created_at", { ascending: true }).limit(1).maybeSingle();
-  const workspaceId = (wsRow?.workspace_id as string) ?? null;
+  const workspaceId = await firstWorkspace(supabase);
   if (!workspaceId) return NextResponse.json({ error: "no_workspace" }, { status: 403 });
 
   const budget = await loadBudget(supabase, workspaceId);
@@ -60,7 +87,7 @@ export async function POST(req: NextRequest) {
           return;
         }
 
-        const { system } = await assembleContext(supabase, scope);
+        const { system } = await assembleContext(supabase, scope, locale);
         await assertIsolation(supabase, system, scope);
         const tools = conciergeTools(scope);
 
@@ -70,13 +97,15 @@ export async function POST(req: NextRequest) {
         });
 
         const draft: DraftRef | null = result.drafts[result.drafts.length - 1] ?? null;
-        await saveMessage(supabase, threadId, "concierge", result.text, draft);
+        const action = result.actions[result.actions.length - 1] ?? null;
+        const msgId = await saveMessage(supabase, threadId, "concierge", result.text, { draft, action });
         await supabase.rpc("concierge_record_usage", { p_workspace: workspaceId, p_in: result.tokensIn, p_out: result.tokensOut });
 
         // stream the answer in word chunks for a live feel
         const words = result.text.split(/(\s+)/);
         for (const w of words) if (w) emit({ type: "token", text: w });
         for (const d of result.drafts) emit({ type: "draft", ...d });
+        if (action) emit({ type: "action", messageId: msgId, ...action });
         emit({ type: "done", used: budget.used + result.tokensIn + result.tokensOut, cap: budget.cap });
         controller.close();
       } catch (e) {

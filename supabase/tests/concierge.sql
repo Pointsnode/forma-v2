@@ -123,6 +123,39 @@ do $$ begin
   exception when foreign_key_violation then null; end;
 end $$;
 
+-- ── (8) approval lane: a pending action card, approve = the mapped fn run as the
+-- planner ('user', not concierge), and drift = the fn's own refusal ────────────
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"11111111-0000-0000-0000-000000000001","role":"authenticated"}';
+do $$ declare v_prop uuid; begin
+  -- a fresh DRAFT proposal (via the concierge draft tool)
+  v_prop := public.concierge_draft_proposal('c0000000-0000-0000-0000-0000000000c1','Venue deposit proposal', null, 12000, null);
+  -- the propose_action card is a concierge_message with action_ref (staff writes it)
+  insert into public.concierge_messages (thread_id, role, content, action_ref) values
+    ('d0000000-0000-0000-0000-0000000000d2','concierge','Prepared for your approval',
+     jsonb_build_object('fn','send_proposal','args', jsonb_build_object('proposal_id', v_prop), 'summary','Send the venue deposit proposal','status','pending'));
+
+  -- APPROVE = the endpoint's exact call shape (send_proposal as the planner). No
+  -- acting_as_concierge flag → the resulting activity is stamped 'user'.
+  perform public.send_proposal(v_prop);
+  if (select status from public.proposals where id = v_prop) <> 'sent' then
+    raise exception 'TEST FAIL: approval did not send the proposal'; end if;
+  if (select actor_kind from public.activity where verb='proposal_sent' and (subject->>'proposal_id')=v_prop::text) <> 'user' then
+    raise exception 'TEST FAIL: approved action stamped concierge, not user'; end if;
+
+  -- DRIFT: approving again (already sent) surfaces the function's own refusal (FV221)
+  begin perform public.send_proposal(v_prop);
+    raise exception 'TEST FAIL: re-approval sent an already-sent proposal';
+  exception when sqlstate 'FV221' then null; end;
+end $$;
+
+-- action cards obey the same RLS: the couple sees zero of that thread's messages
+set local request.jwt.claims = '{"sub":"22222222-0000-0000-0000-000000000002","role":"authenticated"}';
+do $$ begin
+  if (select count(*) from public.concierge_messages where thread_id='d0000000-0000-0000-0000-0000000000d2' and action_ref is not null) <> 0 then
+    raise exception 'TEST FAIL: couple can see a concierge action card'; end if;
+end $$;
+
 reset role;
 select 'concierge: ALL TESTS PASSED' as result;
 rollback;

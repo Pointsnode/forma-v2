@@ -1,7 +1,8 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ToolDef, DraftRef } from "./agent";
+import type { ToolDef, DraftRef, ActionRef } from "./agent";
 import type { Scope } from "./context";
+import { validateAction } from "./approval-lane.mjs";
 
 // The registry IS the draft-first guarantee (Decision C): reads + draft-writes
 // only. No send/sign/pay/advance/close tool exists — so even a jailbroken prompt
@@ -21,6 +22,7 @@ export function conciergeTools(scope: Scope): ToolDef[] {
       { name: "add_task", description: "Add a task for this wedding.", input_schema: s({ title: { type: "string" }, due_date: { type: "string", description: "YYYY-MM-DD" } }, ["title"]) },
       { name: "draft_contract", description: "Create a DRAFT contract from a studio template (never sent). template is the template name; kind is planner_agreement|vendor|venue.", input_schema: s({ title: { type: "string" }, template: { type: "string" }, kind: { type: "string" } }, ["title"]) },
       { name: "add_ledger_line", description: "Add a manual EXPECTED ledger line (an anticipated cost). Never marks anything paid.", input_schema: s({ title: { type: "string" }, amount: { type: "number" }, due_date: { type: "string" } }, ["title", "amount"]) },
+      { name: "propose_action", description: "Propose a leave-the-studio action for the planner to APPROVE — you NEVER execute it. Use this whenever asked to send, sign, pay, book, request/accept/decline a quote, lock a menu, advance a phase, or schedule a touchpoint. fn ∈ [send_proposal, send_contract, request_quote, record_quote, accept_quote, decline_quote, book_engagement, lock_menu, advance_phase, schedule_touchpoint, mark_line_paid]. args carries the ids (e.g. {proposal_id} or {contract_id}); summary is a one-line human description of what will happen.", input_schema: s({ fn: { type: "string" }, args: { type: "object" }, summary: { type: "string" } }, ["fn", "summary"]) },
     ];
   }
   return [
@@ -34,11 +36,21 @@ async function rpcId(supabase: SupabaseClient, fn: string, args: Record<string, 
   return data as string;
 }
 
-export async function execTool(ctx: ToolCtx, name: string, input: Record<string, unknown>): Promise<{ content: string; draft?: DraftRef }> {
+export async function execTool(ctx: ToolCtx, name: string, input: Record<string, unknown>): Promise<{ content: string; draft?: DraftRef; action?: ActionRef }> {
   const { supabase, scope, workspaceId } = ctx;
   const wid = scope.kind === "wedding" ? scope.weddingId : null;
 
   switch (name) {
+    case "propose_action": {
+      const fn = String(input.fn ?? "");
+      const args = (input.args && typeof input.args === "object" ? input.args : {}) as Record<string, unknown>;
+      // a wedding-scoped action defaults its wedding to the scoped one (isolation)
+      if (wid && args.wedding_id == null) args.wedding_id = wid;
+      const v = validateAction(fn, args) as { ok: boolean; error?: string };
+      if (!v.ok) return { content: `That action can't be proposed: ${v.error}. Only these are approvable: send_proposal, send_contract, request_quote, record_quote, accept_quote, decline_quote, book_engagement, lock_menu, advance_phase, schedule_touchpoint, mark_line_paid.` };
+      const summary = String(input.summary ?? fn);
+      return { content: `Prepared for your approval — it stays unexecuted until you tap Approve: ${summary}`, action: { fn, args, summary, status: "pending" } };
+    }
     case "guests_pending": {
       const [{ data: exc }, { data: roll }] = await Promise.all([
         supabase.from("guest_exceptions").select("full_name, reason").eq("wedding_id", wid),

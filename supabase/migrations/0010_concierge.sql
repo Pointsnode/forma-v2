@@ -54,13 +54,17 @@ create table if not exists public.concierge_threads (
 create index if not exists concierge_threads_ws_idx on public.concierge_threads (workspace_id, updated_at desc);
 create index if not exists concierge_threads_wedding_idx on public.concierge_threads (wedding_id);
 
--- ── concierge_messages — planner/concierge turns; draft_ref links a created draft
+-- ── concierge_messages — planner/concierge turns ─────────────────────────────
+-- Two lanes: draft_ref = an auto-created draft this message produced; action_ref =
+-- a PROPOSED leave-the-studio action awaiting the planner's approval, of shape
+-- {fn, args, summary, status: 'pending'|'approved'|'dismissed'|'failed', error?, resolved_at?}.
 create table if not exists public.concierge_messages (
   id uuid primary key default gen_random_uuid(),
   thread_id uuid not null references public.concierge_threads (id) on delete cascade,
   role text not null check (role in ('planner','concierge')),
   content text not null default '',
-  draft_ref jsonb,           -- {kind, id, ...} of a draft this message produced
+  draft_ref jsonb,
+  action_ref jsonb,
   created_at timestamptz not null default now()
 );
 create index if not exists concierge_messages_thread_idx on public.concierge_messages (thread_id, created_at);
@@ -186,11 +190,14 @@ create or replace function private.concierge_record_usage(p_workspace uuid, p_in
 returns void language plpgsql security definer set search_path = public as $$
 begin
   if not private.is_workspace_member(p_workspace) then raise exception 'not permitted' using errcode = 'FV230'; end if;
+  -- clamp per-call to a sane ceiling: a workspace member can't inflate the meter to
+  -- the cap (self-DoS + a false honest meter). The stronger posture (only the route
+  -- writes) is a launch-time service decision — see the PR body.
   insert into public.concierge_usage (workspace_id, day, tokens_in, tokens_out)
-    values (p_workspace, current_date, greatest(p_in, 0), greatest(p_out, 0))
+    values (p_workspace, current_date, least(greatest(p_in, 0), 2000000), least(greatest(p_out, 0), 2000000))
   on conflict (workspace_id, day) do update
-    set tokens_in = public.concierge_usage.tokens_in + greatest(excluded.tokens_in, 0),
-        tokens_out = public.concierge_usage.tokens_out + greatest(excluded.tokens_out, 0);
+    set tokens_in = public.concierge_usage.tokens_in + least(greatest(excluded.tokens_in, 0), 2000000),
+        tokens_out = public.concierge_usage.tokens_out + least(greatest(excluded.tokens_out, 0), 2000000);
 end $$;
 
 -- thin public invoker wrappers (the callable entry points)
