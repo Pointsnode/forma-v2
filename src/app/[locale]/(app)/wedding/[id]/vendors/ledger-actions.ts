@@ -67,12 +67,14 @@ export async function recordQuote(quoteId: string, weddingId: string, amount: st
   // File the PDF on the Documents tab too (first producer of source='vendor_file'
   // and documents.engagement_id). Best-effort: the quote already carries the file.
   if (storagePath) {
-    const { data: q } = await supabase.from("quotes").select("engagement_id").eq("id", quoteId).maybeSingle();
+    const { data: q } = await supabase.from("quotes").select("engagement_id, created_at").eq("id", quoteId).maybeSingle();
     const engagementId = (q?.engagement_id as string | undefined) ?? null;
     let title = "Quote";
     if (engagementId) {
       const { data: eng } = await supabase.from("wedding_vendors").select("vendors(name)").eq("id", engagementId).maybeSingle();
-      const { count } = await supabase.from("quotes").select("id", { count: "exact", head: true }).eq("engagement_id", engagementId);
+      // ordinal = quotes created at or before this one — the SAME ordering the price
+      // strip uses in SQL, so a document and its strip rung never disagree.
+      const { count } = await supabase.from("quotes").select("id", { count: "exact", head: true }).eq("engagement_id", engagementId).lte("created_at", q!.created_at as string);
       const vname = ((eng?.vendors as unknown as { name: string } | null)?.name) ?? "Vendor";
       title = `${vname} — Quote ${count ?? 1}`;
     }

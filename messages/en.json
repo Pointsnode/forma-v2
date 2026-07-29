@@ -279,7 +279,8 @@
     "settled": "Decided",
     "error": "Something went wrong. Try again.",
     "decline": "Decline",
-    "confirmDecline": "Decline this proposal? The planner will be notified."
+    "confirmDecline": "Decline this proposal? The planner will be notified.",
+    "reallyDecline": "Really decline?"
   },
   "invites": {
     "members": "Members & access",
@@ -716,7 +717,8 @@
     "coupleDecline": "Decline",
     "confirmDecline": "Decline this quote? The planner will be notified.",
     "askPlaceholder": "What would you like changed?",
-    "sendAsk": "Send"
+    "sendAsk": "Send",
+    "reallyDecline": "Really decline?"
   },
   "partner": {
     "title": "Partners",

@@ -23,11 +23,13 @@ export function conciergeTools(scope: Scope): ToolDef[] {
       { name: "list_contracts", description: "List this wedding's contracts with their id, title and status — use this to find the id of a contract to send.", input_schema: s({}) },
       { name: "list_tasks", description: "List this wedding's tasks with their id, title and done state.", input_schema: s({}) },
       { name: "seating", description: "The seating for this wedding's events — each table with its capacity and who sits in which chair. Use to answer 'who sits at table 5'.", input_schema: s({}) },
+      { name: "list_vendors", description: "The studio's vendor catalogue — id, name and kind. Call this to find a vendor's real id before proposing present_vendor.", input_schema: s({}) },
+      { name: "events", description: "This wedding's events — id, label and date, plus which venue (if any) is already engaged for each. Call this before proposing a venue: a venue must name at least one event, and you pass their ids as event_ids.", input_schema: s({}) },
       { name: "draft_proposal", description: "Create a DRAFT proposal for the couple (never sent). Returns a draft the planner sends from the proposal room.", input_schema: s({ title: { type: "string" }, note: { type: "string" }, estimate_amount: { type: "number" } }, ["title"]) },
       { name: "add_task", description: "Add a task for this wedding. Optionally assign it — assignee='couple' to give it to the couple, or assignee_member (a team member's name), or assignee_vendor (a vendor's name) — attach it to an event by label, and set flagged=true to mark it urgent. Couple/vendor tasks start in 'waiting'. Resolve any relative due date against Today.", input_schema: s({ title: { type: "string" }, due_date: { type: "string", description: "YYYY-MM-DD, resolved against Today" }, assignee: { type: "string", description: "'couple' to assign the couple; omit otherwise" }, assignee_member: { type: "string" }, assignee_vendor: { type: "string" }, event: { type: "string" }, flagged: { type: "boolean" } }, ["title"]) },
       { name: "draft_contract", description: "Create a DRAFT contract from a studio template (never sent). template is the template name; kind is planner_agreement|vendor|venue.", input_schema: s({ title: { type: "string" }, template: { type: "string" }, kind: { type: "string" } }, ["title"]) },
       { name: "add_ledger_line", description: "Add a manual EXPECTED ledger line (an anticipated cost). Never marks anything paid.", input_schema: s({ title: { type: "string" }, amount: { type: "number" }, due_date: { type: "string" } }, ["title", "amount"]) },
-      { name: "propose_action", description: "Propose a leave-the-studio action for the planner to APPROVE — you NEVER execute it. Use this whenever asked to present a vendor/venue, send a quote to the couple, send, sign, pay, book, request/accept/decline a quote, lock a menu, advance a phase, or schedule a touchpoint. fn ∈ [send_proposal, send_contract, present_vendor (args vendor_id + wedding_id — both real UUIDs, never a name; use the vendors read tool first to get the ids), send_quote (args quote_id — a real UUID, only once the quote has an amount), request_quote, record_quote, accept_quote, decline_quote, book_engagement, lock_menu, advance_phase, schedule_touchpoint, mark_line_paid, assign_seat (args event_id, guest_id, table_id — all real UUIDs from the seating tool — and seat_no, the 0-based chair number A=0 B=1 C=2… as an integer; call the seating tool first to get the ids)]. args carries the ids (e.g. {proposal_id} or {contract_id}); summary is a one-line human description of what will happen.", input_schema: s({ fn: { type: "string" }, args: { type: "object" }, summary: { type: "string" } }, ["fn", "summary"]) },
+      { name: "propose_action", description: "Propose a leave-the-studio action for the planner to APPROVE — you NEVER execute it. Use this whenever asked to present a vendor/venue, send a quote to the couple, send, sign, pay, book, request/accept/decline a quote, lock a menu, advance a phase, or schedule a touchpoint. fn ∈ [send_proposal, send_contract, present_vendor (args vendor_id from list_vendors + wedding_id — both real UUIDs, never a name — plus event_ids, an array of event UUIDs from the events tool; a venue on a multi-event wedding MUST name at least one event), send_quote (args quote_id — a real UUID, only once the quote has an amount), request_quote, record_quote, accept_quote, decline_quote, book_engagement, lock_menu, advance_phase, schedule_touchpoint, mark_line_paid, assign_seat (args event_id, guest_id, table_id — all real UUIDs from the seating tool — and seat_no, the 0-based chair number A=0 B=1 C=2… as an integer; call the seating tool first to get the ids)]. args carries the ids (e.g. {proposal_id} or {contract_id}); summary is a one-line human description of what will happen.", input_schema: s({ fn: { type: "string" }, args: { type: "object" }, summary: { type: "string" } }, ["fn", "summary"]) },
     ];
   }
   return [
@@ -118,6 +120,29 @@ export async function execTool(ctx: ToolCtx, name: string, input: Record<string,
         return lines.join("\n");
       });
       return { content: out.join("\n\n") };
+    }
+    case "list_vendors": {
+      const { data } = await supabase.from("vendors").select("id, name, kind").order("name", { ascending: true });
+      const rows = (data ?? []) as { id: string; name: string; kind: string }[];
+      return { content: rows.length ? rows.map((r) => `${r.id} · ${r.name} · ${r.kind}`).join("\n") : "No vendors in the catalogue yet." };
+    }
+    case "events": {
+      const { data: evs } = await supabase.from("wedding_events").select("id, label, event_date").eq("wedding_id", wid).order("event_date", { ascending: true, nullsFirst: false });
+      const events = (evs ?? []) as { id: string; label: string; event_date: string | null }[];
+      const { data: booked } = await supabase.from("event_vendors").select("event_id, engagement_id").eq("wedding_id", wid).eq("venue_booked", true);
+      const bookedRows = (booked ?? []) as { event_id: string; engagement_id: string }[];
+      const engIds = [...new Set(bookedRows.map((b) => b.engagement_id))];
+      const venueBy = new Map<string, string>();
+      if (engIds.length) {
+        const { data: wv } = await supabase.from("wedding_vendors").select("id, vendors(name)").in("id", engIds);
+        const nameByEng = new Map(((wv ?? []) as unknown as { id: string; vendors: { name: string } | null }[]).map((r) => [r.id, r.vendors?.name ?? "—"]));
+        for (const b of bookedRows) venueBy.set(b.event_id, nameByEng.get(b.engagement_id) ?? "—");
+      }
+      return {
+        content: events.length
+          ? events.map((e) => `${e.label} (event_id=${e.id}${e.event_date ? `, ${e.event_date}` : ""})${venueBy.has(e.id) ? ` — venue: ${venueBy.get(e.id)}` : ""}`).join("\n")
+          : "No events yet.",
+      };
     }
     case "draft_proposal": {
       const id = await rpcId(supabase, "concierge_draft_proposal", { p_wedding: wid, p_title: input.title, p_note: input.note ?? null, p_estimate: input.estimate_amount ?? null, p_event_ref: null });

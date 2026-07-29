@@ -7,7 +7,7 @@ import { Card, Heading, Badge, Button, cx, type BadgeTone } from "@/components/u
 import { formaErrorMessage } from "@/lib/forma-error";
 import {
   requestQuote, recordQuote, sendQuote, acceptQuote, declineQuote, bookEngagement,
-  archiveEngagement, withdrawProposal, addToBudget, coupleRespond, markSeen, type LedgerResult,
+  archiveEngagement, withdrawProposal, addToBudget, coupleRespond, type LedgerResult,
 } from "@/app/[locale]/(app)/wedding/[id]/vendors/ledger-actions";
 
 type TimelineVM =
@@ -251,16 +251,25 @@ function RecordQuoteForm({ quoteId, weddingId, t, pending, onDone }: { quoteId: 
 function CoupleRail({ vm, t, run, pending }: { vm: LedgerVM; t: any; run: (fn: () => Promise<LedgerResult>, after?: () => void) => void; pending: boolean }): ReactNode {
   const pid = vm.rail.openQuoteProposalId;
   const [asking, setAsking] = useState(false);
+  const [declining, setDeclining] = useState(false);
   const [msg, setMsg] = useState("");
   if (!pid) return null;
 
   return (
     <Card>
       <p className="mb-3 font-accent text-[15px] italic text-taupe">{t("coupleHint")}</p>
-      <div className="flex flex-wrap gap-2">
-        <Button variant="solid" onClick={() => { if (pid) run(() => markSeen(pid)); run(() => coupleRespond(pid, "approve", null)); }} disabled={pending}>{t("coupleAccept")}</Button>
-        <Button onClick={() => setAsking((v) => !v)} disabled={pending}>{t("coupleAskNew")}</Button>
-        <Button onClick={() => { if (confirm(t("confirmDecline"))) run(() => coupleRespond(pid, "decline", null)); }} disabled={pending}>{t("coupleDecline")}</Button>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="solid" onClick={() => { setDeclining(false); run(() => coupleRespond(pid, "approve", null)); }} disabled={pending}>{t("coupleAccept")}</Button>
+        <Button onClick={() => { setDeclining(false); setAsking((v) => !v); }} disabled={pending}>{t("coupleAskNew")}</Button>
+        {/* Two-step confirm in the label — no native confirm() (unclickable by automation). */}
+        <button
+          onClick={() => (declining ? run(() => coupleRespond(pid, "decline", null), () => setDeclining(false)) : setDeclining(true))}
+          onBlur={() => setDeclining(false)}
+          disabled={pending}
+          className={cx("rounded-full px-4 py-2 text-[13px] disabled:opacity-50", declining ? "font-medium text-wine" : "text-muted hover:text-wine")}
+        >
+          {declining ? t("reallyDecline") : t("coupleDecline")}
+        </button>
       </div>
       {asking && (
         <div className="mt-3 grid gap-2 sm:max-w-md">

@@ -20,7 +20,9 @@ insert into public.wedding_members (wedding_id, user_id, role)
   values ('cccccccc-0000-0000-0000-0000000000c1','22222222-0000-0000-0000-000000000002','partner');
 insert into public.vendors (id, workspace_id, name, kind) values
   ('d0000000-0000-0000-0000-0000000000f3','aaaaaaaa-0000-0000-0000-0000000000a1','Flor y Canto','florals'),
-  ('d0000000-0000-0000-0000-0000000000f7','aaaaaaaa-0000-0000-0000-0000000000a1','Luz Estudio','photo_video');
+  ('d0000000-0000-0000-0000-0000000000f7','aaaaaaaa-0000-0000-0000-0000000000a1','Luz Estudio','photo_video'),
+  ('d0000000-0000-0000-0000-0000000000f8','aaaaaaaa-0000-0000-0000-0000000000a1','Cocina Ocho','catering'),
+  ('d0000000-0000-0000-0000-0000000000f9','aaaaaaaa-0000-0000-0000-0000000000a1','Trio Nueve','music');
 
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"11111111-0000-0000-0000-000000000001","role":"authenticated"}';
@@ -131,6 +133,49 @@ begin
   perform public.respond_to_proposal(p, 'decline', 'going another way');
   if (select status from public.quotes where id = q) <> 'declined' then raise exception 'TEST FAIL: declined quote not marked declined'; end if;
   if (select status from public.wedding_vendors where id = eng) <> 'declined' then raise exception 'TEST FAIL: decline did not move the engagement to declined'; end if;
+end $$;
+
+-- ── (8) BLOCKER guard: change_requested on a BOOKED engagement is refused (FV241)
+-- and leaves NO phantom 'requested' quote behind ───────────────────────────────
+set local request.jwt.claims = '{"sub":"11111111-0000-0000-0000-000000000001","role":"authenticated"}';
+do $$ declare eng uuid; q uuid; p uuid; before int;
+begin
+  eng := public.present_vendor('d0000000-0000-0000-0000-0000000000f8','cccccccc-0000-0000-0000-0000000000c1', array[]::uuid[], 3000, 'catering');
+  q := public.request_quote(eng);
+  perform public.record_quote(q, 3000, current_date + 30, null, null);  -- → quoted
+  p := public.send_quote(q, 'catering quote');                          -- proposal 'sent'
+  perform public.book_engagement(eng);                                  -- → booked, p still 'sent'
+  select count(*) into before from public.quotes where engagement_id = eng;
+  set local request.jwt.claims = '{"sub":"22222222-0000-0000-0000-000000000002","role":"authenticated"}';
+  begin perform public.respond_to_proposal(p, 'request_change', 'can we revisit?');
+    raise exception 'TEST FAIL: change_requested succeeded on a booked engagement';
+  exception when sqlstate 'FV241' then null; end;
+  if (select count(*) from public.quotes where engagement_id = eng) <> before then raise exception 'TEST FAIL: a phantom quote was conjured on a booked engagement'; end if;
+  if (select status from public.wedding_vendors where id = eng) <> 'booked' then raise exception 'TEST FAIL: booked engagement moved'; end if;
+end $$;
+
+-- ── (9) approved on a STALE proposal cannot flip a declined quote to accepted ──
+set local request.jwt.claims = '{"sub":"11111111-0000-0000-0000-000000000001","role":"authenticated"}';
+do $$ declare eng uuid; q uuid; p uuid;
+begin
+  eng := public.present_vendor('d0000000-0000-0000-0000-0000000000f9','cccccccc-0000-0000-0000-0000000000c1', array[]::uuid[], 2000, 'music');
+  q := public.request_quote(eng);
+  perform public.record_quote(q, 2000, current_date + 30, null, null);
+  p := public.send_quote(q, 'music quote');
+  perform public.decline_quote(q);  -- staff declines the quote (q → 'declined')
+  set local request.jwt.claims = '{"sub":"22222222-0000-0000-0000-000000000002","role":"authenticated"}';
+  perform public.respond_to_proposal(p, 'approve', null);  -- couple approves the stale proposal
+  if (select status from public.quotes where id = q) <> 'declined' then raise exception 'TEST FAIL: approving a stale proposal flipped a declined quote to accepted'; end if;
+end $$;
+
+-- ── (10) send_quote refuses a quote no longer 'received' (FV241) ───────────────
+set local request.jwt.claims = '{"sub":"11111111-0000-0000-0000-000000000001","role":"authenticated"}';
+do $$ declare q uuid;
+begin
+  select id into q from public.quotes where engagement_id = (select id from public.wedding_vendors where vendor_id = 'd0000000-0000-0000-0000-0000000000f9') and status = 'declined' limit 1;
+  begin perform public.send_quote(q, 'again?');
+    raise exception 'TEST FAIL: sent a quote that is no longer received';
+  exception when sqlstate 'FV241' then null; end;
 end $$;
 
 reset role;

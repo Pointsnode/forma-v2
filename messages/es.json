@@ -279,7 +279,8 @@
     "settled": "Decidido",
     "error": "Algo salió mal. Inténtalo de nuevo.",
     "decline": "Rechazar",
-    "confirmDecline": "¿Rechazar esta propuesta? Se avisará a la planner."
+    "confirmDecline": "¿Rechazar esta propuesta? Se avisará a la planner.",
+    "reallyDecline": "¿Seguro que rechazas?"
   },
   "invites": {
     "members": "Miembros y acceso",
@@ -716,7 +717,8 @@
     "coupleDecline": "Rechazar",
     "confirmDecline": "¿Rechazar esta cotización? Se avisará a la planner.",
     "askPlaceholder": "¿Qué te gustaría cambiar?",
-    "sendAsk": "Enviar"
+    "sendAsk": "Enviar",
+    "reallyDecline": "¿Seguro que rechazas?"
   },
   "partner": {
     "title": "Proveedores",

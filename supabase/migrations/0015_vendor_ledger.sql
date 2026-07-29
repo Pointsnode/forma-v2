@@ -56,12 +56,22 @@ begin
   -- decline) the engagement — on the couple's behalf, under the GUC, never via the
   -- staff-guarded helper.
   if new.status = 'approved' then
-    update public.quotes set status = 'accepted' where id = new.quote_id;
+    -- guard the quote's from-state: a couple approving a STALE proposal must not flip
+    -- a quote the planner already declined (or one already accepted) to 'accepted'.
+    update public.quotes set status = 'accepted' where id = new.quote_id and status = 'received';
     -- the engagement stays 'quoted' — booking is the planner's act, with the vendor
     perform private.log_activity(new.wedding_id, (select auth.uid()), 'quote_accepted', new.title, jsonb_build_object('engagement_id', new.engagement_id, 'quote_id', new.quote_id));
   elsif new.status = 'change_requested' then
+    -- Only re-open a quote loop that is genuinely awaiting a decision. If the
+    -- engagement has moved on (e.g. already booked), refuse and roll the couple's
+    -- response back — never accept their words and silently conjure a phantom
+    -- 'requested' quote onto it (the FV241 the couple then sees is a real sentence).
     perform set_config('forma.eng_via_fn', 'on', true);
     update public.wedding_vendors set status = 'quote_requested' where id = new.engagement_id and status = 'quoted';
+    if not found then
+      perform set_config('forma.eng_via_fn', 'off', true);
+      raise exception 'this engagement is no longer awaiting a decision on that quote' using errcode = 'FV241';
+    end if;
     perform set_config('forma.eng_via_fn', 'off', true);
     insert into public.quotes (wedding_id, engagement_id, status) values (new.wedding_id, new.engagement_id, 'requested');
     perform private.log_activity(new.wedding_id, (select auth.uid()), 'quote_revision_requested', new.title, jsonb_build_object('engagement_id', new.engagement_id, 'quote_id', new.quote_id));
@@ -88,6 +98,9 @@ begin
   if not found then raise exception 'no such quote' using errcode = 'FV000'; end if;
   if not private.is_wedding_staff(q.wedding_id) then raise exception 'not permitted' using errcode = 'FV230'; end if;
   if q.amount is null then raise exception 'record the quote amount before sending it to the couple' using errcode = 'FV241'; end if;
+  -- don't re-issue a proposal for a quote the couple has already answered (accepted/
+  -- declined) or one still awaiting its amount — only a 'received' quote is sendable.
+  if q.status <> 'received' then raise exception 'that quote is no longer awaiting the couple' using errcode = 'FV241'; end if;
   select v.name into vname from public.wedding_vendors wv join public.vendors v on v.id = wv.vendor_id where wv.id = q.engagement_id;
   -- N = the 1-based ordinal of this quote among the engagement's quotes by created_at
   select count(*) into n from public.quotes
