@@ -18,6 +18,10 @@ export const APPROVAL_FNS = {
   schedule_touchpoint: { args: ["wedding_id", "kind"] },
   mark_line_paid: { args: ["line_id"] },
   assign_seat: { args: ["event_id", "guest_id", "table_id", "seat_no"] },
+  // M13: present a vendor to a wedding, and send a recorded quote to the couple —
+  // propose-only; the planner approves and their session runs the same function.
+  present_vendor: { args: ["vendor_id", "wedding_id"] },
+  send_quote: { args: ["quote_id"] },
 };
 
 export function isApprovable(fn) {

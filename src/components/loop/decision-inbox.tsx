@@ -73,9 +73,16 @@ function CoupleProposalCard({ weddingId, p }: { weddingId: string; p: ViewPropos
                   </div>
                 </>
               ) : (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Button onClick={() => run(() => respondProposal(weddingId, p.id, "approve", null))} disabled={pending}>{t("approve")}</Button>
                   <Button variant="ghost" onClick={() => setChanging(true)} disabled={pending}>{t("requestChange")}</Button>
+                  <button
+                    onClick={() => { if (confirm(t("confirmDecline"))) run(() => respondProposal(weddingId, p.id, "decline", null)); }}
+                    disabled={pending}
+                    className="ml-auto text-[13px] text-muted hover:text-wine disabled:opacity-50"
+                  >
+                    {t("decline")}
+                  </button>
                 </div>
               )}
               {err ? <p className="text-[13px] text-wine">{err}</p> : null}

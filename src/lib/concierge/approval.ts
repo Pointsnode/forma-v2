@@ -42,6 +42,8 @@ export async function executeApproval(sb: SupabaseClient, fn: string, args: Reco
     case "schedule_touchpoint": { const r = await sendTouchpoint(S("wedding_id"), S("kind") as "menu_collect" | "day_of_schedule"); return r.error ? { error: r.error } : { ok: true }; }
     case "mark_line_paid": { const r = await setLineStatus(S("line_id"), "paid"); return r.error ? { error: r.error } : { ok: true }; }
     case "assign_seat": return rpc(sb, "assign_seat", { p_event: S("event_id"), p_guest: S("guest_id"), p_table: S("table_id"), p_seat_no: Number(args.seat_no) });
+    case "present_vendor": return rpc(sb, "present_vendor", { p_vendor: S("vendor_id"), p_wedding: S("wedding_id"), p_event_ids: [], p_estimate: args.estimate ?? null, p_note: args.note ?? null });
+    case "send_quote": return rpc(sb, "send_quote", { p_quote: S("quote_id"), p_note: args.note ?? null });
     default: return { error: "invalid" };
   }
 }
