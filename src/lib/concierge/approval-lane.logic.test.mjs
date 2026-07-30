@@ -27,6 +27,14 @@ assert.equal(validateAction("assign_seat", { event_id: U, guest_id: U, table_id:
 assert.equal(validateAction("assign_seat", { event_id: U, guest_id: U, table_id: U, seat_no: 3 }).ok, true); // real ids + int
 assert.equal(validateAction("assign_seat", { event_id: U, guest_id: U, table_id: U, seat_no: "3" }).ok, true); // numeric string ok
 
+// M13: present_vendor + send_quote are propose-only (concierge proposes, planner runs)
+assert.equal(isApprovable("present_vendor"), true);
+assert.equal(isApprovable("send_quote"), true);
+assert.equal(validateAction("present_vendor", { vendor_id: U }).ok, false); // wedding_id missing
+assert.equal(validateAction("present_vendor", { vendor_id: U, wedding_id: U }).ok, true);
+assert.equal(validateAction("send_quote", {}).ok, false); // quote_id missing
+assert.equal(validateAction("send_quote", { quote_id: U }).ok, true);
+
 // the lane is a bounded, explicit set
 assert.ok(Object.keys(APPROVAL_FNS).length >= 10);
 assert.ok(!("close_wedding" in APPROVAL_FNS));

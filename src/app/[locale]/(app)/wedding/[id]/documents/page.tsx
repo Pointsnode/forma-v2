@@ -7,7 +7,9 @@ import { DocUpload } from "@/components/wedding/doc-upload";
 import { Card, SectionTitle, Row, RowMain, Icon } from "@/components/ui";
 import { QuickAddTask } from "@/components/tasks/quick-add";
 
-const BUCKET: Record<string, string> = { contract_artifact: "contract-artifacts", upload: "wedding-docs", vendor_file: "vendor-media", touchpoint: "wedding-docs" };
+// M13: vendor quote PDFs are filed under the wedding prefix in wedding-docs (NOT
+// vendor-media, whose policy would leak a wedding-specific price across couples).
+const BUCKET: Record<string, string> = { contract_artifact: "contract-artifacts", upload: "wedding-docs", vendor_file: "wedding-docs", touchpoint: "wedding-docs" };
 
 export default async function DocumentsTab({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;

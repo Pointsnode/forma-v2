@@ -11,6 +11,7 @@ function CoupleProposalCard({ weddingId, p }: { weddingId: string; p: ViewPropos
   const tp = useTranslations("proposals");
   const [open, setOpen] = useState(false);
   const [changing, setChanging] = useState(false);
+  const [declining, setDeclining] = useState(false);
   const [msg, setMsg] = useState("");
   const [reply, setReply] = useState("");
   const [err, setErr] = useState<string | null>(null);
@@ -73,9 +74,18 @@ function CoupleProposalCard({ weddingId, p }: { weddingId: string; p: ViewPropos
                   </div>
                 </>
               ) : (
-                <div className="flex flex-wrap gap-2">
-                  <Button onClick={() => run(() => respondProposal(weddingId, p.id, "approve", null))} disabled={pending}>{t("approve")}</Button>
-                  <Button variant="ghost" onClick={() => setChanging(true)} disabled={pending}>{t("requestChange")}</Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button onClick={() => { setDeclining(false); run(() => respondProposal(weddingId, p.id, "approve", null)); }} disabled={pending}>{t("approve")}</Button>
+                  <Button variant="ghost" onClick={() => { setDeclining(false); setChanging(true); }} disabled={pending}>{t("requestChange")}</Button>
+                  {/* Two-step confirm in the label itself — no native confirm() (which blocks automation and can't be walked at the gate). */}
+                  <button
+                    onClick={() => (declining ? run(() => respondProposal(weddingId, p.id, "decline", null), () => setDeclining(false)) : setDeclining(true))}
+                    onBlur={() => setDeclining(false)}
+                    disabled={pending}
+                    className={cx("ml-auto text-[13px] disabled:opacity-50", declining ? "font-medium text-wine" : "text-muted hover:text-wine")}
+                  >
+                    {declining ? t("reallyDecline") : t("decline")}
+                  </button>
                 </div>
               )}
               {err ? <p className="text-[13px] text-wine">{err}</p> : null}
