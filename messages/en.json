@@ -634,7 +634,16 @@
     "addHint": "This vendor joins your workspace catalogue.",
     "catalogueEmpty": "Nothing here yet.",
     "alreadyPresented": "Already presented on this wedding",
-    "notInCatalogue": "Not in your catalogue? Add one."
+    "notInCatalogue": "Not in your catalogue? Add one.",
+    "searchPlaceholder": "Search by name, tag or city…",
+    "facetKind": "Kind",
+    "facetCity": "City",
+    "facetInUse": "In use",
+    "facetAvailable": "Available",
+    "countLine": "{n} of {total}",
+    "clearAll": "Clear all",
+    "filteredEmptyVendors": "No vendors match. Clear a filter?",
+    "filteredEmptyVenues": "No venues match. Clear a filter?"
   },
   "engagement": {
     "tab": "Vendors",

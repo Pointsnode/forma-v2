@@ -634,7 +634,16 @@
     "addHint": "Este proveedor se añade al catálogo de tu estudio.",
     "catalogueEmpty": "Nada aún aquí.",
     "alreadyPresented": "Ya presentado en esta boda",
-    "notInCatalogue": "¿No está en tu catálogo? Añade uno."
+    "notInCatalogue": "¿No está en tu catálogo? Añade uno.",
+    "searchPlaceholder": "Busca por nombre, etiqueta o ciudad…",
+    "facetKind": "Tipo",
+    "facetCity": "Ciudad",
+    "facetInUse": "En uso",
+    "facetAvailable": "Disponible",
+    "countLine": "{n} de {total}",
+    "clearAll": "Limpiar todo",
+    "filteredEmptyVendors": "Ningún proveedor coincide. ¿Quitar un filtro?",
+    "filteredEmptyVenues": "Ningún venue coincide. ¿Quitar un filtro?"
   },
   "engagement": {
     "tab": "Proveedores",
