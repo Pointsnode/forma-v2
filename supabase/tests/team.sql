@@ -152,6 +152,35 @@ do $$ begin
     raise exception 'TEST FAIL: void_contract did not set status = voided'; end if;
 end $$;
 
+-- ── (8) the two §2-added DEFINER reads: roster (with emails) + invite preview ──
+-- After (6): 22222222 is the sole admin; 33333333 (planner/tasks) remains → 2 members.
+set local request.jwt.claims = '{"sub":"22222222-0000-0000-0000-000000000002","role":"authenticated"}';
+do $$ declare n int; inv uuid; st text; wsname text;
+begin
+  -- roster returns both members WITH their emails (email lives only in auth.users).
+  select count(*) into n from public.workspace_roster('a0000000-0000-0000-0000-0000000000a1');
+  if n <> 2 then raise exception 'TEST FAIL: roster expected 2 members, got %', n; end if;
+  if not exists (select 1 from public.workspace_roster('a0000000-0000-0000-0000-0000000000a1') where email = 'planner@test.forma') then
+    raise exception 'TEST FAIL: roster missing a member email'; end if;
+  -- preview of a fresh invite to a DIFFERENT address → status email_mismatch + ws name.
+  inv := public.create_workspace_invite('a0000000-0000-0000-0000-0000000000a1','newhire@test.forma', array['tasks'], null);
+  select status, workspace_name into st, wsname
+    from public.workspace_invite_preview((select token from public.workspace_invites where id = inv));
+  if st <> 'email_mismatch' then raise exception 'TEST FAIL: preview status expected email_mismatch, got %', st; end if;
+  if wsname <> 'Atelier' then raise exception 'TEST FAIL: preview workspace name wrong: %', wsname; end if;
+  -- unknown token → zero rows (the join page reads this as "invitation not found").
+  if exists (select 1 from public.workspace_invite_preview(gen_random_uuid())) then
+    raise exception 'TEST FAIL: preview returned a row for an unknown token'; end if;
+end $$;
+-- a non-member cannot read the roster (member-gated, FV230) — reads aren't box-gated but
+-- they ARE workspace-scoped.
+set local request.jwt.claims = '{"sub":"44444444-0000-0000-0000-000000000004","role":"authenticated"}';  -- stranger
+do $$ begin
+  begin perform public.workspace_roster('a0000000-0000-0000-0000-0000000000a1');
+    raise exception 'TEST FAIL: a non-member read the roster';
+  exception when sqlstate 'FV230' then null; end;
+end $$;
+
 reset role;
 select 'team: ALL TESTS PASSED' as result;
 rollback;

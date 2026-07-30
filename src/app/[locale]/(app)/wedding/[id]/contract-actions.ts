@@ -5,6 +5,7 @@ import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { APP_URL } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
+import { clearanceGate } from "@/lib/workspace";
 import { resolveMergeFields } from "@/lib/contracts";
 import { signerEmail } from "@/lib/email/contract-email";
 import { sendBatch } from "@/lib/email/resend";
@@ -73,6 +74,7 @@ export async function createContract(
   input: { templateId?: string | null; title: string; kind: string },
 ): Promise<ContractActionResult> {
   const supabase = await createClient();
+  const gate = await clearanceGate(supabase, "contracts"); if (gate) return { error: gate };
   const title = input.title.trim();
   const kind = (CONTRACT_KINDS as readonly string[]).includes(input.kind) ? input.kind : "vendor";
   if (!title) return { error: "invalid" };
@@ -104,6 +106,7 @@ export async function createContract(
 
 export async function saveDraftBody(contractId: string, body: string): Promise<ContractActionResult> {
   const supabase = await createClient();
+  const gate = await clearanceGate(supabase, "contracts"); if (gate) return { error: gate };
   if (!(await assertDraft(supabase, contractId))) return { error: "notDraft" };
   const { error } = await supabase.from("contract_draft_content").upsert({ contract_id: contractId, body }, { onConflict: "contract_id" });
   if (error) { console.error(`saveDraftBody (${error.code}): ${error.message}`); return { error: "generic" }; }
@@ -116,6 +119,7 @@ export async function addField(
   f: { label: string; field_key: string; merge_source: string; signer_order: number | null; required: boolean },
 ): Promise<ContractActionResult> {
   const supabase = await createClient();
+  const gate = await clearanceGate(supabase, "contracts"); if (gate) return { error: gate };
   if (!(await assertDraft(supabase, contractId))) return { error: "notDraft" };
   const label = f.label.trim();
   const field_key = f.field_key.trim().replace(/[^a-zA-Z0-9_]/g, "");
@@ -134,6 +138,7 @@ export async function addField(
 
 export async function removeField(fieldId: string): Promise<ContractActionResult> {
   const supabase = await createClient();
+  const gate = await clearanceGate(supabase, "contracts"); if (gate) return { error: gate };
   const cid = await contractIdOf(supabase, "contract_fields", fieldId);
   if (!cid || !(await assertDraft(supabase, cid))) return { error: "notDraft" };
   const { error } = await supabase.from("contract_fields").delete().eq("id", fieldId);
@@ -147,6 +152,7 @@ export async function addSigner(
   s: { name: string; role: string; email: string | null },
 ): Promise<ContractActionResult> {
   const supabase = await createClient();
+  const gate = await clearanceGate(supabase, "contracts"); if (gate) return { error: gate };
   if (!(await assertDraft(supabase, contractId))) return { error: "notDraft" };
   const name = s.name.trim();
   const role = (SIGNER_ROLES as readonly string[]).includes(s.role) ? s.role : "vendor";
@@ -162,6 +168,7 @@ export async function addSigner(
 
 export async function removeSigner(signerId: string): Promise<ContractActionResult> {
   const supabase = await createClient();
+  const gate = await clearanceGate(supabase, "contracts"); if (gate) return { error: gate };
   const cid = await contractIdOf(supabase, "contract_signers", signerId);
   if (!cid || !(await assertDraft(supabase, cid))) return { error: "notDraft" };
   const { error } = await supabase.from("contract_signers").delete().eq("id", signerId);
@@ -174,6 +181,7 @@ export async function removeSigner(signerId: string): Promise<ContractActionResu
 // sign_order) forbids a direct swap, so we park one row at a sentinel order first.
 export async function reorderSigner(signerId: string, dir: "up" | "down"): Promise<ContractActionResult> {
   const supabase = await createClient();
+  const gate = await clearanceGate(supabase, "contracts"); if (gate) return { error: gate };
   const cid = await contractIdOf(supabase, "contract_signers", signerId);
   if (!cid || !(await assertDraft(supabase, cid))) return { error: "notDraft" };
   const { data: rows } = await supabase.from("contract_signers").select("id, sign_order").eq("contract_id", cid).order("sign_order");

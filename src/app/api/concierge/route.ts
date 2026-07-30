@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { currentWorkspace as firstWorkspace } from "@/lib/workspace";
+import { currentWorkspace as firstWorkspace, clearanceGate } from "@/lib/workspace";
 import { conciergeConfigured } from "@/lib/concierge/config";
 import { assembleContext, type Scope } from "@/lib/concierge/context";
 import { conciergeTools, execTool } from "@/lib/concierge/tools";
@@ -62,6 +62,9 @@ export async function POST(req: NextRequest) {
 
   const workspaceId = await firstWorkspace(supabase);
   if (!workspaceId) return NextResponse.json({ error: "no_workspace" }, { status: 403 });
+  // The concierge box gates USE (it's the priced seat) — a member without it is refused,
+  // pointing at /team where an admin ticks it. route.ts:86's "raise the cap" now has a home.
+  if (await clearanceGate(supabase, "concierge")) return NextResponse.json({ error: "no_clearance" }, { status: 403 });
 
   const budget = await loadBudget(supabase, workspaceId);
   if (!budget.enabled) return NextResponse.json({ error: "not_entitled" }, { status: 403 });

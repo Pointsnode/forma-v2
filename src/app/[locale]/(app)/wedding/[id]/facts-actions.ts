@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { clearanceGate } from "@/lib/workspace";
 
 export type FactsResult = { ok?: boolean; error?: string };
 
@@ -10,6 +11,7 @@ export type FactsResult = { ok?: boolean; error?: string };
 // still advances only through advance_wedding_phase (the DB stays the sole writer).
 export async function updateWeddingFacts(weddingId: string, form: FormData): Promise<FactsResult> {
   const supabase = await createClient();
+  const gate = await clearanceGate(supabase, "ledger"); if (gate) return { error: gate };
   const money = (k: string) => {
     const v = String(form.get(k) ?? "").replace(/[^0-9.]/g, "");
     return v ? Number(v) : null;

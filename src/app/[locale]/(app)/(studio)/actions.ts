@@ -4,7 +4,7 @@ import { z } from "zod";
 import { redirect } from "@/i18n/navigation";
 import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
-import { currentWorkspace } from "@/lib/workspace";
+import { currentWorkspace, clearanceGate } from "@/lib/workspace";
 
 // Advances the cockpit "Since you were away" cursor. Called on mount from the
 // overview so the next visit's window starts from now.
@@ -16,7 +16,7 @@ export async function touchLastSeen(): Promise<void> {
   if (user) await supabase.from("profiles").update({ last_seen_at: new Date().toISOString() }).eq("id", user.id);
 }
 
-export type WeddingState = { error?: "invalid" | "generic" } | null;
+export type WeddingState = { error?: "invalid" | "generic" | "clearance" } | null;
 
 const slugify = (s: string) =>
   s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "wedding";
@@ -59,6 +59,9 @@ export async function createWedding(_prev: WeddingState, formData: FormData): Pr
 
   const workspaceId = await currentWorkspace(supabase);
   if (!workspaceId) return { error: "generic" };
+  // §G backstop: the DB write goes direct under role-blind RLS, so gate a boxless staff
+  // member here (the create button is already hidden for them). Not couple-reachable.
+  if (await clearanceGate(supabase, "weddings")) return { error: "clearance" };
 
   const d = parsed.data;
   const base = slugify(d.coupleDisplay);

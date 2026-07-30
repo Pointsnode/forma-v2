@@ -1,5 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { hasClearance } from "@/lib/clearance";
 
 // The current workspace — ONE deterministic resolver (§I), replacing the 12 copy-
 // pasted `workspace_members … limit(1)` lookups that were only safe while every user
@@ -30,4 +31,21 @@ export async function loadMyGrants(supabase: SupabaseClient, workspaceId: string
   if (!data) return [];
   if (data.role === "owner") return ["admin"];
   return (data.grants as string[] | null) ?? [];
+}
+
+// Action-lane clearance gate (§G) for the direct-write server actions that don't pass
+// through a box-gated DEFINER function (task/guest/ledger/facts/calendly/wedding/invite).
+// STAFF-CONDITIONAL by design: it gates a workspace member who lacks the box, but a caller
+// who is NOT a workspace member (a couple / day-of, who live in wedding_members) resolves
+// no workspace and passes through untouched — their own lanes must never be box-gated.
+// Returns "FS050" to refuse (maps to errors.clearance), or null to allow. The database is
+// still the backstop for the DEFINER lanes; this closes the RLS-is-role-blind gap on the
+// direct-write lanes without hiding-a-button masquerading as a permission.
+export async function clearanceGate(supabase: SupabaseClient, key: string): Promise<"FS050" | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null; // unauthenticated is handled by the action's own auth guard
+  const workspaceId = await currentWorkspace(supabase);
+  if (!workspaceId) return null; // not a workspace member (couple/day-of) — not staff-gated
+  const grants = await loadMyGrants(supabase, workspaceId);
+  return hasClearance(grants, key) ? null : "FS050";
 }

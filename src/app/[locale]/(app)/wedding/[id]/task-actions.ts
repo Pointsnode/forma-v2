@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { clearanceGate } from "@/lib/workspace";
 
 export type TaskResult = { ok?: boolean; error?: string; id?: string };
 
@@ -24,6 +25,7 @@ export type TaskInput = {
 // goes through complete_task (below), never a direct UPDATE.
 export async function createTask(input: TaskInput): Promise<TaskResult> {
   const supabase = await createClient();
+  const gate = await clearanceGate(supabase, "tasks"); if (gate) return { error: gate };
   const title = (input.title ?? "").trim();
   if (!title) return { error: "invalid" };
   if (!input.wedding_id && !input.workspace_id) return { error: "invalid" };
@@ -50,6 +52,7 @@ export async function createTask(input: TaskInput): Promise<TaskResult> {
 
 export async function updateTask(taskId: string, patch: TaskInput): Promise<TaskResult> {
   const supabase = await createClient();
+  const gate = await clearanceGate(supabase, "tasks"); if (gate) return { error: gate };
   const upd: Record<string, unknown> = {};
   if (patch.title !== undefined) { const t = patch.title.trim(); if (!t) return { error: "invalid" }; upd.title = t; }
   if (patch.note !== undefined) upd.note = patch.note?.trim() || null;
@@ -71,6 +74,7 @@ export async function updateTask(taskId: string, patch: TaskInput): Promise<Task
 
 export async function moveTask(taskId: string, status: string): Promise<TaskResult> {
   const supabase = await createClient();
+  const gate = await clearanceGate(supabase, "tasks"); if (gate) return { error: gate };
   const { error } = await supabase.from("tasks").update({ status }).eq("id", taskId);
   if (error) { console.error(`moveTask (${error.code}): ${error.message}`); return { error: "generic" }; }
   rv();
@@ -79,6 +83,7 @@ export async function moveTask(taskId: string, status: string): Promise<TaskResu
 
 export async function setFlag(taskId: string, flagged: boolean): Promise<TaskResult> {
   const supabase = await createClient();
+  const gate = await clearanceGate(supabase, "tasks"); if (gate) return { error: gate };
   const { error } = await supabase.from("tasks").update({ flagged }).eq("id", taskId);
   if (error) { console.error(`setFlag (${error.code}): ${error.message}`); return { error: "generic" }; }
   rv();
@@ -97,6 +102,7 @@ export async function completeTask(taskId: string): Promise<TaskResult> {
 
 export async function deleteTask(taskId: string): Promise<TaskResult> {
   const supabase = await createClient();
+  const gate = await clearanceGate(supabase, "tasks"); if (gate) return { error: gate };
   const { error } = await supabase.from("tasks").delete().eq("id", taskId);
   if (error) return { error: "generic" };
   rv();

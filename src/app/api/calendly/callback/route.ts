@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { currentWorkspace } from "@/lib/workspace";
+import { currentWorkspace, clearanceGate } from "@/lib/workspace";
 import { exchangeCode, getMe, createWebhookSubscription } from "@/lib/calendly/api";
 import { encryptToken } from "@/lib/calendly/crypto.mjs";
 import { backfillMeetings } from "@/lib/calendly/backfill";
@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.redirect(new URL("/sign-in", url.origin));
   const workspaceId = await currentWorkspace(supabase);
   if (!workspaceId) return back("error=workspace");
+  if (await clearanceGate(supabase, "calendly")) return back("error=clearance");
 
   try {
     // APP_URL (not SITE_URL): the redirect URI must match connect's, and the webhook

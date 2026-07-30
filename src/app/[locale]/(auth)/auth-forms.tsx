@@ -18,35 +18,41 @@ function Field({ name, type, label, autoComplete }: { name: string; type: string
   );
 }
 
-export function SignInForm() {
+// `next` is an already-validated relative path (the server component validated it via
+// safeNextPath before passing it here); it rides through as a hidden field so the action
+// returns the invitee to /join/team/<token> after sign-in, and is appended to the
+// cross-link query so switching to sign-up keeps it.
+export function SignInForm({ next }: { next?: string }) {
   const t = useTranslations("auth");
   const [state, action, pending] = useActionState<AuthState, FormData>(signIn, null);
   return (
     <form action={action} className="flex flex-col gap-4">
+      {next ? <input type="hidden" name="next" value={next} /> : null}
       <Field name="email" type="email" label={t("email")} autoComplete="email" />
       <Field name="password" type="password" label={t("password")} autoComplete="current-password" />
       {state?.error ? <p className="text-[13px] text-wine">{t(`errors.${state.error}`)}</p> : null}
       <Button type="submit" disabled={pending} className="mt-1 w-full">{t("signIn")}</Button>
       <div className="flex items-center justify-between text-[13px] text-muted">
-        <Link href="/sign-up" className="hover:text-ink">{t("toSignUp")}</Link>
+        <Link href={next ? { pathname: "/sign-up", query: { next } } : "/sign-up"} className="hover:text-ink">{t("toSignUp")}</Link>
         <Link href="/reset" className="hover:text-ink">{t("forgot")}</Link>
       </div>
     </form>
   );
 }
 
-export function SignUpForm() {
+export function SignUpForm({ next }: { next?: string }) {
   const t = useTranslations("auth");
   const [state, action, pending] = useActionState<AuthState, FormData>(signUp, null);
   if (state?.sent) return <p className="text-[14px] text-sage-ink">{t("confirmSent")}</p>;
   return (
     <form action={action} className="flex flex-col gap-4">
+      {next ? <input type="hidden" name="next" value={next} /> : null}
       <Field name="displayName" type="text" label={t("displayName")} autoComplete="name" />
       <Field name="email" type="email" label={t("email")} autoComplete="email" />
       <Field name="password" type="password" label={t("password")} autoComplete="new-password" />
       {state?.error ? <p className="text-[13px] text-wine">{t(`errors.${state.error}`)}</p> : null}
       <Button type="submit" disabled={pending} className="mt-1 w-full">{t("signUp")}</Button>
-      <Link href="/sign-in" className="text-[13px] text-muted hover:text-ink">{t("toSignIn")}</Link>
+      <Link href={next ? { pathname: "/sign-in", query: { next } } : "/sign-in"} className="text-[13px] text-muted hover:text-ink">{t("toSignIn")}</Link>
     </form>
   );
 }

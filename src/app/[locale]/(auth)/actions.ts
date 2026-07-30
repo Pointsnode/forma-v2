@@ -4,6 +4,7 @@ import { z } from "zod";
 import { redirect } from "@/i18n/navigation";
 import { getLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
+import { safeNextPath } from "@/lib/auth-redirect.mjs";
 import { APP_URL } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 
@@ -27,7 +28,9 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) return { error: "invalid" };
-  redirect({ href: "/", locale: await getLocale() });
+  // Return to the validated deep-link if one rode in (e.g. /join/team/<token>), else the
+  // cockpit. safeNextPath rejects anything non-relative, so this can't be an open redirect.
+  redirect({ href: safeNextPath(formData.get("next")) ?? "/", locale: await getLocale() });
   return null;
 }
 
@@ -37,6 +40,9 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
     .safeParse({ email: formData.get("email"), password: formData.get("password"), displayName: formData.get("displayName") ?? "" });
   if (!parsed.success) return { error: "invalid" };
   const locale = await getLocale();
+  // Sign-up gets no independent next logic — it routes through the same validated path:
+  // carried onto the confirmed sign-in card's ?next, and used directly if a session lands.
+  const next = safeNextPath(formData.get("next"));
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
@@ -48,14 +54,14 @@ export async function signUp(_prev: AuthState, formData: FormData): Promise<Auth
       // landing. Sign-in is what the confirmSent copy already promises. (DoD 8 amended
       // from "cockpit" to "sign-in": genuine signed-in landing needs the token-hash
       // handler and is deferred.)
-      emailRedirectTo: `${APP_URL}${localePath(locale, "/sign-in")}`,
+      emailRedirectTo: `${APP_URL}${localePath(locale, "/sign-in")}${next ? `?next=${encodeURIComponent(next)}` : ""}`,
     },
   });
   if (error) return { error: "generic" };
   // Email confirmation on → no session yet. Tell the user to check their inbox
   // instead of redirecting to "/", which would bounce straight back to sign-in.
   if (!data.session) return { sent: true };
-  redirect({ href: "/", locale });
+  redirect({ href: next ?? "/", locale });
   return null;
 }
 

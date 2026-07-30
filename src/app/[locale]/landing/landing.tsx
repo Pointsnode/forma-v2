@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { cx } from "@/components/ui";
 import { PlannerCard, SectionKicker } from "@/components/directory/ui";
+import { PRICE_ADMIN, PRICE_ADDITIONAL, PRICE_CONCIERGE } from "@/lib/pricing";
 import type { DirectoryCard } from "@/lib/directory-shared";
 import type { Locale } from "@/i18n/routing";
 
@@ -161,9 +162,11 @@ export function Landing({ locale, cards, regions }: { locale: Locale; cards: Dir
           <h3 className="font-display text-[clamp(28px,5vw,44px)] font-medium">{t("pricingTitle")}</h3>
           <div className="mt-7 divide-y divide-hairline border-y border-hairline">
             {[
-              { name: t("pricingStartName"), price: "$79", suffix: t("perMonth"), desc: t("pricingStartDesc") },
-              { name: t("pricingAddName"), price: "$59", suffix: t("perMonthEach"), desc: t("pricingAddDesc") },
-              { name: t("pricingAiName"), price: "+$15", suffix: t("perMonthAccount"), desc: t("pricingAiDesc") },
+              // Prices come from the shared pricing module so the storefront and the /team
+              // seat panel can never drift (M15: additional was a stale $59, now $49).
+              { name: t("pricingStartName"), price: `$${PRICE_ADMIN}`, suffix: t("perMonth"), desc: t("pricingStartDesc") },
+              { name: t("pricingAddName"), price: `$${PRICE_ADDITIONAL}`, suffix: t("perMonthEach"), desc: t("pricingAddDesc") },
+              { name: t("pricingAiName"), price: `+$${PRICE_CONCIERGE}`, suffix: t("perMonthAccount"), desc: t("pricingAiDesc") },
             ].map((row) => (
               <div key={row.name} className="flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
                 <div>

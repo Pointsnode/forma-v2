@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { clearanceGate } from "@/lib/workspace";
 import { deleteWebhookSubscription } from "@/lib/calendly/api";
 import { getValidAccessToken } from "@/lib/calendly/tokens";
 
@@ -10,6 +11,7 @@ import { getValidAccessToken } from "@/lib/calendly/tokens";
 // connection row. Stored meetings are KEPT (history). Runs under the planner session.
 export async function disconnectCalendly(): Promise<{ ok?: boolean; error?: string }> {
   const supabase = await createClient();
+  const gate = await clearanceGate(supabase, "calendly"); if (gate) return { error: gate };
   const { data: conn } = await supabase
     .from("calendly_connections")
     .select("id, access_token_enc, refresh_token_enc, token_expires_at, webhook_subscription_id")

@@ -120,14 +120,72 @@ returns uuid language sql security invoker set search_path = public as $$ select
 create or replace function public.accept_workspace_invite(p_token uuid)
 returns uuid language sql security invoker set search_path = public as $$ select private.accept_workspace_invite(p_token); $$;
 
+-- Read-only invite card for the join page. The invitee is NOT an admin (or member yet),
+-- so RLS hides workspace_invites from them — this DEFINER fn returns just enough to render
+-- the accept card (workspace name, who invited them, the boxes, and a status the UI shows).
+-- authenticated-only (matrix stays 10): the signed-out /join/team page shows a neutral
+-- "sign in to view this invitation" with zero details; only a signed-in user gets this.
+-- Unknown token → zero rows. status ∈ ok|accepted|expired|email_mismatch (the accept fn
+-- still enforces all of these; this only drives the card copy, never authority).
+create or replace function private.workspace_invite_preview(p_token uuid)
+returns table (workspace_name text, inviter text, invited_email text, grants text[], title text, status text)
+language plpgsql security definer set search_path = public as $$
+declare inv public.workspace_invites; uid uuid := (select auth.uid()); u_email text;
+begin
+  if uid is null then raise exception 'must be signed in' using errcode = 'FV230'; end if;
+  select * into inv from public.workspace_invites where token = p_token;
+  if not found then return; end if;
+  select email into u_email from auth.users where id = uid;
+  return query select
+    (select name from public.workspaces where id = inv.workspace_id),
+    (select display_name from public.profiles where id = inv.invited_by),
+    inv.email,
+    inv.grants,
+    inv.title,
+    case
+      when inv.accepted_at is not null then 'accepted'
+      when inv.expires_at < now() then 'expired'
+      when lower(coalesce(u_email, '')) <> lower(inv.email) then 'email_mismatch'
+      else 'ok'
+    end;
+end $$;
+create or replace function public.workspace_invite_preview(p_token uuid)
+returns table (workspace_name text, inviter text, invited_email text, grants text[], title text, status text)
+language sql security invoker set search_path = public as $$ select * from private.workspace_invite_preview(p_token); $$;
+
 revoke execute on function
   private.create_workspace_invite(uuid, text, text[], text), public.create_workspace_invite(uuid, text, text[], text),
-  private.accept_workspace_invite(uuid), public.accept_workspace_invite(uuid)
+  private.accept_workspace_invite(uuid), public.accept_workspace_invite(uuid),
+  private.workspace_invite_preview(uuid), public.workspace_invite_preview(uuid)
   from public, anon;
 grant execute on function
   private.create_workspace_invite(uuid, text, text[], text), public.create_workspace_invite(uuid, text, text[], text),
-  private.accept_workspace_invite(uuid), public.accept_workspace_invite(uuid)
+  private.accept_workspace_invite(uuid), public.accept_workspace_invite(uuid),
+  private.workspace_invite_preview(uuid), public.workspace_invite_preview(uuid)
   to authenticated;
+
+-- ── The roster, with emails (§F). Member emails live only in auth.users (profiles has
+-- none) and RLS hides that table, so the /team roster needs a DEFINER read. Member-gated
+-- (reads aren't box-gated — law 2); authenticated-only so the anon matrix stays 10. Another
+-- §2-list addition to flag: §F needs the email column and there's no other lawful source.
+create or replace function private.workspace_roster(p_workspace uuid)
+returns table (user_id uuid, display_name text, avatar_url text, email text, role public.member_role, grants text[], title text, joined timestamptz)
+language plpgsql security definer set search_path = public as $$
+begin
+  if not private.is_workspace_member(p_workspace) then raise exception 'not permitted' using errcode = 'FV230'; end if;
+  return query
+    select m.user_id, p.display_name, p.avatar_url, u.email::text, m.role, m.grants, m.title, m.created_at
+    from public.workspace_members m
+    join public.profiles p on p.id = m.user_id
+    join auth.users u on u.id = m.user_id
+    where m.workspace_id = p_workspace
+    order by m.created_at asc, m.user_id asc;
+end $$;
+create or replace function public.workspace_roster(p_workspace uuid)
+returns table (user_id uuid, display_name text, avatar_url text, email text, role public.member_role, grants text[], title text, joined timestamptz)
+language sql security invoker set search_path = public as $$ select * from private.workspace_roster(p_workspace); $$;
+revoke execute on function private.workspace_roster(uuid), public.workspace_roster(uuid) from public, anon;
+grant execute on function private.workspace_roster(uuid), public.workspace_roster(uuid) to authenticated;
 
 -- ── Member management (§D edit/remove + §4 law-4 last-admin guard) ───────────────
 -- NOTE: §2's migration list did not name these two, but §D (edit clearances / remove)

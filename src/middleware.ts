@@ -1,14 +1,17 @@
 import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
-import { signInRedirectPath } from "@/lib/auth-redirect.mjs";
+import { signInRedirectPath, safeNextPath } from "@/lib/auth-redirect.mjs";
 import { updateSession } from "@/lib/supabase/middleware";
 
 const intl = createIntlMiddleware(routing);
 // "/" is the M12 landing (the storefront) for signed-out visitors — crawlable.
 // /planners + /p are the M10 public directory. /menu and /sign remain tokenized-
 // public via their own guards; the directory + landing are fully open.
-const PUBLIC = ["/", "/sign-in", "/sign-up", "/reset", "/styleguide", "/rsvp", "/planners", "/p"];
+// /join/team is public so a signed-out invitee lands on the page (which shows a
+// neutral "sign in to view this invitation" + ?next) instead of a bounce that drops
+// the token — the page itself reveals zero invite detail until signed in (matrix stays 10).
+const PUBLIC = ["/", "/sign-in", "/sign-up", "/reset", "/styleguide", "/rsvp", "/planners", "/p", "/join/team"];
 
 export async function middleware(request: NextRequest) {
   // 1. next-intl handles locale routing and returns the base response.
@@ -33,6 +36,12 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     // Locale-aware bounce: /es/* -> /es/sign-in, unprefixed -> /sign-in.
     url.pathname = signInRedirectPath(request.nextUrl.pathname, routing.locales, routing.defaultLocale);
+    // Carry the intended (locale-stripped) destination so sign-in can return there —
+    // the invite deep-link /join/team/<token> depended on this and it was being dropped.
+    // Drop any incoming query first, then set only a validated relative next.
+    url.search = "";
+    const next = safeNextPath(path);
+    if (next && next !== "/") url.searchParams.set("next", next);
     return NextResponse.redirect(url);
   }
   // Signed-out root → the public landing (internal rewrite; the URL stays "/").
