@@ -24,6 +24,10 @@ insert into public.weddings (id, workspace_id, slug, couple_display, kind, budge
   values ('cccccccc-0000-0000-0000-0000000000c1','a0000000-0000-0000-0000-0000000000a1','w1','W One','city',100000,100,'CDMX','MX');
 insert into public.vendors (id, workspace_id, name, kind) values
   ('d0000000-0000-0000-0000-0000000000f3','a0000000-0000-0000-0000-0000000000a1','Flor y Canto','florals');
+-- A draft contract, so (7) can prove the swept void_contract still WORKS (not just refuses):
+-- the sweep dropped 0009's status_via_fn GUC lines and this catches that class of miss.
+insert into public.contracts (id, wedding_id, kind, status, title) values
+  ('cccccccc-0000-0000-0000-0000000000e1','cccccccc-0000-0000-0000-0000000000c1','vendor','draft','Flor y Canto — agreement');
 
 -- ── (1) anon can execute neither invite function (matrix stays 10) ────────────
 set local role anon;
@@ -134,6 +138,18 @@ do $$ begin
   perform public.remove_member('a0000000-0000-0000-0000-0000000000a1','11111111-0000-0000-0000-000000000001');
   if (select count(*) from public.workspace_members where workspace_id='a0000000-0000-0000-0000-0000000000a1' and user_id='11111111-0000-0000-0000-000000000001') <> 0 then
     raise exception 'TEST FAIL: admin not removed once a second admin existed'; end if;
+end $$;
+
+-- ── (7) a SWEPT function still WORKS: void_contract succeeds through the fn ────
+-- 22222222 is now the sole admin (11111111 removed in step 6), so it has full
+-- clearance and is workspace staff. void_contract writes contracts.status, which
+-- 0009's guard_contract_status rejects (FM028) unless the fn sets forma.status_via_fn.
+-- If the sweep dropped those GUC lines this raises FM028 instead of voiding.
+set local request.jwt.claims = '{"sub":"22222222-0000-0000-0000-000000000002","role":"authenticated"}';
+do $$ begin
+  perform public.void_contract('cccccccc-0000-0000-0000-0000000000e1');
+  if (select status from public.contracts where id = 'cccccccc-0000-0000-0000-0000000000e1') <> 'voided' then
+    raise exception 'TEST FAIL: void_contract did not set status = voided'; end if;
 end $$;
 
 reset role;

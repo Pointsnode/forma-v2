@@ -213,9 +213,15 @@ begin
   if not private.has_wedding_clearance(p_wedding, 'vendors') then raise exception 'your role does not allow that' using errcode = 'FS050'; end if;
   select * into v from public.vendors where id = p_vendor;
   if not found then raise exception 'no such vendor' using errcode = 'FV000'; end if;
+  -- guard_engagement_scope also checks, but fail early with the same code:
   if v.workspace_id <> (select workspace_id from public.weddings where id = p_wedding) then
     raise exception 'present only from your own catalog' using errcode = 'FV243';
   end if;
+
+  -- Event placement rules. Single-event law: with exactly one event, an
+  -- engagement auto-attaches to it (the caller shows no event chips). A venue on
+  -- a multi-event wedding MUST name at least one event; other kinds may stay
+  -- event-optional (wedding-general).
   evids := coalesce(p_event_ids, '{}'::uuid[]);
   select count(*) into nevents from public.wedding_events where wedding_id = p_wedding;
   if coalesce(array_length(evids, 1), 0) = 0 and nevents = 1 then
@@ -224,15 +230,18 @@ begin
   if v.kind = 'venue' and nevents >= 2 and coalesce(array_length(evids, 1), 0) = 0 then
     raise exception 'a venue must be presented for at least one event' using errcode = 'FV244';
   end if;
+
   insert into public.wedding_vendors (wedding_id, vendor_id, status, presented_note, presented_estimate, presented_at)
     values (p_wedding, p_vendor, 'presented', p_note, p_estimate, now())
     returning id into eng;
   foreach e in array evids loop
     insert into public.event_vendors (engagement_id, event_id, wedding_id) values (eng, e, p_wedding);
   end loop;
+
   ttl := v.name || ' — ' || v.kind::text;
   insert into public.proposals (wedding_id, status, title, note, estimate_amount, engagement_id, created_by, sent_at)
     values (p_wedding, 'sent', ttl, p_note, p_estimate, eng, (select auth.uid()), now());
+
   perform private.log_activity(p_wedding, (select auth.uid()), 'vendor_presented', v.name, jsonb_build_object('engagement_id', eng));
   return eng;
 end $$;
@@ -258,8 +267,11 @@ begin
   if not private.is_wedding_staff(q.wedding_id) then raise exception 'not permitted' using errcode = 'FV230'; end if;
   if not private.has_wedding_clearance(q.wedding_id, 'send') then raise exception 'your role does not allow that' using errcode = 'FS050'; end if;
   if q.amount is null then raise exception 'record the quote amount before sending it to the couple' using errcode = 'FV241'; end if;
+  -- don't re-issue a proposal for a quote the couple has already answered (accepted/
+  -- declined) or one still awaiting its amount — only a 'received' quote is sendable.
   if q.status <> 'received' then raise exception 'that quote is no longer awaiting the couple' using errcode = 'FV241'; end if;
   select v.name into vname from public.wedding_vendors wv join public.vendors v on v.id = wv.vendor_id where wv.id = q.engagement_id;
+  -- N = the 1-based ordinal of this quote among the engagement's quotes by created_at
   select count(*) into n from public.quotes
     where engagement_id = q.engagement_id and (created_at < q.created_at or (created_at = q.created_at and id <= q.id));
   insert into public.proposals (wedding_id, status, title, note, estimate_amount, engagement_id, quote_id, created_by, sent_at)
@@ -320,7 +332,10 @@ begin
   if not private.is_wedding_staff(c.wedding_id) then raise exception 'not permitted' using errcode = 'FV230'; end if;
   if not private.has_wedding_clearance(c.wedding_id, 'contracts') then raise exception 'your role does not allow that' using errcode = 'FS050'; end if;
   if c.status = 'completed' then raise exception 'a completed contract cannot be voided' using errcode = 'FM027'; end if;
+  -- 0009 guard_contract_status raises FM028 on any status write made without this GUC set.
+  perform set_config('forma.status_via_fn', 'on', true);
   update public.contracts set status = 'voided' where id = p_contract;
+  perform set_config('forma.status_via_fn', 'off', true);
   perform private.log_activity(c.wedding_id, (select auth.uid()), 'contract_voided', c.title, jsonb_build_object('contract_id', p_contract));
 end $$;
 
@@ -395,6 +410,9 @@ begin
   if not private.has_clearance(inq.workspace_id, 'weddings') then raise exception 'your role does not allow that' using errcode = 'FS050'; end if;
   disp := case when coalesce(inq.partner_name,'') <> '' then inq.name || ' & ' || inq.partner_name else inq.name end;
   v_slug := regexp_replace(lower(disp), '[^a-z0-9]+', '-', 'g') || '-' || substr(gen_random_uuid()::text, 1, 6);
+  -- phase/date_start are NOT set here: phase defaults 'foundations'; date_start is
+  -- trigger-derived from event dates, so we carry the inquiry date onto the default
+  -- event (auto-created by seed_default_event), which recompute_wedding_dates rolls up.
   insert into public.weddings (workspace_id, slug, couple_display, partner_a, partner_b)
     values (inq.workspace_id, v_slug, disp, inq.name, nullif(inq.partner_name,''))
     returning id into v_wedding;
