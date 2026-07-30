@@ -30,8 +30,17 @@
     "confirmSent": "Revisa tu correo — confirma tu email para terminar de registrarte.",
     "errors": {
       "invalid": "Revisa tu correo y contraseña.",
-      "generic": "Algo salió mal. Inténtalo de nuevo."
-    }
+      "generic": "Algo salió mal. Inténtalo de nuevo.",
+      "weak": "Usa al menos 8 caracteres.",
+      "mismatch": "Las contraseñas no coinciden.",
+      "expired": "Ese enlace ya no es válido — pide uno nuevo."
+    },
+    "resetConfirmTitle": "Elige una contraseña nueva",
+    "newPassword": "Contraseña nueva",
+    "confirmPassword": "Confirma la contraseña nueva",
+    "setPassword": "Guardar e iniciar sesión",
+    "resetExpired": "Ese enlace ya venció o ya se usó. Pide uno nuevo.",
+    "resetAgain": "Enviar un enlace nuevo"
   },
   "workspace": {
     "createTitle": "Nombra tu espacio",

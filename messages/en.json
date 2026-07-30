@@ -30,8 +30,17 @@
     "confirmSent": "Check your inbox — confirm your email to finish signing up.",
     "errors": {
       "invalid": "Check your email and password.",
-      "generic": "Something went wrong. Try again."
-    }
+      "generic": "Something went wrong. Try again.",
+      "weak": "Use at least 8 characters.",
+      "mismatch": "Those two passwords don't match.",
+      "expired": "That link is no longer valid — ask for a fresh one."
+    },
+    "resetConfirmTitle": "Choose a new password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "setPassword": "Save and sign in",
+    "resetExpired": "That link has expired or has already been used. Ask for a fresh one.",
+    "resetAgain": "Send a new link"
   },
   "workspace": {
     "createTitle": "Name your workspace",

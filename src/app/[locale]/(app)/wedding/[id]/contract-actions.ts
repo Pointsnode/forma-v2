@@ -1,9 +1,9 @@
 "use server";
 
-import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
+import { APP_URL } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import { resolveMergeFields } from "@/lib/contracts";
 import { signerEmail } from "@/lib/email/contract-email";
@@ -27,14 +27,8 @@ async function contractIdOf(supabase: Awaited<ReturnType<typeof createClient>>, 
   return (data?.contract_id as string) ?? null;
 }
 
-async function baseUrl(): Promise<string> {
-  // APP_URL first — signing/return URLs stay on the app origin across the cutover.
-  const app = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL;
-  if (app) return app;
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  return host ? `${(h.get("x-forwarded-proto") ?? "https")}://${host}` : "http://localhost:3000";
-}
+// Signing/return URLs stay on the app origin — APP_URL, the single source (env.ts).
+// Used inline at the call site.
 
 // Staff sends a contract: resolve the merge snapshot from the mesh, flip it out of
 // draft (send_contract enforces the draft-hold + signer gates), then email each
@@ -52,7 +46,7 @@ export async function sendContractAction(contractId: string): Promise<ContractAc
   if (error) { console.error(`send_contract (${error.code}): ${error.message}`); return { error: error.code === "FM022" ? "draftHold" : "generic" }; }
 
   const { data: signers } = await supabase.from("contract_signers").select("name, email, token, sign_order").eq("contract_id", contractId).order("sign_order");
-  const base = await baseUrl();
+  const base = APP_URL;
   const emails = ((signers ?? []) as { name: string; email: string | null; token: string; sign_order: number }[])
     .filter((s) => s.email)
     .map((s) => signerEmail({ to: s.email!, signerName: s.name, title: c.title, signUrl: `${base}/sign/${s.token.trim()}`, locale }));
