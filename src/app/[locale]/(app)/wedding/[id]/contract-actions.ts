@@ -27,11 +27,8 @@ async function contractIdOf(supabase: Awaited<ReturnType<typeof createClient>>, 
   return (data?.contract_id as string) ?? null;
 }
 
-async function baseUrl(): Promise<string> {
-  // Signing/return URLs stay on the app origin. APP_URL is the single source (env.ts),
-  // carrying the preview VERCEL_URL leg a hand-rolled env fallback would drop.
-  return APP_URL;
-}
+// Signing/return URLs stay on the app origin — APP_URL, the single source (env.ts).
+// Used inline at the call site.
 
 // Staff sends a contract: resolve the merge snapshot from the mesh, flip it out of
 // draft (send_contract enforces the draft-hold + signer gates), then email each
@@ -49,7 +46,7 @@ export async function sendContractAction(contractId: string): Promise<ContractAc
   if (error) { console.error(`send_contract (${error.code}): ${error.message}`); return { error: error.code === "FM022" ? "draftHold" : "generic" }; }
 
   const { data: signers } = await supabase.from("contract_signers").select("name, email, token, sign_order").eq("contract_id", contractId).order("sign_order");
-  const base = await baseUrl();
+  const base = APP_URL;
   const emails = ((signers ?? []) as { name: string; email: string | null; token: string; sign_order: number }[])
     .filter((s) => s.email)
     .map((s) => signerEmail({ to: s.email!, signerName: s.name, title: c.title, signUrl: `${base}/sign/${s.token.trim()}`, locale }));

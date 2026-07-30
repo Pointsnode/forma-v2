@@ -27,8 +27,8 @@ export function signerEmail(opts: { to: string; signerName: string; title: strin
 }
 
 // Phase-1 invites the gate created: email each couple their portal join link,
-// once (marks emailed_at). Runs after the deposit is paid (webhook) or the
-// agreement completes (sign action).
+// once (marks emailed_at). Called from the Stripe webhook after the deposit is paid
+// (the gate can also fire on contract completion, but no sign-action caller is wired).
 export async function phase1InviteEmails(admin: SupabaseClient, weddingId: string, baseUrl: string, locale = "en"): Promise<Email[]> {
   const { data } = await admin
     .from("wedding_invites")

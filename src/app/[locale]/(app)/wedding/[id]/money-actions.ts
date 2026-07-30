@@ -7,12 +7,8 @@ import { createCheckoutSession, stripeConfigured } from "@/lib/stripe";
 
 export type MoneyResult = { ok?: boolean; error?: string; url?: string };
 
-// Stripe returns land back on the app origin (cookies are host-scoped). APP_URL is the
-// one source of truth (env.ts): NEXT_PUBLIC_APP_URL in prod, the VERCEL_URL host on a
-// preview, localhost otherwise — no hand-rolled env fallback that drops the preview leg.
-async function baseUrl(): Promise<string> {
-  return APP_URL;
-}
+// Stripe returns land back on the app origin (cookies are host-scoped) — APP_URL,
+// the single source of truth (env.ts). Used inline at the call site.
 
 // Couple pays a due planner_fee line → Stripe hosted Checkout. Only planner_fee
 // lines ever reach Stripe (Decision 3).
@@ -22,7 +18,7 @@ export async function payPlannerFee(lineId: string): Promise<MoneyResult> {
   if (!line) return { error: "generic" };
   if (line.kind !== "planner_fee") return { error: "notFee" };
   if (!stripeConfigured()) return { error: "notConfigured" };
-  const base = await baseUrl();
+  const base = APP_URL;
   try {
     const session = await createCheckoutSession({
       lineId: line.id, weddingId: line.wedding_id, amountCents: Math.round(Number(line.amount) * 100),

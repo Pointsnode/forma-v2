@@ -100,8 +100,11 @@ export async function setPassword(_prev: AuthState, formData: FormData): Promise
     return { error: "expired" };
   }
 
+  // The token is spent by now, so a failure HERE is not an expired link — it's the
+  // password itself (e.g. Supabase's policy rejecting it as unchanged / too short).
+  // "generic" is honest; saying "expired" would manufacture the state it describes.
   const { error } = await supabase.auth.updateUser({ password });
-  if (error) return { error: "expired" };
+  if (error) return { error: "generic" };
   redirect({ href: "/", locale: await getLocale() });
   return null;
 }

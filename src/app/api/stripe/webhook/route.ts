@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { APP_URL } from "@/lib/env";
 import { verifyStripeSignature, isPaymentEvent } from "@/lib/stripe-verify.mjs";
 import { sendBatch } from "@/lib/email/resend";
 import { phase1InviteEmails } from "@/lib/email/contract-email";
@@ -42,8 +43,10 @@ export async function POST(req: NextRequest) {
       await admin.rpc("record_fee_payment", { p_line: lineId, p_intent: String(intent), p_status: "succeeded", p_amount: amount });
       const weddingId = obj.metadata?.wedding_id;
       if (weddingId) {
-        const base = process.env.NEXT_PUBLIC_SITE_URL ?? req.nextUrl.origin;
-        const emails = await phase1InviteEmails(admin, weddingId, base);
+        // The join link is a couple-portal app route — build it from APP_URL (the app
+        // origin), never SITE_URL (marketing, which flips to forma.events at cutover)
+        // or the webhook's request host (whatever Stripe happened to call).
+        const emails = await phase1InviteEmails(admin, weddingId, APP_URL);
         if (emails.length) await sendBatch(emails);
       }
     }
