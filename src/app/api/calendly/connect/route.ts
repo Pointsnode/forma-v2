@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { randomBytes } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
+import { clearanceGate } from "@/lib/workspace";
 import { authorizeUrl, calendlyConfigured } from "@/lib/calendly/api";
 import { APP_URL } from "@/lib/env";
 
@@ -12,6 +13,8 @@ export async function GET(req: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.redirect(new URL("/sign-in", req.nextUrl.origin));
+  // Connect is a member action, but a boxless staff member is refused (calendly box).
+  if (await clearanceGate(supabase, "calendly")) return NextResponse.redirect(new URL("/calendar?error=clearance", req.nextUrl.origin));
 
   const state = randomBytes(16).toString("hex");
   const jar = await cookies();

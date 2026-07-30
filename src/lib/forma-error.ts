@@ -8,6 +8,7 @@ const MAP: Record<string, string> = {
   FV243: "ownCatalogue", // "You can only present vendors from your own catalogue."
   FV244: "venueEvent",   // "A venue has to be presented for at least one event."
   FV222: "changeNote",   // "Tell them what you'd like changed."
+  FS050: "clearance",    // "Your role doesn't allow that." (M15 clearance box gate)
 };
 
 /** i18n key in the "errors" namespace for a code, or null → caller uses the DB message. */

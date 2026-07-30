@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { APP_URL } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
+import { clearanceGate } from "@/lib/workspace";
 import { createCheckoutSession, stripeConfigured } from "@/lib/stripe";
 
 export type MoneyResult = { ok?: boolean; error?: string; url?: string };
@@ -34,6 +35,7 @@ export async function payPlannerFee(lineId: string): Promise<MoneyResult> {
 // Staff adds a manual ledger line.
 export async function addLedgerLine(weddingId: string, form: FormData): Promise<MoneyResult> {
   const supabase = await createClient();
+  const gate = await clearanceGate(supabase, "ledger"); if (gate) return { error: gate };
   const title = String(form.get("title") ?? "").trim();
   const amount = Number(String(form.get("amount") ?? "").replace(/[^0-9.]/g, ""));
   if (!title || !amount) return { error: "invalid" };
@@ -48,6 +50,7 @@ export async function addLedgerLine(weddingId: string, form: FormData): Promise<
 // paid only through Stripe — never marked by hand here.
 export async function setLineStatus(lineId: string, status: string): Promise<MoneyResult> {
   const supabase = await createClient();
+  const gate = await clearanceGate(supabase, "ledger"); if (gate) return { error: gate };
   const { data: line } = await supabase.from("ledger_lines").select("kind").eq("id", lineId).maybeSingle();
   if (!line) return { error: "generic" };
   if (line.kind === "planner_fee" && status === "paid") return { error: "feeStripeOnly" };

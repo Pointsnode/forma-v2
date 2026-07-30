@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { clearanceGate } from "@/lib/workspace";
 
 export type LoopResult = { ok?: boolean; error?: string };
 
@@ -92,6 +93,7 @@ export async function createInvite(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "generic" };
+  const gate = await clearanceGate(supabase, "couples"); if (gate) return { error: gate };
   const { data, error } = await supabase
     .from("wedding_invites")
     .insert({ wedding_id: weddingId, role, created_by: user.id })
@@ -107,6 +109,7 @@ export async function createInvite(
 
 export async function revokeInvite(_weddingId: string, inviteId: string): Promise<LoopResult> {
   const supabase = await createClient();
+  const gate = await clearanceGate(supabase, "couples"); if (gate) return { error: gate };
   const { error } = await supabase.from("wedding_invites").delete().eq("id", inviteId);
   if (error) {
     console.error(`revokeInvite failed (${error.code}): ${error.message}`);

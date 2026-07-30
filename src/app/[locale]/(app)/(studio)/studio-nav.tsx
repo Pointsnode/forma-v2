@@ -14,7 +14,7 @@ export function StudioNav() {
   const tops = useTranslations("ops");
   const tc = useTranslations("contract");
   const path = usePathname();
-  const items: { href: "/" | "/weddings" | "/venues" | "/vendors" | "/contracts" | "/tasks" | "/calendar" | "/profile"; label: string }[] = [
+  const items: { href: "/" | "/weddings" | "/venues" | "/vendors" | "/contracts" | "/tasks" | "/calendar" | "/team" | "/profile"; label: string }[] = [
     { href: "/", label: t("overview") },
     { href: "/weddings", label: t("weddings") },
     { href: "/venues", label: tv("venues") },
@@ -22,6 +22,7 @@ export function StudioNav() {
     { href: "/contracts", label: tc("tab") },
     { href: "/tasks", label: tops("tasksTab") },
     { href: "/calendar", label: t("calendar") },
+    { href: "/team", label: t("team") },
     { href: "/profile", label: t("profile") },
   ];
   return (
