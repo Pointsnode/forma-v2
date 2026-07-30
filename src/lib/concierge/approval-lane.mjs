@@ -18,6 +18,9 @@ export const APPROVAL_FNS = {
   schedule_touchpoint: { args: ["wedding_id", "kind"] },
   mark_line_paid: { args: ["line_id"] },
   assign_seat: { args: ["event_id", "guest_id", "table_id", "seat_no"] },
+  // M14: move a guest off their seat — propose-only; the DB unseat(p_event, p_guest) runs
+  // under the planner's session on approval. Its absence made "move Ana off table 4" a dead end.
+  unseat: { args: ["event_id", "guest_id"] },
   // M13: present a vendor to a wedding, and send a recorded quote to the couple —
   // propose-only; the planner approves and their session runs the same function.
   present_vendor: { args: ["vendor_id", "wedding_id"] },
@@ -46,6 +49,11 @@ export function validateAction(fn, args) {
     }
     const n = Number(a.seat_no);
     if (!Number.isInteger(n) || n < 0) return { ok: false, error: "seat_no must be the 0-based chair number (A=0, B=1, C=2, …), an integer — not a letter" };
+  }
+  if (fn === "unseat") {
+    for (const k of ["event_id", "guest_id"]) {
+      if (!UUID.test(String(a[k]))) return { ok: false, error: `${k} must be a real id (a UUID from the seating tool), not a name` };
+    }
   }
   // present_vendor: event_ids optional (single-event weddings auto-attach), but when
   // present it must be an array of real event UUIDs — a venue on a multi-event wedding

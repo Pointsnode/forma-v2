@@ -1035,7 +1035,8 @@
     "queued": "En cola — el cron lo enviará",
     "sendMenu": "Enviar recolección de menú",
     "sendSchedules": "Enviar itinerarios del día",
-    "dietaryFlags": "Restricciones dietéticas"
+    "dietaryFlags": "Restricciones dietéticas",
+    "seatingTab": "Distribución"
   },
   "menu": {
     "wordmark": "planificación, refinada.",

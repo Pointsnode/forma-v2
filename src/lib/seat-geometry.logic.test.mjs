@@ -28,4 +28,22 @@ assert.ok(Math.abs(rotated.y) < 1e-6 && rotated.x > 0); // rotated to the right
 // zero capacity → no chairs
 assert.equal(seatPositions("round", 0, 100, 100, 0).length, 0);
 
-console.log("seat-geometry: labels + ring/side positions + rotation ok");
+// ── M14 §C seat_sides ─────────────────────────────────────────────────────────
+// 'all' (default) is unchanged, and 'long' coincides with it for this geometry.
+const allRect = seatPositions("rect", 6, 200, 90, 0, "all");
+const longRect = seatPositions("rect", 6, 200, 90, 0, "long");
+assert.deepEqual(longRect, allRect); // long == all for a rect (short ends are never seated)
+assert.deepEqual(allRect, seatPositions("rect", 6, 200, 90, 0)); // 'all' == the 5-arg default
+// 'one' puts every chair on a single long side (all on top, y<0).
+const oneRect = seatPositions("rect", 6, 200, 90, 0, "one");
+assert.equal(oneRect.length, 6);
+assert.equal(oneRect.filter((p) => p.y < 0).length, 6); // all on the top side
+assert.equal(oneRect.filter((p) => p.y > 0).length, 0);
+// 'one' on a round table is a front arc across the lower semicircle (all y>=0).
+const oneRound = seatPositions("round", 5, 120, 120, 0, "one");
+assert.equal(oneRound.length, 5);
+assert.ok(oneRound.every((p) => p.y >= -1e-9)); // lower half only
+// round ignores 'long' (no long sides) → still the full ring == 'all'.
+assert.deepEqual(seatPositions("round", 8, 120, 120, 0, "long"), seatPositions("round", 8, 120, 120, 0, "all"));
+
+console.log("seat-geometry: labels + ring/side positions + rotation + seat_sides ok");

@@ -27,6 +27,12 @@ assert.equal(validateAction("assign_seat", { event_id: U, guest_id: U, table_id:
 assert.equal(validateAction("assign_seat", { event_id: U, guest_id: U, table_id: U, seat_no: 3 }).ok, true); // real ids + int
 assert.equal(validateAction("assign_seat", { event_id: U, guest_id: U, table_id: U, seat_no: "3" }).ok, true); // numeric string ok
 
+// M14: unseat is propose-only; ids must be real UUIDs
+assert.equal(isApprovable("unseat"), true);
+assert.equal(validateAction("unseat", { event_id: U }).ok, false); // guest_id missing
+assert.equal(validateAction("unseat", { event_id: "sangeet", guest_id: "ana" }).ok, false); // slugs, not UUIDs
+assert.equal(validateAction("unseat", { event_id: U, guest_id: U }).ok, true);
+
 // M13: present_vendor + send_quote are propose-only (concierge proposes, planner runs)
 assert.equal(isApprovable("present_vendor"), true);
 assert.equal(isApprovable("send_quote"), true);

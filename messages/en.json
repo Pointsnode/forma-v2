@@ -1035,7 +1035,8 @@
     "queued": "Queued — the cron will send it",
     "sendMenu": "Send menu collection",
     "sendSchedules": "Send day-of schedules",
-    "dietaryFlags": "Dietary flags"
+    "dietaryFlags": "Dietary flags",
+    "seatingTab": "Seating"
   },
   "menu": {
     "wordmark": "planning, refined.",

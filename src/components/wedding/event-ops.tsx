@@ -5,18 +5,13 @@ import { useTranslations } from "next-intl";
 import { Button, Card, Heading, Badge, Tag, cx } from "@/components/ui";
 import {
   addScheduleItem, updateScheduleItem, deleteScheduleItem, checkScheduleItem,
-  addMenu, addMenuOption, lockMenu, addTable, assignSeat, unseat, addFloorPlan,
+  addMenu, addMenuOption, lockMenu,
 } from "@/app/[locale]/(app)/wedding/[id]/ops-actions";
 
 const input = "rounded-lg bg-bone px-2.5 py-1.5 text-[13px] text-ink shadow-card outline-none";
 
 export type ScheduleItemVM = { id: string; time: string | null; title: string; detail: string | null; done: boolean };
 export type MenuVM = { id: string; title: string; locked: boolean; options: { id: string; label: string; diet: string[]; count: number }[] };
-export type SeatingVM = {
-  plan: { id: string; name: string } | null;
-  tables: { id: string; name: string; capacity: number; seated: { guestId: string; name: string }[] }[];
-  unseated: { guestId: string; name: string }[];
-};
 
 function useRun() {
   const [pending, start] = useTransition();
@@ -116,50 +111,3 @@ export function MenusCard({ weddingId, eventId, menus }: { weddingId: string; ev
   );
 }
 
-// ── Seating (honest v1: table list + assign/unseat, not a canvas) ────────────
-export function SeatingCard({ weddingId, eventId, seating }: { weddingId: string; eventId: string; seating: SeatingVM }) {
-  const t = useTranslations("ops");
-  const { pending, run } = useRun();
-  const [assignTo, setAssignTo] = useState<string | null>(null);
-  return (
-    <Card>
-      <Heading className="mb-1 text-[18px]">{t("seating")}</Heading>
-      {!seating.plan ? (
-        <div className="flex items-center justify-between">
-          <p className="text-[13px] text-muted">{t("noFloorPlan")}</p>
-          <Button variant="ghost" disabled={pending} onClick={() => run(() => addFloorPlan(weddingId, eventId, "Main hall"), () => t("error"))}>{t("addFloorPlan")}</Button>
-        </div>
-      ) : (
-        <>
-          <p className="mb-2 text-[12.5px] text-muted">{t("seatedCount", { seated: seating.tables.reduce((s, tb) => s + tb.seated.length, 0), total: seating.tables.reduce((s, tb) => s + tb.seated.length, 0) + seating.unseated.length })}</p>
-          {seating.tables.map((tb) => (
-            <div key={tb.id} className="mb-2 rounded-xl bg-bone p-3">
-              <div className="mb-1 flex items-center justify-between">
-                <p className="font-display text-[14.5px] text-ink">{tb.name} <span className="text-[12px] text-muted">{tb.seated.length}/{tb.capacity}</span></p>
-                <button onClick={() => setAssignTo(assignTo === tb.id ? null : tb.id)} className="text-[12px] text-wine hover:underline">{t("assign")}</button>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {tb.seated.map((s) => (
-                  <button key={s.guestId} onClick={() => run(() => unseat(eventId, s.guestId), () => t("error"))} disabled={pending} className="rounded-full bg-sand-soft px-2.5 py-[2px] text-[11.5px] text-taupe hover:bg-wine-soft hover:text-wine" title={t("unseat")}>{s.name} ×</button>
-                ))}
-              </div>
-              {assignTo === tb.id ? (
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {seating.unseated.length === 0 ? <span className="text-[12px] text-muted">{t("allSeated")}</span> : null}
-                  {seating.unseated.map((u) => (
-                    <button key={u.guestId} onClick={() => run(() => assignSeat(eventId, u.guestId, tb.id), () => t("error"))} disabled={pending} className="rounded-full bg-ink px-2.5 py-[2px] text-[11.5px] text-bone">{u.name}</button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          ))}
-          <form action={(fd) => run(() => addTable(seating.plan!.id, weddingId, fd), () => t("error"))} className="mt-2 flex flex-wrap items-end gap-2">
-            <input name="name" required placeholder={t("tableName")} className={input} />
-            <input name="capacity" inputMode="numeric" placeholder={t("capacity")} className={cx(input, "w-24")} />
-            <Button type="submit" variant="ghost" disabled={pending}>{t("addTable")}</Button>
-          </form>
-        </>
-      )}
-    </Card>
-  );
-}
