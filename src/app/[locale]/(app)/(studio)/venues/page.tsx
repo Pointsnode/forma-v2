@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loadVendorCards } from "@/lib/vendors";
-import { VendorBento } from "@/components/vendors/vendor-bento";
+import { CatalogBrowser } from "@/components/vendors/catalog-browser";
 import { Button, SectionTitle } from "@/components/ui";
 
 export default async function VenuesPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -17,7 +17,7 @@ export default async function VenuesPage({ params }: { params: Promise<{ locale:
       <SectionTitle title={t("venues")} accent={t("venuesHint")} action={<Link href="/vendors/new?kind=venue"><Button>{t("addVenue")}</Button></Link>} className="mt-1" />
       {venues.length === 0
         ? <div className="rounded-2xl bg-paper p-10 text-center shadow-card"><p className="font-accent text-[17px] text-muted">{t("empty")}</p></div>
-        : <VendorBento vendors={venues} />}
+        : <CatalogBrowser vendors={venues} mode="venues" />}
     </div>
   );
 }

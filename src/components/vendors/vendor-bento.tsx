@@ -1,4 +1,6 @@
-import { getTranslations } from "next-intl/server";
+"use client";
+
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Bento, BentoBig, BentoFoot, Badge, Tag, WhoBadge, heroToneAt, cx } from "@/components/ui";
 import type { VendorCard, CardEngagement } from "@/lib/vendors";
@@ -14,8 +16,11 @@ function nameInitials(name: string): string {
 // perks/contact rows) then the grid. Every card carries engagement-status pills
 // (where the vendor stands across weddings), a description with its city bolded,
 // and Edit / Present affordances. Solid heroes rotate for variety (no gradients).
-export async function VendorBento({ vendors }: { vendors: VendorCard[] }) {
-  const [t, te] = [await getTranslations("vendors"), await getTranslations("engagement")];
+// M16-catalog: a client component (was an async server component) so CatalogBrowser can pass it the
+// client-filtered subset and re-render instantly — markup/output byte-identical; only the i18n hook
+// moved from getTranslations (server) to useTranslations (client).
+export function VendorBento({ vendors }: { vendors: VendorCard[] }) {
+  const [t, te] = [useTranslations("vendors"), useTranslations("engagement")];
 
   const pills = (engagements: CardEngagement[]) =>
     engagements.length ? (
