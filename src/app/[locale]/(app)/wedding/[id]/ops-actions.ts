@@ -58,42 +58,8 @@ export async function lockMenu(menuId: string, lock: boolean): Promise<OpsResult
   if (error) return { error: error.code || "generic" }; rv(); return { ok: true };
 }
 
-// ── seating ──────────────────────────────────────────────────────────────────
-export async function addFloorPlan(weddingId: string, eventId: string, name: string): Promise<OpsResult> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("floor_plans").insert({ wedding_id: weddingId, event_id: eventId, name: name.trim() || "Floor plan" }).select("id").single();
-  if (error || !data) return { error: "generic" }; rv(); return { ok: true, id: data.id };
-}
-export async function addTable(planId: string, weddingId: string, form: FormData): Promise<OpsResult> {
-  const supabase = await createClient();
-  const name = String(form.get("name") ?? "").trim();
-  if (!name) return { error: "invalid" };
-  const { error } = await supabase.from("seating_tables").insert({ floor_plan_id: planId, wedding_id: weddingId, name, capacity: num(form.get("capacity")) || 8 });
-  if (error) return { error: "generic" }; rv(); return { ok: true };
-}
-export async function assignSeat(eventId: string, guestId: string, tableId: string, seatNo?: number): Promise<OpsResult> {
-  const supabase = await createClient();
-  // Canvas passes a specific chair; the list view auto-picks the lowest free chair.
-  let seat = seatNo;
-  if (seat == null) {
-    const [{ data: tbl }, { data: taken }] = await Promise.all([
-      supabase.from("seating_tables").select("capacity").eq("id", tableId).maybeSingle(),
-      supabase.from("seats").select("seat_no").eq("table_id", tableId),
-    ]);
-    const used = new Set(((taken ?? []) as { seat_no: number }[]).map((s) => s.seat_no));
-    const cap = (tbl?.capacity as number) ?? 8;
-    seat = 0;
-    while (seat < cap && used.has(seat)) seat++;
-    if (seat >= cap) return { error: "FS042" }; // table full
-  }
-  const { error } = await supabase.rpc("assign_seat", { p_event: eventId, p_guest: guestId, p_table: tableId, p_seat_no: seat });
-  if (error) return { error: error.code || "generic" }; rv(); return { ok: true };
-}
-export async function unseat(eventId: string, guestId: string): Promise<OpsResult> {
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("unseat", { p_event: eventId, p_guest: guestId });
-  if (error) return { error: "generic" }; rv(); return { ok: true };
-}
+// (M14 §I: the pre-canvas seating v1 — addFloorPlan/addTable/assignSeat/unseat here and
+// SeatingCard in event-ops — is removed. The live canvas stack is floor-actions.ts + FloorSection.)
 
 // ── day-of extras + close ────────────────────────────────────────────────────
 export async function addDayOfExtra(weddingId: string, eventId: string | null, form: FormData): Promise<OpsResult> {

@@ -29,6 +29,7 @@ export default async function GuestsTab({ params }: { params: Promise<{ locale: 
         touchpoints={board.touchpoints}
         guests={board.guests}
         eventGuests={board.eventGuests}
+        seats={board.seats}
         rsvpDeadline={wedding.rsvp_deadline ?? null}
         rsvpOpen={wedding.rsvp_open ?? false}
       />

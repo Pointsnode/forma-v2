@@ -8,7 +8,7 @@ import {
   phaseOrdinal, type EventRow, type WeddingRow,
 } from "@/lib/wedding";
 
-export type WeddingTab = "overview" | "whatsnext" | "proposals" | "guests" | "vendors" | "budget" | "contracts" | "tasks" | "design" | "documents" | "planning";
+export type WeddingTab = "overview" | "whatsnext" | "proposals" | "guests" | "vendors" | "budget" | "contracts" | "tasks" | "design" | "documents" | "planning" | "seating";
 
 // The wedding shell — full-bleed ink masthead (eyebrow · display couple name ·
 // meta · event chips · the slim planning line as its bottom edge), the sticky
@@ -69,6 +69,16 @@ export async function WeddingShell({
       : n === 1 ? tp("itemsToGateOne")
       : tp("itemsToGateOther", { count: n });
 
+  // §A Seating: staff always; the couple only when a plan on this wedding has couple_can_edit
+  // (the flag is per-plan/per-event — the tab follows "any plan is open to the couple").
+  let coupleSeating = false;
+  if (role === "member") {
+    const sb = await createClient();
+    const { data: openPlan } = await sb.from("floor_plans").select("id").eq("wedding_id", wedding.id).eq("couple_can_edit", true).limit(1).maybeSingle();
+    coupleSeating = !!openPlan;
+  }
+
+  const seatingTab = { key: "seating" as const, href: `/wedding/${wedding.id}/seating`, label: tops("seatingTab") };
   const tabs: { key: WeddingTab; href: string; label: string }[] =
     role === "staff"
       ? [
@@ -80,12 +90,14 @@ export async function WeddingShell({
           { key: "contracts", href: `/wedding/${wedding.id}/contracts`, label: tc("tab") },
           { key: "tasks", href: `/wedding/${wedding.id}/tasks`, label: ttask("tab") },
           { key: "design", href: `/wedding/${wedding.id}/design`, label: tops("designTab") },
+          seatingTab,
           { key: "documents", href: `/wedding/${wedding.id}/documents`, label: tops("documentsTab") },
         ]
       : [
           { key: "overview", href: `/wedding/${wedding.id}`, label: tw("overview") },
           { key: "whatsnext", href: `/wedding/${wedding.id}/whats-next`, label: tops("whatsNextTab") },
           { key: "guests", href: `/wedding/${wedding.id}/guests`, label: tg("tab") },
+          ...(coupleSeating ? [seatingTab] : []),
           { key: "design", href: `/wedding/${wedding.id}/design`, label: tops("designTab") },
           { key: "documents", href: `/wedding/${wedding.id}/documents`, label: tops("documentsTab") },
         ];

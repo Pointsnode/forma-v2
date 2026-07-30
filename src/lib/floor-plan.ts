@@ -2,12 +2,15 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type SeatVM = { seatNo: number; guestId: string; name: string; diet: string[] };
-export type TableVM = { id: string; name: string; capacity: number; shape: "round" | "rect" | "banquet"; x: number; y: number; rotation: number; width: number; height: number; seats: SeatVM[] };
+export type SeatSides = "all" | "long" | "one";
+export type TableVM = { id: string; name: string; capacity: number; shape: "round" | "rect" | "banquet"; x: number; y: number; rotation: number; width: number; height: number; seatSides: SeatSides; isLoose: boolean; groupedWith: string | null; seats: SeatVM[] };
 export type ElementVM = { id: string; kind: string; label: string | null; x: number; y: number; rotation: number; width: number; height: number };
 export type AttendeeVM = { guestId: string; name: string; diet: string[]; seated: boolean };
 export type ExceptionVM = { guestId: string; name: string; rsvp: string; tableId: string; seatNo: number };
+// §L blueprint display settings live on the plan so reopening restores exactly what was set.
+export type BackgroundSettings = { opacity?: number; scale?: number; x?: number; y?: number; locked?: boolean };
 export type FloorPlanVM = {
-  plan: { id: string; name: string; canvas: { w: number; h: number }; coupleCanEdit: boolean } | null;
+  plan: { id: string; name: string; canvas: { w: number; h: number }; coupleCanEdit: boolean; background: string | null; backgroundUrl: string | null; backgroundSettings: BackgroundSettings } | null;
   tables: TableVM[]; elements: ElementVM[]; attendees: AttendeeVM[]; exceptions: ExceptionVM[];
   seatedCount: number; attendingCount: number;
 };
@@ -16,11 +19,20 @@ export type FloorPlanVM = {
 // event's rsvp='yes' guests (kills hole 4); a seated guest who's no longer 'yes'
 // becomes an exception (RSVP-flip drift), never a silent lie.
 export async function loadFloorPlan(supabase: SupabaseClient, eventId: string): Promise<FloorPlanVM> {
-  const { data: planRow } = await supabase.from("floor_plans").select("id, name, canvas, couple_can_edit").eq("event_id", eventId).order("created_at", { ascending: true }).limit(1).maybeSingle();
+  const { data: planRow } = await supabase.from("floor_plans").select("id, name, canvas, couple_can_edit, background, background_settings").eq("event_id", eventId).order("created_at", { ascending: true }).limit(1).maybeSingle();
+  // §L the blueprint is a private wedding-docs file; resolve a short-lived signed URL to draw it.
+  let backgroundUrl: string | null = null;
+  if (planRow?.background) {
+    const { data: signed } = await supabase.storage.from("wedding-docs").createSignedUrl(planRow.background as string, 3600);
+    backgroundUrl = signed?.signedUrl ?? null;
+  }
   const plan = planRow ? {
     id: planRow.id as string, name: planRow.name as string,
     canvas: (planRow.canvas as { w: number; h: number }) ?? { w: 2000, h: 1200 },
     coupleCanEdit: !!planRow.couple_can_edit,
+    background: (planRow.background as string | null) ?? null,
+    backgroundUrl,
+    backgroundSettings: (planRow.background_settings as BackgroundSettings) ?? {},
   } : null;
 
   // every event_guest with name, rsvp, and dietary (from their menu choice)
@@ -43,10 +55,10 @@ export async function loadFloorPlan(supabase: SupabaseClient, eventId: string): 
 
   if (plan) {
     const [{ data: tblRows }, { data: elRows }] = await Promise.all([
-      supabase.from("seating_tables").select("id, name, capacity, shape, x, y, rotation, width, height").eq("floor_plan_id", plan.id).order("sort"),
+      supabase.from("seating_tables").select("id, name, capacity, shape, x, y, rotation, width, height, seat_sides, is_loose, grouped_with").eq("floor_plan_id", plan.id).order("sort"),
       supabase.from("floor_elements").select("id, kind, label, x, y, rotation, width, height").eq("floor_plan_id", plan.id).order("created_at"),
     ]);
-    const tbls = (tblRows ?? []) as Omit<TableVM, "seats">[];
+    const tbls = (tblRows ?? []) as (Omit<TableVM, "seats" | "seatSides" | "isLoose" | "groupedWith"> & { seat_sides: string | null; is_loose: boolean; grouped_with: string | null })[];
     elements = (elRows ?? []) as ElementVM[];
     const tableIds = tbls.map((t) => t.id);
     const seatsBy = new Map<string, SeatVM[]>();
@@ -61,7 +73,11 @@ export async function loadFloorPlan(supabase: SupabaseClient, eventId: string): 
         if (rsvpBy.get(s.guest_id) !== "yes") exceptions.push({ guestId: s.guest_id, name: nameBy.get(s.guest_id) ?? "—", rsvp: rsvpBy.get(s.guest_id) ?? "—", tableId: s.table_id, seatNo: s.seat_no });
       }
     }
-    tables = tbls.map((t) => ({ ...t, seats: (seatsBy.get(t.id) ?? []).sort((a, b) => a.seatNo - b.seatNo) }));
+    tables = tbls.map((t) => ({
+      id: t.id, name: t.name, capacity: t.capacity, shape: t.shape, x: t.x, y: t.y, rotation: t.rotation, width: t.width, height: t.height,
+      seatSides: (t.seat_sides as SeatSides) ?? "all", isLoose: !!t.is_loose, groupedWith: t.grouped_with ?? null,
+      seats: (seatsBy.get(t.id) ?? []).sort((a, b) => a.seatNo - b.seatNo),
+    }));
   }
 
   const attending = egs.filter((e) => e.rsvp_status === "yes");

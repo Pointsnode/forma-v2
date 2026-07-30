@@ -12,6 +12,7 @@ const MAP: Record<string, string> = {
   FC010: "fcNotInStudio", // "That wedding isn't in your studio." (M16a orchestrator auth)
   FC011: "fcWhichWedding",// "Which wedding should I look at?"
   FC012: "fcWhichOne",    // "I found a few — which one?"
+  FS041: "seatTaken",    // "Someone's already in that seat." (M14; FS040/42/43 fall back to their named DB messages)
 };
 
 /** i18n key in the "errors" namespace for a code, or null → caller uses the DB message. */

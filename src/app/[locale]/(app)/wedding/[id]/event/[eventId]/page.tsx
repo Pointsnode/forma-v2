@@ -133,7 +133,9 @@ export default async function EventPage({
           <FloorSection eventId={event.id} weddingId={id} eventLabel={event.label}
             planId={floor.plan?.id ?? null} canvas={floor.plan?.canvas ?? { w: 2000, h: 1200 }} coupleCanEdit={floor.plan?.coupleCanEdit ?? false}
             tables={floor.tables} elements={floor.elements} attendees={floor.attendees} exceptions={floor.exceptions}
-            seatedCount={floor.seatedCount} attendingCount={floor.attendingCount} role={floorRole} />
+            seatedCount={floor.seatedCount} attendingCount={floor.attendingCount} role={floorRole}
+            background={floor.plan?.background ?? null} backgroundUrl={floor.plan?.backgroundUrl ?? null}
+            backgroundSettings={floor.plan?.backgroundSettings ?? {}} printHref={`/wedding/${id}/event/${event.id}/seating/print`} />
         </section>
 
         {budgetLines.length ? (

@@ -2,13 +2,30 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { Button, Pill } from "@/components/ui";
+import { seatLabel } from "@/lib/seat-geometry.mjs";
 import { updateGuest, deleteGuest } from "@/app/[locale]/(app)/wedding/[id]/guest-actions";
-import type { GuestRow } from "@/lib/guests";
+import type { GuestRow, SeatCell } from "@/lib/guests";
 
 const inputCls = "rounded-lg bg-bone px-2.5 py-1.5 text-[13px] text-ink shadow-card outline-none focus:shadow-lift";
 
-function Row({ weddingId, g, canDelete }: { weddingId: string; g: GuestRow; canDelete: boolean }) {
+// §F the "Seated at" cell: a seated guest reads "{table}, seat {n}"; an unseated attendee is a
+// "Seat…" deep-link that lands in the plan with them already picked up; a non-attendee is a dash.
+function SeatedAt({ weddingId, guestId, cell }: { weddingId: string; guestId: string; cell: SeatCell | undefined }) {
+  const t = useTranslations("guests");
+  if (!cell || cell.kind === "none") return <span className="shrink-0 text-[12.5px] text-muted">—</span>;
+  if (cell.kind === "seated") {
+    return <span className="shrink-0 text-[12.5px] text-taupe">{t("seatedAt", { table: cell.table, seat: seatLabel(cell.seatNo) })}</span>;
+  }
+  return (
+    <Link href={{ pathname: `/wedding/${weddingId}/seating`, query: { event: cell.eventId, guest: guestId } }} className="shrink-0 text-[12.5px] text-wine hover:underline hover:underline-offset-2">
+      {cell.count > 1 ? t("seatEvents", { n: cell.count }) : t("seatDots")}
+    </Link>
+  );
+}
+
+function Row({ weddingId, g, canDelete, seat }: { weddingId: string; g: GuestRow; canDelete: boolean; seat: SeatCell | undefined }) {
   const t = useTranslations("guests");
   const [editing, setEditing] = useState(false);
   const [pending, start] = useTransition();
@@ -36,6 +53,7 @@ function Row({ weddingId, g, canDelete }: { weddingId: string; g: GuestRow; canD
         <p className="text-[14px] text-ink">{g.full_name}{g.plus_one_allowed ? <span className="ml-1.5 text-muted">+1</span> : null}</p>
         <p className="font-accent text-[13px] text-muted">{g.email ?? "—"}{g.group_label ? ` · ${g.group_label}` : ""}</p>
       </div>
+      <SeatedAt weddingId={weddingId} guestId={g.id} cell={seat} />
       {g.side !== "none" ? <Pill tone="sand">{g.side === "both" ? t("sideBoth") : g.side === "a" ? t("sideA") : t("sideB")}</Pill> : null}
       <button onClick={() => setEditing(true)} className="shrink-0 rounded-full px-2.5 py-1 text-[12.5px] text-muted hover:text-ink">{t("edit")}</button>
       {canDelete ? <button disabled={pending} onClick={() => start(async () => { await deleteGuest(g.id); })} className="shrink-0 rounded-full px-2.5 py-1 text-[12.5px] text-muted hover:text-wine">✕</button> : null}
@@ -43,7 +61,7 @@ function Row({ weddingId, g, canDelete }: { weddingId: string; g: GuestRow; canD
   );
 }
 
-export function AllGuests({ weddingId, guests, canDelete }: { weddingId: string; guests: GuestRow[]; canDelete: boolean }) {
+export function AllGuests({ weddingId, guests, canDelete, seatCells }: { weddingId: string; guests: GuestRow[]; canDelete: boolean; seatCells: Record<string, SeatCell> }) {
   const t = useTranslations("guests");
   const [q, setQ] = useState("");
   const [show, setShow] = useState(false);
@@ -60,7 +78,7 @@ export function AllGuests({ weddingId, guests, canDelete }: { weddingId: string;
         <Button variant="ghost" onClick={() => setShow(false)}>{t("hideAll")}</Button>
       </div>
       {filtered.length === 0 ? <p className="py-3 text-center font-accent text-[15px] text-muted">{t("noGuests")}</p> :
-        <div className="flex flex-col">{filtered.map((g) => <Row key={g.id} weddingId={weddingId} g={g} canDelete={canDelete} />)}</div>}
+        <div className="flex flex-col">{filtered.map((g) => <Row key={g.id} weddingId={weddingId} g={g} canDelete={canDelete} seat={seatCells[g.id]} />)}</div>}
     </div>
   );
 }

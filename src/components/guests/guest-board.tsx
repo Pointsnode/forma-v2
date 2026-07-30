@@ -4,22 +4,23 @@ import { GuestIntake } from "./guest-intake";
 import { AllGuests } from "./all-guests";
 import { RsvpControls } from "./rsvp-controls";
 import { TouchpointTimeline } from "./touchpoint-timeline";
-import { reminderChaseCount, type Rollup, type EventCount, type Exception, type Touchpoint, type GuestRow, type EventGuestRow } from "@/lib/guests";
+import { reminderChaseCount, seatCells, type Rollup, type EventCount, type Exception, type Touchpoint, type GuestRow, type EventGuestRow, type SeatRow } from "@/lib/guests";
 import type { EventRow } from "@/lib/wedding";
 
 const REASON_KEY: Record<string, string> = { no_email: "reasonNoEmail", missing_plus_one: "reasonMissingPlusOne", unanswered: "reasonUnanswered" };
 
 export async function GuestBoard({
-  weddingId, role, events, rollup, counts, exceptions, touchpoints, guests, eventGuests, rsvpDeadline, rsvpOpen,
+  weddingId, role, events, rollup, counts, exceptions, touchpoints, guests, eventGuests, seats, rsvpDeadline, rsvpOpen,
 }: {
   weddingId: string; role: "staff" | "member";
   events: EventRow[]; rollup: Rollup; counts: EventCount[]; exceptions: Exception[];
-  touchpoints: Touchpoint[]; guests: GuestRow[]; eventGuests: EventGuestRow[];
+  touchpoints: Touchpoint[]; guests: GuestRow[]; eventGuests: EventGuestRow[]; seats: SeatRow[];
   rsvpDeadline: string | null; rsvpOpen: boolean;
 }) {
   const [t, tt] = [await getTranslations("guests"), await getTranslations("touchpoints")];
   const countFor = (id: string) => counts.find((c) => c.event_id === id);
   const chase = reminderChaseCount(guests, eventGuests);
+  const cells = seatCells(guests, eventGuests, seats);
   const empty = guests.length === 0;
 
   return (
@@ -105,7 +106,7 @@ export async function GuestBoard({
           <Card>
             <div className="flex flex-col gap-4">
               <GuestIntake weddingId={weddingId} existing={guests.map((g) => ({ full_name: g.full_name, email: g.email, phone: g.phone }))} />
-              <AllGuests weddingId={weddingId} guests={guests} canDelete={role === "staff"} />
+              <AllGuests weddingId={weddingId} guests={guests} canDelete={role === "staff"} seatCells={cells} />
             </div>
           </Card>
         </>

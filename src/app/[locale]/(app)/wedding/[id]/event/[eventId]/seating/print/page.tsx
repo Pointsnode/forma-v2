@@ -41,6 +41,14 @@ export default async function SeatingPrint({ params }: { params: Promise<{ local
         <p className="mt-1 text-[13px] text-muted">{t("titleTotals", { tables: floor.tables.length, seated: floor.seatedCount, attending: floor.attendingCount })}</p>
       </header>
 
+      {/* §L the venue blueprint, so the printed plan shows the room */}
+      {floor.plan?.backgroundUrl ? (
+        <section className="mb-6">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={floor.plan.backgroundUrl} alt={t("blueprint")} className="w-full rounded-lg border border-hairline" />
+        </section>
+      ) : null}
+
       {/* by table */}
       <section className="mb-8">
         <h2 className="mb-2 text-[12px] uppercase tracking-[0.14em] text-muted">{t("byTable")}</h2>

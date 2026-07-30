@@ -521,7 +521,10 @@
     "openHint": "Abrir permite que los invitados respondan e inicia los recordatorios. Cerrar detiene nuevas respuestas y fija los conteos.",
     "setDeadline": "Definir fecha",
     "error": "Algo salió mal. Inténtalo de nuevo.",
-    "edit": "Editar"
+    "edit": "Editar",
+    "seatedAt": "{table}, lugar {seat}",
+    "seatDots": "Sentar…",
+    "seatEvents": "{n} eventos"
   },
   "touchpoints": {
     "timeline": "Línea de recordatorios",
@@ -1035,7 +1038,8 @@
     "queued": "En cola — el cron lo enviará",
     "sendMenu": "Enviar recolección de menú",
     "sendSchedules": "Enviar itinerarios del día",
-    "dietaryFlags": "Restricciones dietéticas"
+    "dietaryFlags": "Restricciones dietéticas",
+    "seatingTab": "Distribución"
   },
   "menu": {
     "wordmark": "planificación, refinada.",
@@ -1101,7 +1105,34 @@
     "byTable": "Por mesa",
     "escortCards": "Tarjetas de lugar",
     "chair": "silla",
-    "noneSeated": "Nadie tiene lugar aún"
+    "noneSeated": "Nadie tiene lugar aún",
+    "addLooseSeat": "1 asiento",
+    "confirmDelete": "Hay {n} invitados sentados aquí. ¿Eliminar la mesa y quitarlos?",
+    "clickChairHint": "Toca una silla para sentar a alguien.",
+    "nowClickChair": "Ahora toca una silla vacía para sentar a {name}.",
+    "escToCancel": "Pulsa Esc para cancelar.",
+    "everyoneSeated": "Todos están sentados.",
+    "tableWithLoose": "{name}  {seated}/{capacity}  +{loose} suelto",
+    "looseSeat": "Asiento suelto",
+    "groupWith": "Agrupar con",
+    "delete": "Eliminar",
+    "seats": "Asientos",
+    "seatedOn": "Sentados en",
+    "sidesAll": "Alrededor",
+    "sidesLong": "Los lados largos",
+    "sidesOne": "Un lado",
+    "duplicate": "Duplicar",
+    "addBlueprint": "Agregar plano del venue",
+    "blueprint": "Plano",
+    "opacity": "Opacidad",
+    "fit": "Ajustar",
+    "lock": "Bloquear",
+    "unlock": "Desbloquear",
+    "removeBlueprint": "Quitar",
+    "blueprintHint": "PNG o JPEG — la sala a escala.",
+    "blueprintConverting": "Subiendo…",
+    "blueprintPdfDeferred": "PDF aún no se admite — sube un PNG o JPEG.",
+    "blueprintBadType": "Sube una imagen PNG o JPEG."
   },
   "directory": {
     "indexTitle": "Encuentra a tu wedding planner",
@@ -1312,7 +1343,8 @@
     "clearance": "Tu rol no permite eso.",
     "fcNotInStudio": "Esa boda no está en tu estudio.",
     "fcWhichWedding": "¿Qué boda quieres revisar?",
-    "fcWhichOne": "Encontré varias — ¿cuál?"
+    "fcWhichOne": "Encontré varias — ¿cuál?",
+    "seatTaken": "Ese lugar ya está ocupado."
   },
   "team": {
     "noWorkspace": "Aún no hay espacio de trabajo.",
