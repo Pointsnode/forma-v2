@@ -388,7 +388,7 @@
     "scoped": "Concierge · {name}",
     "scopedHint": "Solo esta boda",
     "collapse": "Contraer",
-    "emptyStudio": "Pregunta por cualquier boda — qué vence, quién espera, qué sigue.",
+    "emptyStudio": "Pregunta por cualquier boda — ¿cómo va el presupuesto de Ibiza? — o pídeme un borrador.",
     "emptyWedding": "Pregunta por {name} — solo conozco esta boda.",
     "placeholder": "Pregunta, o pídeme un borrador…",
     "send": "Enviar",
@@ -1300,7 +1300,10 @@
     "venueEvent": "Un venue debe presentarse para al menos un evento.",
     "changeNote": "Diles qué te gustaría cambiar.",
     "generic": "Algo salió mal. Inténtalo de nuevo.",
-    "clearance": "Tu rol no permite eso."
+    "clearance": "Tu rol no permite eso.",
+    "fcNotInStudio": "Esa boda no está en tu estudio.",
+    "fcWhichWedding": "¿Qué boda quieres revisar?",
+    "fcWhichOne": "Encontré varias — ¿cuál?"
   },
   "team": {
     "noWorkspace": "Aún no hay espacio de trabajo.",
