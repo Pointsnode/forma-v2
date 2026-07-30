@@ -2,15 +2,31 @@
 // isolation rules directly (the DB-backed callers in tools.ts/session.ts just feed rows in).
 
 // The weddings matching a free-text query. Each wedding: { id, couple_display, phase, date_start,
-// location_city, location_country }. Empty query → all (the model gets the whole list). "the X
-// one"/"the X wedding" strip to X so casual phrasing still resolves. Zero and multiple matches are
-// both first-class — resolve_wedding returns them and the model asks; it never picks (§C).
+// location_city, location_country }. Empty query → all (the model gets the whole list). Zero and
+// multiple matches are both first-class — resolve_wedding returns them and the model asks; it never
+// picks (§C).
+//
+// Matching is NORMALIZED, not literal: "&" ↔ "and" and all punctuation collapse to spaces on both
+// sides, so "Priya & Arjun" (the exact card string), "Priya and Arjun" (the model's rewrite), and a
+// bare "Priya" or "Arjun" all resolve to the one wedding. Two ways to hit: the normalized query is a
+// substring of the wedding's haystack (couple + city + country + phase + date — carries "the Ibiza
+// one" → city, a date, a phase), OR the query shares a significant NAME token with the couple (so a
+// reordered/padded name like "Priya Arjun budget" still resolves). "the X one"/"the X wedding" strip
+// to X for casual phrasing.
+const STOP = new Set(["and", "the", "wedding", "one", "of", "for", "on"]);
+const norm = (s) => String(s ?? "").toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+const nameTokens = (s) => norm(s).split(" ").filter((t) => t.length >= 2 && !STOP.has(t));
+
 export function matchWeddings(weddings, query) {
-  const q = String(query ?? "").trim().toLowerCase();
-  if (!q) return weddings.slice();
-  const stripped = q.replace(/^the\s+/, "").replace(/\s+(one|wedding)$/, "").trim();
-  const hay = (w) => `${w.couple_display} ${w.location_city ?? ""} ${w.location_country ?? ""} ${w.phase} ${w.date_start ?? ""}`.toLowerCase();
-  return weddings.filter((w) => hay(w).includes(q) || (stripped.length >= 2 && hay(w).includes(stripped)));
+  const nq = norm(query);
+  if (!nq) return weddings.slice();
+  const stripped = nq.replace(/^the /, "").replace(/ (one|wedding)$/, "").trim();
+  const qTokens = new Set(nameTokens(stripped));
+  return weddings.filter((w) => {
+    const hay = norm(`${w.couple_display} ${w.location_city ?? ""} ${w.location_country ?? ""} ${w.phase} ${w.date_start ?? ""}`);
+    if (hay.includes(nq) || (stripped.length >= 2 && hay.includes(stripped))) return true;
+    return nameTokens(w.couple_display).some((t) => qTokens.has(t));
+  });
 }
 
 // The couple_display of any wedding OTHER than keepId whose name appears in text, or null. The
