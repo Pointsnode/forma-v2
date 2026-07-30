@@ -388,7 +388,7 @@
     "scoped": "Concierge · {name}",
     "scopedHint": "This wedding only",
     "collapse": "Collapse",
-    "emptyStudio": "Ask about any wedding — what's due, who's waiting, what's next.",
+    "emptyStudio": "Ask about any wedding — how's the Ibiza budget? — or ask me to draft a message.",
     "emptyWedding": "Ask about {name} — I know this wedding only.",
     "placeholder": "Ask, or ask me to draft…",
     "send": "Send",
@@ -1300,7 +1300,10 @@
     "venueEvent": "A venue has to be presented for at least one event.",
     "changeNote": "Tell them what you'd like changed.",
     "generic": "Something went wrong. Please try again.",
-    "clearance": "Your role doesn't allow that."
+    "clearance": "Your role doesn't allow that.",
+    "fcNotInStudio": "That wedding isn't in your studio.",
+    "fcWhichWedding": "Which wedding should I look at?",
+    "fcWhichOne": "I found a few — which one?"
   },
   "team": {
     "noWorkspace": "No workspace yet.",

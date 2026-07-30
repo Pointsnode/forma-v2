@@ -22,6 +22,11 @@ Earlier turns record what you created as bracketed notes like [created draft pro
 Never claim a draft or approval card exists unless a tool result in THIS turn confirms it — if you didn't call the tool, say what you'll do and call it.
 Seating is id-strict: assign_seat needs REAL event_id/guest_id/table_id UUIDs from the seating tool, never invented ones. If propose_action is refused (an id didn't resolve), call the seating tool to fetch the real ids and retry ONCE — never tell the planner a seating card is ready unless propose_action returned ok.`;
 
+// M16a orchestrator (studio) addendum — appended only at orchestrator scope. The studio has no
+// wedding in front of it: naming one means resolve_wedding → a real id → the read/draft tools.
+const ORCH_GUIDE = `
+At the STUDIO you have no wedding open. To answer about a specific wedding, ALWAYS call resolve_wedding first to turn what the planner said (a couple, a venue, a city, "the Ibiza one") into a real wedding_id, then call the read/draft tools with that wedding_id. If resolve_wedding returns more than one, ask the planner which one — name each by couple, date and venue; if none, ask them to clarify. NEVER guess a wedding or a wedding_id, and never pick one when it's ambiguous. Use weddings_overview for a list across weddings. You can READ any wedding and make safe DRAFTS here, but you cannot send, sign, pay, book or otherwise execute from the studio — say so plainly and let the planner open the wedding for that; never claim you sent or did anything.`;
+
 
 async function weddingBlock(supabase: SupabaseClient, id: string): Promise<{ text: string; name: string } | null> {
   const { data: w } = await supabase
@@ -71,20 +76,16 @@ export async function assembleContext(supabase: SupabaseClient, scope: Scope, lo
     return { system, weddingIds: [scope.weddingId], workspaceId };
   }
 
-  // orchestrator: workspace-level rollups + one summary line per wedding
-  const { data: weds } = await supabase
-    .from("weddings")
-    .select("id, couple_display, phase, date_start, guest_target, budget_total")
-    .order("date_start", { ascending: true, nullsFirst: false });
-  const weddings = (weds ?? []) as { id: string; couple_display: string; phase: string; date_start: string | null; guest_target: number | null; budget_total: number | null }[];
-  const { data: radar } = await supabase.from("money_radar").select("couple_display, title, amount, due_date, status").order("due_date", { ascending: true });
-  const radarRows = (radar ?? []) as { couple_display: string; title: string; amount: number; due_date: string; status: string }[];
-
-  const lines = weddings.map((w) => {
-    const days = countdownDays(w.date_start);
-    return `- ${w.couple_display} (id ${w.id}) · phase ${w.phase}${days != null ? ` · ${days >= 0 ? `${days}d to day one` : `${-days}d ago`}` : ""} · budget ${formatMoney(w.budget_total ?? 0, "en") ?? "—"}`;
-  });
-  const dues = radarRows.slice(0, 12).map((r) => `- ${r.couple_display}: ${r.title} ${formatMoney(r.amount, "en") ?? ""} due ${r.due_date} (${r.status})`);
-  const system = `${GUIDE}${langLine}\n\nSCOPE: you are the studio orchestrator — you see workspace-level rollups across all weddings, and per-wedding summaries. For deep work inside one wedding, the planner opens that wedding.\n\nWEDDINGS (${weddings.length}):\n${lines.join("\n") || "none"}\n\nUPCOMING DUES (next 60 days):\n${dues.join("\n") || "none"}`;
-  return { system, weddingIds: weddings.map((w) => w.id), workspaceId };
+  // §G orchestrator: studio name + counts ONLY. The per-wedding list (couple/id/budget) is a
+  // tool now (weddings_overview), so the prompt no longer bakes every couple — it stops growing
+  // with the business (it stopped fitting ~40 weddings), and removing the couple names is what
+  // lets a studio turn be routed into ONE wedding's thread and isolation-checked (§E/§F). No
+  // couple_display or wedding id appears in the orchestrator prompt anymore.
+  const [{ count: weddingCount }, ws] = await Promise.all([
+    supabase.from("weddings").select("id", { count: "exact", head: true }),
+    workspaceId ? supabase.from("workspaces").select("name").eq("id", workspaceId).maybeSingle() : Promise.resolve({ data: null }),
+  ]);
+  const studio = ((ws?.data as { name?: string } | null)?.name) ?? "your studio";
+  const system = `${GUIDE}${ORCH_GUIDE}${langLine}\n\nSCOPE: you are the studio orchestrator for ${studio} — ${weddingCount ?? 0} wedding(s) under management. No single wedding is open in front of you; reach one with resolve_wedding, then the read/draft tools.`;
+  return { system, weddingIds: [], workspaceId };
 }

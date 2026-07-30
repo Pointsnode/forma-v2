@@ -9,6 +9,9 @@ const MAP: Record<string, string> = {
   FV244: "venueEvent",   // "A venue has to be presented for at least one event."
   FV222: "changeNote",   // "Tell them what you'd like changed."
   FS050: "clearance",    // "Your role doesn't allow that." (M15 clearance box gate)
+  FC010: "fcNotInStudio", // "That wedding isn't in your studio." (M16a orchestrator auth)
+  FC011: "fcWhichWedding",// "Which wedding should I look at?"
+  FC012: "fcWhichOne",    // "I found a few — which one?"
 };
 
 /** i18n key in the "errors" namespace for a code, or null → caller uses the DB message. */

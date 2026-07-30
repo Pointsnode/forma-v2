@@ -2,9 +2,24 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ChatMessage, DraftRef } from "./agent";
 import type { Scope } from "./context";
+import { conciergeError } from "./errors";
+import { otherCoupleIn } from "./resolve.mjs";
 import { foldHistory } from "./history.mjs";
 
 export type Budget = { enabled: boolean; used: number; cap: number; over: boolean };
+
+// ── §A The front door: authorize a wedding before ANY orchestrator-scope read ────
+// The concierge runs server-side under the planner's RLS session; the model produces the
+// wedding_id, so it must never be trusted. workspaceId is server-derived (currentWorkspace —
+// always a workspace the caller is a MEMBER of), so "the wedding is in workspaceId" == the
+// caller is staff of it (is_wedding_staff = member of the wedding's workspace). A hallucinated
+// or carried-over id, or one from another workspace, fails to match → FC010, never data.
+// (FC011 for a missing id is raised at the tool boundary, before this is called.)
+export async function assertWeddingReachable(supabase: SupabaseClient, weddingId: string, workspaceId: string): Promise<void> {
+  if (!weddingId) conciergeError("FC011");
+  const { data } = await supabase.from("weddings").select("workspace_id").eq("id", weddingId).maybeSingle();
+  if (!data || (data.workspace_id as string) !== workspaceId) conciergeError("FC010");
+}
 
 // Pending approval-card count across the workspace's threads — RLS already scopes
 // concierge_messages to the planner's workspace, so the count is theirs. Seeds the
@@ -31,28 +46,45 @@ export async function loadBudget(supabase: SupabaseClient, workspaceId: string):
   return { enabled: !!settings?.enabled, used, cap, over: cap > 0 && used >= cap };
 }
 
-// Load (or create) the thread for this scope and return its message history mapped
-// to the model's alternating user/assistant shape.
-export async function loadThread(
-  supabase: SupabaseClient,
-  opts: { threadId: string | null; scope: Scope; workspaceId: string; userId: string; firstMessage: string },
-): Promise<{ threadId: string; history: ChatMessage[] }> {
-  const threadId = opts.threadId;
-  if (!threadId) {
-    const { data, error } = await supabase.from("concierge_threads").insert({
-      workspace_id: opts.workspaceId,
-      wedding_id: opts.scope.kind === "wedding" ? opts.scope.weddingId : null,
-      title: opts.firstMessage.slice(0, 80),
-      created_by: opts.userId,
-    }).select("id").single();
-    if (error || !data) throw new Error(`thread create: ${error?.message}`);
-    return { threadId: data.id as string, history: [] };
-  }
-  // Fold each row's draft_ref/action_ref into the transcript so the model remembers
-  // the ids of what it created earlier (finding 1) and no proposed card is lost (2).
+// Fold a thread's rows into the model's alternating transcript — the draft/action refs
+// become bracketed [created draft …] notes so the model recalls its own tool work.
+export async function threadHistory(supabase: SupabaseClient, threadId: string): Promise<ChatMessage[]> {
   const { data: rows } = await supabase.from("concierge_messages").select("role, content, draft_ref, action_ref").eq("thread_id", threadId).order("created_at", { ascending: true });
-  const history = foldHistory(rows ?? []) as ChatMessage[];
-  return { threadId, history };
+  return foldHistory(rows ?? []) as ChatMessage[];
+}
+
+// The wedding_id a thread belongs to (null = a studio/orchestrator thread). Used to detect a
+// wedding-focused continuation: an orchestrator turn whose client threadId is a wedding thread
+// is really a turn about that wedding (§E), and runs isolated to it.
+export async function threadWeddingId(supabase: SupabaseClient, threadId: string): Promise<string | null> {
+  const { data } = await supabase.from("concierge_threads").select("wedding_id").eq("id", threadId).maybeSingle();
+  return (data?.wedding_id as string | null) ?? null;
+}
+
+// §E "one thread per wedding is the memory": the wedding's canonical thread is its OLDEST
+// (deterministic) thread; both rooms — the wedding room and a studio turn that resolves to this
+// wedding — read from and append to it, so a budget discussion started at the studio is present
+// when the planner opens the wedding, and vice versa. Find-or-create.
+export async function canonicalWeddingThread(supabase: SupabaseClient, workspaceId: string, weddingId: string, userId: string, firstMessage: string): Promise<string> {
+  const { data: existing } = await supabase.from("concierge_threads")
+    .select("id").eq("workspace_id", workspaceId).eq("wedding_id", weddingId)
+    .order("created_at", { ascending: true }).limit(1).maybeSingle();
+  if (existing) return existing.id as string;
+  const { data, error } = await supabase.from("concierge_threads")
+    .insert({ workspace_id: workspaceId, wedding_id: weddingId, title: firstMessage.slice(0, 80), created_by: userId })
+    .select("id").single();
+  if (error || !data) throw new Error(`thread create: ${error?.message}`);
+  return data.id as string;
+}
+
+// A fresh studio (orchestrator, wedding_id null) thread — holds only cross-wedding / studio-
+// general turns (§E). Created lazily once a turn is known NOT to resolve to a single wedding.
+export async function createStudioThread(supabase: SupabaseClient, workspaceId: string, userId: string, firstMessage: string): Promise<string> {
+  const { data, error } = await supabase.from("concierge_threads")
+    .insert({ workspace_id: workspaceId, wedding_id: null, title: firstMessage.slice(0, 80), created_by: userId })
+    .select("id").single();
+  if (error || !data) throw new Error(`thread create: ${error?.message}`);
+  return data.id as string;
 }
 
 export async function saveMessage(
@@ -84,17 +116,20 @@ export async function loadThreadMessages(supabase: SupabaseClient, threadId: str
   return (data ?? []) as StoredMessage[];
 }
 
-// Isolation guard (Decision D, verified server-side): in a wedding scope, the
-// assembled system block must NOT mention any other wedding's couple name. By
-// construction it can't (we only queried the scoped wedding) — this is the belt
-// that proves it, and refuses rather than leak if it ever regressed.
-export async function assertIsolation(supabase: SupabaseClient, system: string, scope: Scope): Promise<void> {
-  if (scope.kind !== "wedding") return;
-  const { data } = await supabase.from("weddings").select("id, couple_display");
-  const others = ((data ?? []) as { id: string; couple_display: string }[]).filter((w) => w.id !== scope.weddingId);
-  for (const w of others) {
-    if (w.couple_display && system.includes(w.couple_display)) {
-      throw new Error(`isolation breach: wedding scope leaked "${w.couple_display}"`);
-    }
-  }
+// The couple_display (within this workspace) of any wedding OTHER than `keepId` that appears
+// in `text`, or null if none. Workspace-scoped: isolation is within one studio.
+export async function scanOtherCouples(supabase: SupabaseClient, workspaceId: string, keepId: string, text: string): Promise<string | null> {
+  const { data } = await supabase.from("weddings").select("id, couple_display").eq("workspace_id", workspaceId);
+  return otherCoupleIn((data ?? []) as { id: string; couple_display: string }[], keepId, text);
+}
+
+// §F Isolation, keyed off the DESTINATION thread — NOT the entry scope. For any turn being
+// persisted to wedding W's thread (whether asked from the wedding room OR from the studio), the
+// assembled context + tool outputs must contain no OTHER couple's name — a wedding thread can
+// never accumulate another couple's data, law 3. A turn destined for the studio thread
+// (destinationWeddingId null) may name many couples (its purpose) and is never scanned.
+export async function assertIsolation(supabase: SupabaseClient, workspaceId: string, destinationWeddingId: string | null, text: string): Promise<void> {
+  if (!destinationWeddingId) return;
+  const leaked = await scanOtherCouples(supabase, workspaceId, destinationWeddingId, text);
+  if (leaked) throw new Error(`isolation breach: wedding thread leaked "${leaked}"`);
 }
