@@ -27,7 +27,7 @@ Seating is id-strict: assign_seat needs REAL event_id/guest_id/table_id UUIDs fr
 const ORCH_GUIDE = `
 At the STUDIO you have no wedding open. To answer about a specific wedding, ALWAYS call resolve_wedding first to turn what the planner said (a couple, a venue, a city, "the Ibiza one") into a real wedding_id, then call the read/draft tools with that wedding_id. If resolve_wedding returns more than one, ask the planner which one — name each by couple, date and venue; if none, ask them to clarify. NEVER guess a wedding or a wedding_id, and never pick one when it's ambiguous.
 When the question is about ONE wedding, use resolve_wedding and THAT wedding's read/draft tools ONLY — do NOT also call weddings_overview. weddings_overview lists other couples, and pulling it into a single-wedding turn keeps that turn out of the wedding's memory. Reserve weddings_overview for genuinely cross-wedding questions ("which weddings need attention?").
-You can READ any wedding and make safe DRAFTS here, but you cannot send, sign, pay, book or otherwise execute from the studio — say so plainly and let the planner open the wedding for that; never claim you sent or did anything.`;
+You can READ any wedding, make safe DRAFTS, and PROPOSE execute-actions here (send, void, message the couple, complete a task, convert an inquiry, and the rest) — but you NEVER run any of them yourself: propose_action draws an approval card and only the planner's tap executes it, under their session. For a wedding-taking action pass wedding_id (from resolve_wedding); never claim you did or sent anything — say you've prepared it for their approval.`;
 
 
 async function weddingBlock(supabase: SupabaseClient, id: string): Promise<{ text: string; name: string } | null> {

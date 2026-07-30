@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { currentWorkspace } from "@/lib/workspace";
 import { executeApproval } from "@/lib/concierge/approval";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
 
   // RLS scopes this to the planner's workspace threads.
   const { data: msg } = await supabase.from("concierge_messages").select("id, action_ref").eq("id", messageId).maybeSingle();
-  const action = (msg?.action_ref ?? null) as { fn: string; args: Record<string, unknown>; summary: string; status: string } | null;
+  const action = (msg?.action_ref ?? null) as { fn: string; args: Record<string, unknown>; summary: string; status: string; wedding_id?: string | null } | null;
   if (!msg || !action) return NextResponse.json({ error: "not_found" }, { status: 404 });
   if (action.status !== "pending") return NextResponse.json({ status: action.status }); // already resolved — idempotent
 
@@ -34,7 +35,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ status: "dismissed" });
   }
 
-  const r = await executeApproval(supabase, action.fn, action.args);
+  // §B approve-time authorization: the guard runs against the APPROVER's workspace (resolved now,
+  // at the tap — not at mint time), so a card approved by a session no longer entitled to its
+  // wedding is refused with FC010 here, not executed.
+  const approverWorkspace = await currentWorkspace(supabase);
+  const r = await executeApproval(supabase, action.fn, action.args, approverWorkspace, action.wedding_id ?? null);
   const errorMsg = r.ok ? undefined : (r.message || r.error || "failed");
   const next = { ...action, status: r.ok ? "approved" : "failed", error: errorMsg, resolved_at: nowIso };
   await supabase.from("concierge_messages").update({ action_ref: next }).eq("id", messageId);
