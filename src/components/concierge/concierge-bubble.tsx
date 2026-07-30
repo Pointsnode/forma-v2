@@ -5,7 +5,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { usePathname, Link } from "@/i18n/navigation";
 
 type DraftCard = { kind: string; id: string; title: string };
-type ActionCard = { messageId: string; fn: string; summary: string; status: "pending" | "approved" | "dismissed" | "failed"; error?: string };
+type ActionCard = { messageId: string; fn: string; summary: string; heading?: string; status: "pending" | "approved" | "dismissed" | "failed"; error?: string };
 type Msg = { role: "planner" | "concierge"; content: string; draft?: DraftCard | null; action?: ActionCard | null };
 type ThreadSummary = { id: string; title: string };
 type Convo = { threadId: string | null; messages: Msg[]; threads: ThreadSummary[]; loaded: boolean };
@@ -125,7 +125,7 @@ export function ConciergeBubble({ weddings, usage: usage0, initialPending = 0 }:
           if (ev.type === "thread") setConvo((c) => ({ ...c, threadId: ev.threadId as string }));
           else if (ev.type === "token") setConvo((c) => appendToken(c, ev.text as string));
           else if (ev.type === "draft") setConvo((c) => pushCard(c, { draft: { kind: ev.kind as string, id: ev.id as string, title: ev.title as string } }));
-          else if (ev.type === "action") setConvo((c) => pushCard(c, { action: { messageId: ev.messageId as string, fn: ev.fn as string, summary: ev.summary as string, status: "pending" } }));
+          else if (ev.type === "action") setConvo((c) => pushCard(c, { action: { messageId: ev.messageId as string, fn: ev.fn as string, summary: ev.summary as string, heading: ev.heading as string | undefined, status: "pending" } }));
           else if (ev.type === "done") { if (typeof ev.used === "number") setUsage((u) => ({ ...u, used: ev.used as number })); }
           else if (ev.type === "error") setConvo((c) => appendToken(c, `\n[${t("error")}]`));
         }
@@ -227,6 +227,7 @@ function ActionCardView({ card, t, onDecide }: { card: ActionCard; t: ReturnType
   const tone = card.status === "approved" ? "border-sage bg-sage-soft" : card.status === "failed" ? "border-wine bg-[rgba(92,43,53,0.06)]" : card.status === "dismissed" ? "border-hairline bg-bone" : "border-wine bg-[rgba(92,43,53,0.06)]";
   return (
     <div className={`mt-2 rounded-xl border px-3 py-2 ${tone}`}>
+      {card.heading ? <p className="mb-0.5 text-[11px] font-medium uppercase tracking-[0.06em] text-taupe">{card.heading}</p> : null}
       <p className="text-[12.5px] text-ink">{card.summary}</p>
       {card.status === "pending" ? (
         <div className="mt-2 flex gap-2">

@@ -9,7 +9,10 @@ export type ChatMessage = { role: "user" | "assistant"; content: unknown };
 export type ToolDef = { name: string; description: string; input_schema: Record<string, unknown> };
 export type ToolExec = (name: string, input: Record<string, unknown>) => Promise<{ content: string; draft?: DraftRef; action?: ActionRef }>;
 export type DraftRef = { kind: string; id: string; title: string };
-export type ActionRef = { fn: string; args: Record<string, unknown>; summary: string; status: "pending" };
+// M16b: wedding_id is the wedding at mint time (null for the two workspace-level actions) — the
+// approve-time guard re-authorizes it against the APPROVER's workspace. heading is the studio card's
+// wedding line ("{Couple}, {date} · {city}") so a planner approving from the studio knows which wedding.
+export type ActionRef = { fn: string; args: Record<string, unknown>; summary: string; status: "pending"; wedding_id?: string | null; heading?: string };
 
 type Block =
   | { type: "text"; text: string }
