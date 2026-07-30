@@ -9,6 +9,7 @@ import {
   loadBudget, saveMessage, assertIsolation, scanOtherCouples, listThreads, loadThreadMessages,
   threadHistory, threadWeddingId, canonicalWeddingThread, createStudioThread,
 } from "@/lib/concierge/session";
+import { subjectWedding } from "@/lib/concierge/resolve.mjs";
 
 // Planner-facing text shouldn't show raw markup or the internal id-note format —
 // strip emphasis/headings/code ticks and any [created draft …]/[proposed action …]
@@ -144,29 +145,29 @@ export async function POST(req: NextRequest) {
         await assertIsolation(supabase, workspaceId, destWeddingId, system);
         const tools = conciergeTools(effectiveScope);
         const touched = new Set<string>();
-        const toolOutputs: string[] = [];
+        const resolved = new Set<string>();
 
         const result = await runConciergeTurn({
           system, history, userText: message, tools,
-          exec: async (name, input) => {
-            const r = await execTool({ supabase, scope: effectiveScope, workspaceId, touched }, name, input);
-            toolOutputs.push(r.content);
-            return r;
-          },
+          exec: (name, input) => execTool({ supabase, scope: effectiveScope, workspaceId, touched, resolved }, name, input),
         });
         const answer = plain(result.text);
 
-        // ── §E/§F finalize the destination. A deferred studio turn that touched exactly one wedding
-        // AND leaked no other couple's name lands in that wedding's thread (its memory). Otherwise
-        // it stays in the studio thread. A wedding-destined turn re-checks isolation over the tool
-        // outputs (the belt over the whole turn, not just the system).
+        // §F The isolation scan covers only what is PERSISTED to the thread — the planner message and
+        // the concierge answer — plus the system. Raw tool outputs are never stored (saveMessage
+        // persists content; history folds stored rows, never tool plumbing), so scanning them was
+        // over-broad: it blocked a legitimate single-wedding turn whose model reached for a cross-
+        // wedding tool. An answer that names another couple still refuses to land in a wedding thread.
+        const persisted = `${system}\n${message}\n${answer}`;
+
+        // ── §E/§F finalize the destination. A deferred studio turn whose SUBJECT is exactly one
+        // wedding (read OR unambiguously resolved) and whose persisted text names no other couple
+        // lands in that wedding's thread (its memory) — robust to which read tool the model used.
+        // Otherwise it stays in the studio thread.
         if (destThreadId == null) {
+          const cand = subjectWedding(touched, resolved);
           let target: string | null = null;
-          if (touched.size === 1) {
-            const cand = [...touched][0];
-            const blob = `${system}\n${toolOutputs.join("\n")}\n${answer}`;
-            if (!(await scanOtherCouples(supabase, workspaceId, cand, blob))) target = cand;
-          }
+          if (cand && !(await scanOtherCouples(supabase, workspaceId, cand, persisted))) target = cand;
           destWeddingId = target;
           destThreadId = target
             ? await canonicalWeddingThread(supabase, workspaceId, target, user.id, message)
@@ -174,7 +175,7 @@ export async function POST(req: NextRequest) {
           emit({ type: "thread", threadId: destThreadId });
           await saveMessage(supabase, destThreadId, "planner", message);
         } else {
-          await assertIsolation(supabase, workspaceId, destWeddingId, `${system}\n${toolOutputs.join("\n")}\n${answer}`);
+          await assertIsolation(supabase, workspaceId, destWeddingId, persisted);
         }
 
         // Persist EACH draft and EACH proposed action as its own message row — no

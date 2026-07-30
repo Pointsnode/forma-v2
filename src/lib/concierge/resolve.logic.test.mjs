@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { matchWeddings, otherCoupleIn } from "./resolve.mjs";
+import { matchWeddings, otherCoupleIn, subjectWedding } from "./resolve.mjs";
 
 const W = [
   { id: "w1", couple_display: "Ana & Beatriz", phase: "planning", date_start: "2026-09-12", location_city: "Ibiza", location_country: "Spain" },
@@ -35,4 +35,15 @@ assert.equal(otherCoupleIn(W, "w2", "note about Ana & Beatriz"), "Ana & Beatriz"
 assert.equal(otherCoupleIn(W, "w1", ""), null);
 assert.equal(otherCoupleIn(W, "w1", "just numbers: 12000 due 2026-01-01"), null);
 
-console.log("concierge resolve: 14 cases ok");
+// ── routing subject (§E) — robust to which read tool the model used ──────────
+// The blocker: a budget answered from weddings_overview READ nothing, so touched was empty and the
+// turn never routed. Now an unambiguous resolve alone routes the turn to that wedding.
+assert.equal(subjectWedding(new Set(), new Set(["w1"])), "w1"); // resolved only, no read → still routes
+assert.equal(subjectWedding(new Set(["w1"]), new Set()), "w1"); // read only
+assert.equal(subjectWedding(new Set(["w1"]), new Set(["w1"])), "w1"); // both agree
+assert.equal(subjectWedding(new Set(["w1"]), new Set(["w2"])), null); // conflict → studio thread
+assert.equal(subjectWedding(new Set(["w1", "w2"]), new Set()), null); // two reads → studio thread
+assert.equal(subjectWedding(new Set(), new Set()), null); // nothing → studio thread
+assert.equal(subjectWedding(undefined, undefined), null); // defensive
+
+console.log("concierge resolve: 21 cases ok");

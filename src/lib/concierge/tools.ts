@@ -7,6 +7,7 @@ import { matchWeddings } from "./resolve.mjs";
 import { assertWeddingReachable } from "./session";
 import { conciergeError } from "./errors";
 import { clearanceGate } from "@/lib/workspace";
+import { formatMoney } from "@/lib/wedding";
 import { seatLabel } from "@/lib/seat-geometry.mjs";
 
 // The registry IS the draft-first guarantee (Decision C): reads + draft-writes
@@ -20,7 +21,11 @@ import { seatLabel } from "@/lib/seat-geometry.mjs";
 // which weddings a turn actually read/drafted, so the route can route the turn to that wedding's
 // thread (§E) and prove isolation (§F). propose_action is NOT lifted here — execution is M16b.
 
-export type ToolCtx = { supabase: SupabaseClient; scope: Scope; workspaceId: string | null; touched?: Set<string> };
+// `touched` = weddings actually read/drafted (via targetWedding); `resolved` = the wedding a
+// resolve_wedding call pinned to exactly one match. The route routes a studio turn to a wedding's
+// thread when the UNION of the two is a single wedding — so a turn concerning one wedding lands
+// there regardless of which read tool the model happened to use (not just when it hit a read).
+export type ToolCtx = { supabase: SupabaseClient; scope: Scope; workspaceId: string | null; touched?: Set<string>; resolved?: Set<string> };
 
 const s = (props: Record<string, unknown>, required: string[] = []) => ({ type: "object", properties: props, required });
 
@@ -113,10 +118,20 @@ export async function execTool(ctx: ToolCtx, name: string, input: Record<string,
       return { content: names.length ? `${head} Reminded but silent: ${names.join(", ")}` : head };
     }
     case "ledger": {
+      // "How's the budget" wants the picture, not the headline: the paid/committed/open rollup the
+      // wedding room already shows, plus the lines — amounts formatted (so the model states the
+      // studio's real currency, $, instead of guessing a symbol from a bare number).
       const target = await targetWedding();
-      const { data } = await supabase.from("ledger_lines").select("title, amount, status, due_date").eq("wedding_id", target).order("due_date", { ascending: true, nullsFirst: false });
+      const [{ data }, { data: roll }] = await Promise.all([
+        supabase.from("ledger_lines").select("title, amount, status, due_date").eq("wedding_id", target).order("due_date", { ascending: true, nullsFirst: false }),
+        supabase.from("wedding_money_rollup").select("budget_total, paid, committed, open").eq("wedding_id", target).maybeSingle(),
+      ]);
       const rows = (data ?? []) as { title: string; amount: number; status: string; due_date: string | null }[];
-      return { content: rows.length ? rows.map((r) => `${r.title}: ${r.amount} (${r.status}${r.due_date ? `, due ${r.due_date}` : ""})`).join("\n") : "No ledger lines yet." };
+      const m = (roll ?? {}) as { budget_total?: number; paid?: number; committed?: number; open?: number };
+      const money = (n: number | null | undefined) => formatMoney(n ?? 0, "en") ?? "$0";
+      const summary = `Budget ${money(m.budget_total)} · paid ${money(m.paid)} · committed ${money(m.committed)} · open ${money(m.open)}`;
+      const lines = rows.length ? rows.map((r) => `${r.title}: ${money(r.amount)} (${r.status}${r.due_date ? `, due ${r.due_date}` : ""})`).join("\n") : "No ledger lines yet.";
+      return { content: `${summary}\n${lines}` };
     }
     case "list_proposals": {
       const target = await targetWedding();
@@ -262,21 +277,29 @@ export async function execTool(ctx: ToolCtx, name: string, input: Record<string,
       const matches = matchWeddings((data ?? []) as W[], raw) as W[];
       const fmt = (w: W) => `${w.id} · ${w.couple_display}${w.date_start ? ` · ${w.date_start}` : ""} · ${w.phase}${w.location_city ? ` · ${[w.location_city, w.location_country].filter(Boolean).join(", ")}` : ""}`;
       if (matches.length === 0) return { content: `No wedding matches "${raw}". Ask the planner which wedding they mean — don't guess.` };
-      if (matches.length === 1) return { content: `One match — use this wedding_id: ${fmt(matches[0])}` };
+      if (matches.length === 1) {
+        // An unambiguous resolution IS the turn's subject — record it so the route files the turn
+        // into this wedding's thread even if the model answers from resolve/overview without a read.
+        ctx.resolved?.add(matches[0].id);
+        return { content: `One match — use this wedding_id: ${fmt(matches[0])}` };
+      }
       return { content: `Several match — ask the planner which one, naming each (couple · date · venue):\n${matches.map(fmt).join("\n")}` };
     }
     case "weddings_overview": {
       // §G the compact per-wedding list on demand, replacing the baked prompt block. Workspace-
       // filtered. Studio-general (names many couples) — a turn that calls this stays in the studio
       // thread by §F (its output carries other couples, so it never reroutes to one wedding).
+      // Deliberately does NOT carry budget_total: a budget question must go through the wedding's
+      // ledger (its real paid/committed/open), not this headline — which also kept "how's X's
+      // budget" from routing to X's thread (the model answered here in one call, touching nothing).
       const filter = String(input.filter ?? "all");
       const today = new Date().toISOString().slice(0, 10);
       const { data } = await supabase
         .from("weddings")
-        .select("id, couple_display, phase, date_start, budget_total")
+        .select("id, couple_display, phase, date_start")
         .eq("workspace_id", workspaceId ?? "")
         .order("date_start", { ascending: true, nullsFirst: false });
-      type WO = { id: string; couple_display: string; phase: string; date_start: string | null; budget_total: number | null };
+      type WO = { id: string; couple_display: string; phase: string; date_start: string | null };
       let rows = (data ?? []) as WO[];
       if (filter === "active") rows = rows.filter((w) => w.phase !== "closed");
       else if (filter === "upcoming") rows = rows.filter((w) => w.phase !== "closed" && w.date_start != null && w.date_start >= today);
@@ -287,7 +310,7 @@ export async function execTool(ctx: ToolCtx, name: string, input: Record<string,
       }
       return {
         content: rows.length
-          ? rows.map((w) => `${w.id} · ${w.couple_display} · ${w.phase}${w.date_start ? ` · ${w.date_start}` : ""} · budget ${w.budget_total ?? "—"}`).join("\n")
+          ? rows.map((w) => `${w.id} · ${w.couple_display} · ${w.phase}${w.date_start ? ` · ${w.date_start}` : ""}`).join("\n")
           : "No weddings match that filter.",
       };
     }

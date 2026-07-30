@@ -22,3 +22,12 @@ export function otherCoupleIn(weddings, keepId, text) {
   }
   return null;
 }
+
+// The single wedding a studio turn concerns — the union of the weddings it READ (touched) and any
+// it unambiguously RESOLVED — or null if none or more than one. §E routing keys off this so a turn
+// about one wedding lands in its thread regardless of which read tool the model happened to use
+// (the blocker: a budget answered from weddings_overview touched nothing, so it never routed).
+export function subjectWedding(touched, resolved) {
+  const s = new Set([...(touched ?? []), ...(resolved ?? [])]);
+  return s.size === 1 ? [...s][0] : null;
+}
