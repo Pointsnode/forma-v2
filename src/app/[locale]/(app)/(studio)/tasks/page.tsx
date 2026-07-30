@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { currentWorkspace } from "@/lib/workspace";
 import { SectionTitle, BentoBig, Check, heroToneAt } from "@/components/ui";
 import { countdownDays, initials, type WeddingRow, type EventRow } from "@/lib/wedding";
 import { loadGoalMesh, computeGoals } from "@/lib/goals";
@@ -16,11 +17,11 @@ export default async function TasksPage({ params }: { params: Promise<{ locale: 
   const t = await getTranslations("tasks");
   const supabase = await createClient();
 
-  const [{ data: ws }, { data: weds }] = await Promise.all([
-    supabase.from("workspace_members").select("workspace_id").order("created_at", { ascending: true }).limit(1).maybeSingle(),
+  const [wsId, { data: weds }] = await Promise.all([
+    currentWorkspace(supabase),
     supabase.from("weddings").select("id, couple_display, phase, kind, location_city, location_country, date_start, date_end, guest_target, budget_total").order("date_start", { ascending: true, nullsFirst: false }),
   ]);
-  const workspaceId = (ws?.workspace_id as string) ?? "";
+  const workspaceId = wsId ?? "";
   const weddings = (weds ?? []) as WeddingRow[];
 
   const nextMoves = new Map<string, { key: string; title: string; detail: string | null }[]>();

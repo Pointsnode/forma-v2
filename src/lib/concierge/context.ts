@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { countdownDays, gateItems, formatMoney, type WeddingRow, type EventRow } from "@/lib/wedding";
+import { currentWorkspace as firstWorkspace } from "@/lib/workspace";
 import { loadGoalMesh } from "@/lib/goals";
 
 // ── Context assembly = isolation by construction (Decision D) ─────────────────
@@ -21,10 +22,6 @@ Earlier turns record what you created as bracketed notes like [created draft pro
 Never claim a draft or approval card exists unless a tool result in THIS turn confirms it — if you didn't call the tool, say what you'll do and call it.
 Seating is id-strict: assign_seat needs REAL event_id/guest_id/table_id UUIDs from the seating tool, never invented ones. If propose_action is refused (an id didn't resolve), call the seating tool to fetch the real ids and retry ONCE — never tell the planner a seating card is ready unless propose_action returned ok.`;
 
-async function firstWorkspace(supabase: SupabaseClient): Promise<string | null> {
-  const { data } = await supabase.from("workspace_members").select("workspace_id").order("created_at", { ascending: true }).limit(1).maybeSingle();
-  return (data?.workspace_id as string) ?? null;
-}
 
 async function weddingBlock(supabase: SupabaseClient, id: string): Promise<{ text: string; name: string } | null> {
   const { data: w } = await supabase

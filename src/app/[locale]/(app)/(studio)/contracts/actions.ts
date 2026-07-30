@@ -2,16 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { currentWorkspace as firstWorkspace } from "@/lib/workspace";
 import { templateDeletable } from "@/lib/studio-contracts-classify.mjs";
 
 export type TemplateResult = { ok?: boolean; error?: string; id?: string };
 
 const KINDS = new Set(["full", "partial", "day_of", "rider"]);
-
-async function firstWorkspace(supabase: Awaited<ReturnType<typeof createClient>>): Promise<string | null> {
-  const { data } = await supabase.from("workspace_members").select("workspace_id").order("created_at", { ascending: true }).limit(1).maybeSingle();
-  return data?.workspace_id ?? null;
-}
 
 // Templates are workspace-scoped and staff-CRUD under the existing
 // contract_templates RLS (is_workspace_member) — direct-table writes, no RPC.

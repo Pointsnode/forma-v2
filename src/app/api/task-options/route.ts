@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { currentWorkspace } from "@/lib/workspace";
 
 // Options for the global quick-add sheet: workspace team members + vendors, and
 // (when a wedding is chosen) that wedding's events. RLS scopes everything.
@@ -11,8 +12,7 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const weddingId = new URL(req.url).searchParams.get("weddingId");
 
-  const { data: ws } = await supabase.from("workspace_members").select("workspace_id").order("created_at", { ascending: true }).limit(1).maybeSingle();
-  const workspaceId = (ws?.workspace_id as string) ?? "";
+  const workspaceId = (await currentWorkspace(supabase)) ?? "";
 
   const [{ data: members }, { data: vendors }, events] = await Promise.all([
     supabase.from("workspace_members").select("user_id, profiles(display_name)").eq("workspace_id", workspaceId),

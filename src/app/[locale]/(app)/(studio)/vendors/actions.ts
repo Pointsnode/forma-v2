@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "@/i18n/navigation";
 import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { currentWorkspace as firstWorkspace } from "@/lib/workspace";
 
 export type VendorResult = { ok?: boolean; error?: string; id?: string };
 
@@ -13,11 +14,6 @@ const txt = (s: FormDataEntryValue | null) => {
   const v = String(s ?? "").trim();
   return v || null;
 };
-
-async function firstWorkspace(supabase: Awaited<ReturnType<typeof createClient>>): Promise<string | null> {
-  const { data } = await supabase.from("workspace_members").select("workspace_id").order("created_at", { ascending: true }).limit(1).maybeSingle();
-  return data?.workspace_id ?? null;
-}
 
 export async function createVendor(formData: FormData): Promise<VendorResult> {
   const supabase = await createClient();

@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { initials } from "@/lib/wedding";
+import { currentWorkspace } from "@/lib/workspace";
 import { classifyContracts } from "@/lib/studio-contracts-classify.mjs";
 
 export type TemplateCard = { id: string; name: string; kind: string; body: string; updatedAt: string; usage: number };
@@ -28,8 +29,7 @@ type SignerRow = { contract_id: string; sign_order: number; name: string; signed
 // workspace-wide, exceptions-first read of every contract the planner is party
 // to. RLS scopes `contracts`/`contract_signers` to the staff's own weddings.
 export async function loadStudioContracts(supabase: SupabaseClient): Promise<StudioContracts> {
-  const { data: ws } = await supabase.from("workspace_members").select("workspace_id").order("created_at", { ascending: true }).limit(1).maybeSingle();
-  const workspaceId = ws?.workspace_id ?? null;
+  const workspaceId = await currentWorkspace(supabase);
   const empty: StudioContracts = { workspaceId, templates: [], summary: { signedCurrent: 0, weddings: 0 }, exceptions: [], contractCount: 0 };
   if (!workspaceId) return empty;
 

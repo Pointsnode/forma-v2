@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { currentWorkspace } from "@/lib/workspace";
 import { SITE_URL } from "@/lib/env";
 import { Card } from "@/components/ui";
 import type { ProfileContent, Area } from "@/lib/directory";
@@ -11,14 +12,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
   const t = await getTranslations("profile");
   const supabase = await createClient();
 
-  const { data: mem } = await supabase
-    .from("workspace_members")
-    .select("workspace_id")
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  if (!mem) {
+  const workspaceId = await currentWorkspace(supabase);
+  if (!workspaceId) {
     return (
       <Card>
         <p className="py-6 text-center font-accent text-[16px] text-muted">{t("noWorkspace")}</p>
@@ -27,8 +22,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
   }
 
   const [{ data: w }, { data: areas }] = await Promise.all([
-    supabase.from("workspaces").select("slug, profile, profile_published").eq("id", mem.workspace_id).single(),
-    supabase.from("workspace_service_areas").select("country, region, city").eq("workspace_id", mem.workspace_id).order("created_at", { ascending: true }),
+    supabase.from("workspaces").select("slug, profile, profile_published").eq("id", workspaceId).single(),
+    supabase.from("workspace_service_areas").select("country, region, city").eq("workspace_id", workspaceId).order("created_at", { ascending: true }),
   ]);
 
   return (

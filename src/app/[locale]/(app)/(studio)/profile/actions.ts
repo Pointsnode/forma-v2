@@ -2,22 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { currentWorkspace } from "@/lib/workspace";
 import type { ProfileContent, Area } from "@/lib/directory";
 
 const BUCKET = "planner-profiles";
 
 export type SaveResult = { ok?: boolean; error?: string };
 export type UploadResult = { ok?: boolean; path?: string; error?: string };
-
-async function currentWorkspace(supabase: Awaited<ReturnType<typeof createClient>>): Promise<string | undefined> {
-  const { data } = await supabase
-    .from("workspace_members")
-    .select("workspace_id")
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-  return (data?.workspace_id as string | undefined) ?? undefined;
-}
 
 // Persist content + areas together (both member-checked DEFINER wrappers). Slug is
 // saved separately because it can fail on format/taken and needs its own message.

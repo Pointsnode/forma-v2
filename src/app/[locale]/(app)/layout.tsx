@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { currentWorkspace } from "@/lib/workspace";
 import { TopBar, type SwitcherWedding, heroTone } from "@/components/ui";
 import { countdownDays, initials, phaseOrdinal, type Phase } from "@/lib/wedding";
 import { ConciergeBubble } from "@/components/concierge/concierge-bubble";
@@ -32,15 +33,18 @@ export default async function AppLayout({
   let concierge: { weddings: { id: string; name: string }[]; usage: { used: number; cap: number }; pending: number } | null = null;
 
   if (user) {
-    const [{ data: prof }, { data: ws }, { data: weds }] = await Promise.all([
+    const [{ data: prof }, wsId, { data: weds }] = await Promise.all([
       supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle(),
-      supabase.from("workspace_members").select("workspace_id, workspaces(name)").order("created_at", { ascending: true }).limit(1).maybeSingle(),
+      currentWorkspace(supabase),
       supabase.from("weddings").select("id, couple_display, phase, date_start").order("date_start", { ascending: true, nullsFirst: false }),
     ]);
     plannerName = (prof?.display_name as string | null) ?? user.email ?? "";
     monogram = plannerMonogram(plannerName);
-    workspaceName = ((ws?.workspaces as unknown as { name: string } | null)?.name) ?? null;
-    workspaceId = (ws?.workspace_id as string | null) ?? null;
+    workspaceId = wsId;
+    if (wsId) {
+      const { data: wsRow } = await supabase.from("workspaces").select("name").eq("id", wsId).maybeSingle();
+      workspaceName = (wsRow?.name as string | null) ?? null;
+    }
     const weddingRows = (weds ?? []) as { id: string; couple_display: string; phase: Phase; date_start: string | null }[];
     switcher = weddingRows.map((w) => {
       const days = countdownDays(w.date_start);
