@@ -16,7 +16,7 @@ export default async function SeatingPage({
   params, searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
-  searchParams: Promise<{ event?: string }>;
+  searchParams: Promise<{ event?: string; guest?: string }>;
 }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
@@ -26,8 +26,8 @@ export default async function SeatingPage({
   const { wedding, events, role, userId } = ctx;
   if (events.length === 0) notFound();
 
-  const wantEvent = (await searchParams).event;
-  const event = events.find((e) => e.id === wantEvent) ?? events[0];
+  const sp = await searchParams;
+  const event = events.find((e) => e.id === sp.event) ?? events[0];
 
   // Couple gets the lens (billing member); day_of read-only — identical to the event page.
   let floorRole: "staff" | "couple" | "view" = "staff";
@@ -78,6 +78,11 @@ export default async function SeatingPage({
         seatedCount={floor.seatedCount}
         attendingCount={floor.attendingCount}
         role={floorRole}
+        background={floor.plan?.background ?? null}
+        backgroundUrl={floor.plan?.backgroundUrl ?? null}
+        backgroundSettings={floor.plan?.backgroundSettings ?? {}}
+        printHref={`/wedding/${id}/event/${event.id}/seating/print`}
+        initialPickGuest={sp.guest ?? null}
       />
     </WeddingShell>
   );

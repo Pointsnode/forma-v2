@@ -521,7 +521,10 @@
     "openHint": "Opening lets guests respond and starts the touchpoints. Closing stops new responses and locks counts.",
     "setDeadline": "Set deadline",
     "error": "Something went wrong. Try again.",
-    "edit": "Edit"
+    "edit": "Edit",
+    "seatedAt": "{table}, seat {seat}",
+    "seatDots": "Seat…",
+    "seatEvents": "{n} events"
   },
   "touchpoints": {
     "timeline": "Touchpoint timeline",
@@ -1102,7 +1105,34 @@
     "byTable": "By table",
     "escortCards": "Escort cards",
     "chair": "chair",
-    "noneSeated": "No one seated yet"
+    "noneSeated": "No one seated yet",
+    "addLooseSeat": "1 seat",
+    "confirmDelete": "{n} guests are seated here. Delete the table and unseat them?",
+    "clickChairHint": "Click a chair to seat someone.",
+    "nowClickChair": "Now click an empty chair to seat {name}.",
+    "escToCancel": "Press Esc to cancel.",
+    "everyoneSeated": "Everyone's seated.",
+    "tableWithLoose": "{name}  {seated}/{capacity}  +{loose} loose",
+    "looseSeat": "Loose seat",
+    "groupWith": "Group with",
+    "delete": "Delete",
+    "seats": "Seats",
+    "seatedOn": "Seated on",
+    "sidesAll": "All around",
+    "sidesLong": "The long sides",
+    "sidesOne": "One side",
+    "duplicate": "Duplicate",
+    "addBlueprint": "Add venue blueprint",
+    "blueprint": "Blueprint",
+    "opacity": "Opacity",
+    "fit": "Fit",
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "removeBlueprint": "Remove",
+    "blueprintHint": "PNG or JPEG — the room drawn to scale.",
+    "blueprintConverting": "Uploading…",
+    "blueprintPdfDeferred": "PDF isn't supported yet — upload a PNG or JPEG.",
+    "blueprintBadType": "Upload a PNG or JPEG image."
   },
   "directory": {
     "indexTitle": "Find your wedding planner",
@@ -1313,7 +1343,8 @@
     "clearance": "Your role doesn't allow that.",
     "fcNotInStudio": "That wedding isn't in your studio.",
     "fcWhichWedding": "Which wedding should I look at?",
-    "fcWhichOne": "I found a few — which one?"
+    "fcWhichOne": "I found a few — which one?",
+    "seatTaken": "Someone's already in that seat."
   },
   "team": {
     "noWorkspace": "No workspace yet.",
