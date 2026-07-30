@@ -65,16 +65,23 @@ export function ResetForm() {
   );
 }
 
-// Shown by /reset/confirm once a recovery session is live: set a new password, which
-// signs the user in (setPassword redirects to "/").
-export function NewPasswordForm() {
+// Shown by /reset/confirm. The recovery token rides through as a hidden field;
+// setPassword exchanges it for a session (where the cookie survives) THEN sets the
+// password, so a weak/mismatched password is caught before the token is spent and
+// the same link can be retried. On expiry, the way forward sits under the error.
+export function NewPasswordForm({ tokenHash, code }: { tokenHash: string | null; code: string | null }) {
   const t = useTranslations("auth");
   const [state, action, pending] = useActionState<AuthState, FormData>(setPassword, null);
   return (
     <form action={action} className="flex flex-col gap-4">
+      {tokenHash ? <input type="hidden" name="token_hash" value={tokenHash} /> : null}
+      {code ? <input type="hidden" name="code" value={code} /> : null}
       <Field name="password" type="password" label={t("newPassword")} autoComplete="new-password" />
       <Field name="confirm" type="password" label={t("confirmPassword")} autoComplete="new-password" />
       {state?.error ? <p className="text-[13px] text-wine">{t(`errors.${state.error}`)}</p> : null}
+      {state?.error === "expired" ? (
+        <Link href="/reset" className="text-[13px] font-medium text-ink hover:text-taupe">{t("resetAgain")} →</Link>
+      ) : null}
       <Button type="submit" disabled={pending} className="mt-1 w-full">{t("setPassword")}</Button>
     </form>
   );

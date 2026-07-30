@@ -1,15 +1,14 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Card } from "@/components/ui";
-import { createClient } from "@/lib/supabase/server";
 import { NewPasswordForm } from "../../auth-forms";
 
-// The page that never existed: the recovery link lands here. It establishes the
-// session from whatever shape the link carried — a PKCE code, a token_hash to verify,
-// or (when Supabase's /verify already redirected here) an existing session — then
-// shows the new-password form. An expired/reused/malformed link is NOT a 404: it's
-// one honest sentence and a way to ask for a fresh one. Public via middleware's
-// /reset/ prefix match.
+// The page that never existed: the recovery link lands here. It makes NO auth calls
+// at render — establishing the session during a Server Component render would throw
+// the Set-Cookie away (server.ts swallows the throw), so the exchange happens in the
+// setPassword server action instead, where a cookie survives. The token rides through
+// as a hidden field and doubles as the form's authorization: no token → dead-link
+// state (one sentence, one route out, never a 404), no form to submit.
 export default async function ResetConfirmPage({
   params,
   searchParams,
@@ -21,35 +20,23 @@ export default async function ResetConfirmPage({
   setRequestLocale(locale);
   const t = await getTranslations("auth");
   const sp = await searchParams;
-  const supabase = await createClient();
+  const tokenHash = typeof sp.token_hash === "string" && sp.type === "recovery" ? sp.token_hash : null;
+  const code = typeof sp.code === "string" ? sp.code : null;
 
-  let ready = false;
-  if (typeof sp.token_hash === "string" && sp.type === "recovery") {
-    const { error } = await supabase.auth.verifyOtp({ type: "recovery", token_hash: sp.token_hash });
-    ready = !error;
-  } else if (typeof sp.code === "string") {
-    const { error } = await supabase.auth.exchangeCodeForSession(sp.code);
-    ready = !error;
-  } else {
-    // Supabase's /verify already consumed the token and redirected here with a session.
-    const { data } = await supabase.auth.getUser();
-    ready = Boolean(data.user);
+  if (!tokenHash && !code) {
+    return (
+      <Card>
+        <h1 className="mb-2 font-display text-[22px] text-ink">{t("resetConfirmTitle")}</h1>
+        <p className="mb-5 text-[14px] text-muted">{t("resetExpired")}</p>
+        <Link href="/reset" className="text-[13px] font-medium text-ink hover:text-taupe">{t("resetAgain")} →</Link>
+      </Card>
+    );
   }
 
   return (
     <Card>
-      {ready ? (
-        <>
-          <h1 className="mb-5 font-display text-[22px] text-ink">{t("resetConfirmTitle")}</h1>
-          <NewPasswordForm />
-        </>
-      ) : (
-        <>
-          <h1 className="mb-2 font-display text-[22px] text-ink">{t("resetConfirmTitle")}</h1>
-          <p className="mb-5 text-[14px] text-muted">{t("resetExpired")}</p>
-          <Link href="/reset" className="text-[13px] font-medium text-ink hover:text-taupe">{t("resetAgain")} →</Link>
-        </>
-      )}
+      <h1 className="mb-5 font-display text-[22px] text-ink">{t("resetConfirmTitle")}</h1>
+      <NewPasswordForm tokenHash={tokenHash} code={code} />
     </Card>
   );
 }

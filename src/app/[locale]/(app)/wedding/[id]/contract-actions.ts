@@ -1,9 +1,9 @@
 "use server";
 
-import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
+import { APP_URL } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import { resolveMergeFields } from "@/lib/contracts";
 import { signerEmail } from "@/lib/email/contract-email";
@@ -28,12 +28,9 @@ async function contractIdOf(supabase: Awaited<ReturnType<typeof createClient>>, 
 }
 
 async function baseUrl(): Promise<string> {
-  // APP_URL first — signing/return URLs stay on the app origin across the cutover.
-  const app = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL;
-  if (app) return app;
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  return host ? `${(h.get("x-forwarded-proto") ?? "https")}://${host}` : "http://localhost:3000";
+  // Signing/return URLs stay on the app origin. APP_URL is the single source (env.ts),
+  // carrying the preview VERCEL_URL leg a hand-rolled env fallback would drop.
+  return APP_URL;
 }
 
 // Staff sends a contract: resolve the merge snapshot from the mesh, flip it out of
