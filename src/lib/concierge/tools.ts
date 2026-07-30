@@ -205,6 +205,7 @@ export async function execTool(ctx: ToolCtx, name: string, input: Record<string,
     }
     case "add_task": {
       const target = await targetWedding();
+      if (await clearanceGate(supabase, "tasks")) conciergeError("FS050"); // §H tasks lane — the concierge must not be a hole in the box model
       let kind: string | null = null, member: string | null = null, vendor: string | null = null;
       if (String(input.assignee ?? "").toLowerCase() === "couple") kind = "couple";
       else if (input.assignee_member && workspaceId) {
@@ -224,6 +225,7 @@ export async function execTool(ctx: ToolCtx, name: string, input: Record<string,
       return { content: `Task added (id ${id})${kind ? `, assigned to ${kind}` : ""}.`, draft: { kind: "task", id, title: String(input.title) } };
     }
     case "add_studio_task": {
+      if (await clearanceGate(supabase, "tasks")) conciergeError("FS050"); // §H tasks lane (same box as add_task)
       const id = await rpcId(supabase, "concierge_add_task", { p_wedding: null, p_workspace: workspaceId, p_title: input.title, p_due: input.due_date ?? null, p_assignee_kind: null, p_assignee_member: null, p_assignee_vendor: null, p_event: null, p_flagged: input.flagged === true });
       return { content: `Studio task added (id ${id}).`, draft: { kind: "task", id, title: String(input.title) } };
     }
