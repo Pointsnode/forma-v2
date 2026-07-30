@@ -9,47 +9,53 @@ export function seatLabel(n) {
 // `rotation` degrees — a ring for round tables, the two long sides for rect/banquet.
 // Returns [{x,y}] of length `capacity`.
 //
-// M14 §C `sides` distributes the chairs: 'all' (default = today's behaviour: the full ring /
-// the two long sides) · 'long' (the two long sides — the head-table/banquet case; for this app's
-// geometry the short ends are never seated, so it coincides with 'all' on a rect/banquet) · 'one'
-// (a single side — the sweetheart/imperial case: one long side for rect/banquet, a front arc for
-// round). The 6th arg is OPTIONAL and defaults to today's layout, so the 5-arg callers and the
-// existing logic test stay green.
+// M14 §C `sides` distributes a RECT/BANQUET table's chairs three distinct ways:
+//   'all'  (default) — all four sides: the two long sides PLUS one chair at each short end (the
+//                      head and foot), so someone sits at the head of the table.
+//   'long'           — the two long sides only, ends empty — the "nobody at the head" banquet case.
+//   'one'            — a single long side (the sweetheart/imperial case).
+// ROUND tables have no long/short sides, so `sides` is ignored there (always the full ring) — the
+// UI only offers the selector on rect/banquet. Chairs are laid out in seat_no order so switching
+// 'long'→'all' keeps the long-side chairs and only ADDS the two ends.
 export function seatPositions(shape, capacity, width, height, rotation = 0, sides = "all") {
   const pts = [];
   const rad = ((rotation || 0) * Math.PI) / 180;
   const rot = (x, y) => ({ x: x * Math.cos(rad) - y * Math.sin(rad), y: x * Math.sin(rad) + y * Math.cos(rad) });
   const n = Math.max(0, capacity);
+  const offY = height / 2 + 14; // long sides (top/bottom)
+  const offX = width / 2 + 14;  // short ends (left/right)
+
   if (shape === "round") {
     const r = Math.max(width, height) / 2 + 14; // chairs ring just outside the table
-    if (sides === "one") {
-      // sweetheart/imperial — a front arc across the lower semicircle
-      for (let i = 0; i < n; i++) {
-        const a = Math.PI * ((i + 0.5) / (n || 1));
-        pts.push(rot(Math.cos(a) * r, Math.sin(a) * r));
-      }
-    } else {
-      for (let i = 0; i < n; i++) {
-        const a = (i / (n || 1)) * 2 * Math.PI - Math.PI / 2;
-        pts.push(rot(Math.cos(a) * r, Math.sin(a) * r));
-      }
+    for (let i = 0; i < n; i++) {
+      const a = (i / (n || 1)) * 2 * Math.PI - Math.PI / 2;
+      pts.push(rot(Math.cos(a) * r, Math.sin(a) * r));
     }
-  } else if (sides === "one") {
+    return pts;
+  }
+
+  if (sides === "one") {
     // all chairs along one long side (top)
-    const offY = height / 2 + 14;
     const step = width / (n + 1);
     for (let i = 0; i < n; i++) pts.push(rot(-width / 2 + step * (i + 1), -offY));
-  } else {
-    // 'all' / 'long' — the two long sides, ceil(n/2) top and the rest bottom (today's math)
-    const perSide = Math.ceil(n / 2);
-    const offY = height / 2 + 14;
-    for (let i = 0; i < n; i++) {
-      const top = i < perSide;
-      const idx = top ? i : i - perSide;
-      const count = top ? perSide : n - perSide;
+    return pts;
+  }
+
+  // 'all' reserves one chair for each short end (the head + foot); 'long' reserves none. The rest
+  // split across the two long sides, ceil on top. seat_no order: long sides first, then the ends.
+  const ends = sides === "all" ? Math.min(n, 2) : 0;
+  const longN = n - ends;
+  const perTop = Math.ceil(longN / 2);
+  for (let i = 0; i < n; i++) {
+    if (i < longN) {
+      const top = i < perTop;
+      const idx = top ? i : i - perTop;
+      const count = top ? perTop : longN - perTop;
       const step = width / (count + 1);
-      const x = -width / 2 + step * (idx + 1);
-      pts.push(rot(x, top ? -offY : offY));
+      pts.push(rot(-width / 2 + step * (idx + 1), top ? -offY : offY));
+    } else {
+      // the ends: first the left head, then the right foot
+      pts.push(rot(i - longN === 0 ? -offX : offX, 0));
     }
   }
   return pts;

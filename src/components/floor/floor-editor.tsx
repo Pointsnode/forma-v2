@@ -466,13 +466,15 @@ function TableInspector({
         <span className="w-6 text-center text-[12px] text-ink">{table.capacity}</span>
         <button onClick={() => onCapacity(Math.min(100, table.capacity + 1))} className="rounded bg-bone px-1.5 py-0.5 text-ink">+</button>
       </span>
-      <label className="flex items-center gap-1 text-[11.5px] text-muted">{t("seatedOn")}
-        <select value={table.seatSides} onChange={(e) => onSides(e.target.value as SeatSides)} className="rounded bg-bone px-1.5 py-0.5 text-[12px] text-ink outline-none">
-          <option value="all">{t("sidesAll")}</option>
-          <option value="long">{t("sidesLong")}</option>
-          <option value="one">{t("sidesOne")}</option>
-        </select>
-      </label>
+      {table.shape !== "round" ? (
+        <label className="flex items-center gap-1 text-[11.5px] text-muted">{t("seatedOn")}
+          <select value={table.seatSides} onChange={(e) => onSides(e.target.value as SeatSides)} className="rounded bg-bone px-1.5 py-0.5 text-[12px] text-ink outline-none">
+            <option value="all">{t("sidesAll")}</option>
+            <option value="long">{t("sidesLong")}</option>
+            <option value="one">{t("sidesOne")}</option>
+          </select>
+        </label>
+      ) : null}
       <button onClick={onDuplicate} className="rounded bg-bone px-2 py-0.5 text-[11.5px] text-ink">{t("duplicate")}</button>
       <button onClick={onDelete} className="rounded bg-wine-soft px-2 py-0.5 text-[11.5px] text-wine">{t("delete")}</button>
     </span>
