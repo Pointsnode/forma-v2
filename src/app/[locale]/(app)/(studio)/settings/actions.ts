@@ -8,9 +8,23 @@ import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { APP_URL } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
-import { currentWorkspace } from "@/lib/workspace";
+import { currentWorkspace, loadMyGrants } from "@/lib/workspace";
+import { createSubscriptionCheckout, createPortalSession } from "@/lib/stripe";
 
 export type Result = { ok?: boolean; error?: string };
+export type UrlResult = { url?: string; error?: string };
+
+function localePrefix(locale: string): string {
+  return locale === routing.defaultLocale ? "" : `/${locale}`;
+}
+
+// The live roster for the current workspace (owner-readable via workspace_roster).
+async function rosterSeats(supabase: Awaited<ReturnType<typeof createClient>>, ws: string): Promise<{ accounts: number; conciergeSeats: number }> {
+  const { data } = await supabase.rpc("workspace_roster", { p_workspace: ws });
+  const rows = ((data ?? []) as { role: string; grants: string[] | null }[]);
+  const conciergeSeats = rows.filter((m) => m.role === "owner" || (m.grants ?? []).includes("admin") || (m.grants ?? []).includes("concierge")).length;
+  return { accounts: rows.length, conciergeSeats };
+}
 
 // ── §B language & region ─────────────────────────────────────────────────────────
 const REGION = z.object({
@@ -161,4 +175,56 @@ export async function undoDeletion(): Promise<Result> {
   if (error) return { error: "generic" };
   revalidatePath("/settings");
   return { ok: true };
+}
+
+// ── §F plan & billing: the studio's own Forma subscription ────────────────────────
+// Owner-only. Reuses a stored stripe_customer_id (owner-readable) so a resubscribe keeps
+// one customer. The client redirects to the returned Checkout URL. Quantities come from
+// the live roster; the price is lib/pricing.ts (proven === seatBill inside stripe.ts).
+export async function startSubscription(): Promise<UrlResult> {
+  const supabase = await createClient();
+  const ws = await currentWorkspace(supabase);
+  if (!ws) return { error: "generic" };
+  if (!(await loadMyGrants(supabase, ws)).includes("admin")) return { error: "forbidden" };
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: sub } = await supabase.from("workspace_subscriptions").select("stripe_customer_id").eq("workspace_id", ws).maybeSingle();
+  const { accounts, conciergeSeats } = await rosterSeats(supabase, ws);
+  const locale = await getLocale();
+  const base = `${APP_URL}${localePrefix(locale)}/settings`;
+  try {
+    const out = await createSubscriptionCheckout({
+      workspaceId: ws,
+      accounts,
+      conciergeSeats,
+      customerId: (sub?.stripe_customer_id as string | null) ?? null,
+      customerEmail: user?.email ?? null,
+      successUrl: `${base}?sub=started#plan`,
+      cancelUrl: `${base}#plan`,
+    });
+    if (!out) return { error: "unconfigured" };
+    return { url: out.url };
+  } catch {
+    return { error: "generic" };
+  }
+}
+
+// Customer Portal — manage payment method / cancel. Owner-only; needs a stored customer.
+export async function openBillingPortal(): Promise<UrlResult> {
+  const supabase = await createClient();
+  const ws = await currentWorkspace(supabase);
+  if (!ws) return { error: "generic" };
+  if (!(await loadMyGrants(supabase, ws)).includes("admin")) return { error: "forbidden" };
+  const { data: sub } = await supabase.from("workspace_subscriptions").select("stripe_customer_id").eq("workspace_id", ws).maybeSingle();
+  const customerId = sub?.stripe_customer_id as string | null;
+  if (!customerId) return { error: "generic" };
+  const locale = await getLocale();
+  try {
+    const out = await createPortalSession({ customerId, returnUrl: `${APP_URL}${localePrefix(locale)}/settings#plan` });
+    if (!out) return { error: "unconfigured" };
+    return { url: out.url };
+  } catch {
+    return { error: "generic" };
+  }
 }

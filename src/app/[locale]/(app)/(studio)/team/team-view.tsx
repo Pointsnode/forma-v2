@@ -238,6 +238,8 @@ function SeatPanel({ accounts, conciergeSeats }: { accounts: number; conciergeSe
         </div>
       </div>
       <p className="mt-4 font-accent text-[13px] italic text-muted">{t("billingNote")}</p>
+      {/* §F period-boundary reconciliation: seat changes here never write to Stripe mid-cycle. */}
+      <p className="mt-1 text-[11.5px] text-muted">{t("nextPeriodNote")}</p>
     </Card>
   );
 }

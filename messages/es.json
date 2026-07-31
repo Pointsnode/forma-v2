@@ -1427,7 +1427,8 @@
     "joinEmailMismatch": "Esta invitación se envió a {email}. Inicia sesión con ese correo para aceptar.",
     "joinInvited": "<b>{inviter}</b> te invitó a <b>{workspace}</b>.",
     "joinAccept": "Aceptar invitación",
-    "joinRejected": "No se puede aceptar esta invitación."
+    "joinRejected": "No se puede aceptar esta invitación.",
+    "nextPeriodNote": "Los cambios de cuentas se aplican en tu próximo periodo de facturación — sin cargos a mitad de ciclo."
   },
   "settings": {
     "title": "Ajustes",
@@ -1498,6 +1499,16 @@
     "usageSeatsTitle": "Cuentas en uso",
     "seatsAccounts": "Cuentas",
     "seatsConcierge": "Asientos de Concierge",
-    "manageSeats": "Gestionar cuentas → Equipo"
+    "manageSeats": "Gestionar cuentas → Equipo",
+    "status_active": "Activa",
+    "status_trialing": "Prueba",
+    "status_past_due": "Pago vencido",
+    "status_canceled": "Cancelada",
+    "status_none": "Sin iniciar",
+    "renewsOn": "se renueva el {date}",
+    "subStartHint": "Inicia tu suscripción para comenzar la facturación.",
+    "managePlanBtn": "Gestionar plan",
+    "startSubscription": "Iniciar suscripción",
+    "subErr": "No se pudo conectar con Stripe — inténtalo de nuevo."
   }
 }
