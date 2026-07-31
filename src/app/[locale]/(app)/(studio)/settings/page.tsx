@@ -2,6 +2,7 @@ import { setRequestLocale, getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { currentWorkspace, loadMyGrants } from "@/lib/workspace";
 import { loadBudget } from "@/lib/concierge/session";
+import { conciergeSeatCount } from "@/lib/seats.mjs";
 import { stripeConfigured } from "@/lib/stripe";
 import type { DateFormat } from "@/lib/format-date";
 import { SettingsView, type SettingsData } from "./settings-view";
@@ -37,7 +38,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
       supabase.from("workspace_subscriptions").select("status, current_period_end").eq("workspace_id", workspaceId).maybeSingle(),
     ]);
     const roster = ((rosterRows ?? []) as { role: string; grants: string[] | null }[]);
-    const conciergeSeats = roster.filter((m) => m.role === "owner" || (m.grants ?? []).includes("admin") || (m.grants ?? []).includes("concierge")).length;
+    const conciergeSeats = conciergeSeatCount(roster, budget.enabled);
     plan = { accounts: roster.length, conciergeSeats };
     usage = { used: budget.used, cap: budget.cap };
     isOwner = grants.includes("admin");

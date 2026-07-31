@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { APP_URL } from "@/lib/env";
 import { verifyStripeSignature, isPaymentEvent } from "@/lib/stripe-verify.mjs";
 import { mapSubStatus } from "@/lib/subscription-plan.mjs";
+import { conciergeSeatCount } from "@/lib/seats.mjs";
 import { reconcileSubscription } from "@/lib/stripe";
 import { seatBill } from "@/lib/pricing";
 import { sendBatch } from "@/lib/email/resend";
@@ -14,13 +15,16 @@ function iso(sec: unknown): string | null {
   return typeof sec === "number" && sec > 0 ? new Date(sec * 1000).toISOString() : null;
 }
 
-// The live roster for a workspace (service-role, RLS bypassed). Concierge seat = the
-// admin box (owner role) OR an explicit concierge grant — the same rule Team/Usage use.
+// The live roster → billable seats (service-role, RLS bypassed). Uses the SAME shared
+// helper as Team/Settings/Start, gated on whether concierge is enabled, so the webhook
+// reconciles/snapshots exactly what those surfaces display.
 async function workspaceSeats(admin: SupabaseClient, ws: string): Promise<{ accounts: number; conciergeSeats: number }> {
-  const { data } = await admin.from("workspace_members").select("role, grants").eq("workspace_id", ws);
+  const [{ data }, { data: cs }] = await Promise.all([
+    admin.from("workspace_members").select("role, grants").eq("workspace_id", ws),
+    admin.from("concierge_settings").select("enabled").eq("workspace_id", ws).maybeSingle(),
+  ]);
   const rows = (data ?? []) as { role: string; grants: string[] | null }[];
-  const conciergeSeats = rows.filter((m) => m.role === "owner" || (m.grants ?? []).includes("admin") || (m.grants ?? []).includes("concierge")).length;
-  return { accounts: rows.length, conciergeSeats };
+  return { accounts: rows.length, conciergeSeats: conciergeSeatCount(rows, !!cs?.enabled) };
 }
 
 // Resolve the workspace behind an invoice via its subscription id (the stored row).

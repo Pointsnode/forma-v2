@@ -8,6 +8,7 @@ import { assertWeddingReachable } from "./session";
 import { conciergeError } from "./errors";
 import { clearanceGate } from "@/lib/workspace";
 import { seatBill } from "@/lib/pricing";
+import { conciergeSeatCount } from "@/lib/seats.mjs";
 import { formatMoney } from "@/lib/wedding";
 import { seatLabel } from "@/lib/seat-geometry.mjs";
 
@@ -153,11 +154,16 @@ export async function execTool(ctx: ToolCtx, name: string, input: Record<string,
       } else if (fn === "post_proposal_message") {
         summary = `Message the couple: "${String(args.body)}"`;
       } else if (fn === "create_workspace_invite") {
-        const { data: mem } = await supabase.from("workspace_members").select("role, grants").eq("workspace_id", workspaceId ?? "");
+        const [{ data: mem }, { data: cs }] = await Promise.all([
+          supabase.from("workspace_members").select("role, grants").eq("workspace_id", workspaceId ?? ""),
+          supabase.from("concierge_settings").select("enabled").eq("workspace_id", workspaceId ?? "").maybeSingle(),
+        ]);
         const ms = (mem ?? []) as { role: string; grants: string[] | null }[];
         const grants = Array.isArray(args.grants) ? (args.grants as string[]) : [];
-        const hasConc = (m: { role: string; grants: string[] | null }) => m.role === "owner" || (m.grants ?? []).includes("admin") || (m.grants ?? []).includes("concierge");
-        const bill = seatBill(ms.length + 1, ms.filter(hasConc).length + (grants.includes("admin") || grants.includes("concierge") ? 1 : 0));
+        // Same shared seat rule as billing: gated on concierge being enabled, owner-inclusive.
+        const enabled = !!(cs as { enabled?: boolean } | null)?.enabled;
+        const inviteeSeat = enabled && (grants.includes("admin") || grants.includes("concierge")) ? 1 : 0;
+        const bill = seatBill(ms.length + 1, conciergeSeatCount(ms, enabled) + inviteeSeat);
         summary = `Invite ${String(args.email)}${grants.length ? ` (${grants.join(", ")})` : ""} — new total ${formatMoney(bill.total, "en") ?? `$${bill.total}`}/mo`;
       }
       // §1A a studio card gets a wedding line at the top so the approver knows which wedding it is.
