@@ -71,9 +71,15 @@ export async function loadProposals(
     const c = courtMap.get(p.id);
     const messages = [...(p.proposal_messages ?? [])].sort((a, b) => a.created_at.localeCompare(b.created_at));
     const eng = p.engagement_id ? engMap.get(p.engagement_id) : undefined;
+    // The couple can't read the vendors catalogue (workspace-member-only RLS), so the vendors join
+    // is null on their side and vendorName comes back "—". The present-born proposal's TITLE — set
+    // by present_vendor to "{vendor name} — {kind}", and couple-readable — carries the name; fall
+    // back to it rather than widening the vendors policy (§3).
+    let vendorName = eng?.vendorName ?? null;
+    if (p.engagement_id && (!vendorName || vendorName === "—")) vendorName = p.title.split(" — ")[0] || vendorName;
     return {
       ...p, proposal_messages: messages, court: c?.court ?? "none", age_days: c?.age_days ?? 0,
-      engVendorName: eng?.vendorName ?? null, engEventIds: eng?.eventIds ?? [],
+      engVendorName: vendorName, engEventIds: eng?.eventIds ?? [],
     };
   });
 

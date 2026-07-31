@@ -1,5 +1,5 @@
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
+import { Link, redirect } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
   Card, Heading, Monogram, PhaseDots, StatRow, Stat, SectionTitle, Row, RowMain, cx,
@@ -32,6 +32,13 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
   const hasWorkspace = (memberships ?? []).length > 0;
 
   if (!hasWorkspace) {
+    // A couple (a wedding member with no workspace) must never see studio onboarding — send them
+    // to their wedding portal. RLS returns only the weddings they're a member of. The
+    // create-workspace card shows ONLY for a genuinely new user (no wedding AND no workspace).
+    const { data: myWeddings } = await supabase.from("weddings").select("id").order("date_start", { ascending: true, nullsFirst: false });
+    if (myWeddings && myWeddings.length > 0) {
+      redirect({ href: `/wedding/${(myWeddings[0] as { id: string }).id}`, locale: lang });
+    }
     const tws = await getTranslations("workspace");
     return (
       <div className="mx-auto max-w-md">
