@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { cookies } from "next/headers";
 import { redirect } from "@/i18n/navigation";
 import { getLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -28,9 +29,22 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) return { error: "invalid" };
+  // §B3 — seed the locale on first authenticated load: honour the saved profiles.locale
+  // by setting NEXT_LOCALE (the middleware then keeps the app surface in that locale) and
+  // landing directly in it, so a Spanish account doesn't flash English before redirecting.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: prof } = user ? await supabase.from("profiles").select("locale").eq("id", user.id).maybeSingle() : { data: null };
+  // Follow the PROFILE, not the URL the user happened to sign in from — signing in on an
+  // /es page with profiles.locale='en' must not seed an es cookie (it would diverge until
+  // the next toggle). Fall back to the URL locale only when the profile has none.
+  const profLocale = prof?.locale as string | null;
+  const savedLocale = profLocale === "es" || profLocale === "en" ? profLocale : await getLocale();
+  if (savedLocale === "es") (await cookies()).set("NEXT_LOCALE", "es", { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
   // Return to the validated deep-link if one rode in (e.g. /join/team/<token>), else the
   // cockpit. safeNextPath rejects anything non-relative, so this can't be an open redirect.
-  redirect({ href: safeNextPath(formData.get("next")) ?? "/", locale: await getLocale() });
+  redirect({ href: safeNextPath(formData.get("next")) ?? "/", locale: savedLocale });
   return null;
 }
 

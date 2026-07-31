@@ -1,6 +1,7 @@
 import { getLocale, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { loadCalendar } from "@/lib/calendar";
+import { loadDatePrefs } from "@/lib/prefs";
 import { zonedDateKey } from "@/lib/calendar-grid.mjs";
 import { calendlyConfigured } from "@/lib/calendly/api";
 import { CalendarView } from "./calendar-view";
@@ -22,7 +23,10 @@ export default async function CalendarPage({
   setRequestLocale(locale);
   const lang = await getLocale();
   const supabase = await createClient();
-  const data = await loadCalendar(supabase);
+  // §B4 — render the studio calendar in the account's timezone preference (grid, today,
+  // and meeting times move together). Default matches the connection's zone.
+  const prefs = await loadDatePrefs(supabase, lang);
+  const data = await loadCalendar(supabase, prefs.tz);
   const todayKey = zonedDateKey(new Date(), data.timezone);
   const sp = await searchParams;
   const banner = sp.connected ? "connected" : sp.error ? "error" : null;

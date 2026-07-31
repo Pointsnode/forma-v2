@@ -22,13 +22,23 @@ export async function middleware(request: NextRequest) {
   const prefix = request.nextUrl.pathname.match(/^\/(en|es)(?=\/|$)/)?.[0] ?? "";
   const path = request.nextUrl.pathname.replace(/^\/(en|es)(?=\/|$)/, "") || "/";
 
+  // Carry the rotated sb-* auth cookies updateSession wrote onto `response` across a
+  // fresh redirect — a redirect for a SIGNED-IN user that drops them discards a token
+  // rotation and silently logs the user out on the next refresh (the Supabase-SSR
+  // footgun). Only redirects that can run while signed-in need this.
+  const withSession = (url: URL) => {
+    const res = NextResponse.redirect(url);
+    response.cookies.getAll().forEach((c) => res.cookies.set(c));
+    return res;
+  };
+
   // The landing is never exposed as its own URL: a DIRECT hit on /landing (any locale,
   // signed-in or out) redirects to the locale root, which serves the landing (signed-
   // out) or the cockpit (signed-in) at the canonical "/".
   if (path === "/landing") {
     const url = request.nextUrl.clone();
     url.pathname = prefix || "/";
-    return NextResponse.redirect(url);
+    return withSession(url);
   }
 
   const isPublic = PUBLIC.some((p) => (p === "/" ? path === "/" : path === p || path.startsWith(`${p}/`)));
@@ -57,6 +67,20 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = `/${loc}/landing`;
     return NextResponse.rewrite(url);
+  }
+
+  // §B3 — app-only locale honouring. A SIGNED-IN user whose saved locale is Spanish
+  // (NEXT_LOCALE=es) hitting an unprefixed (default-locale) path is sent to the /es
+  // equivalent, so the Settings language choice survives reloads and deep-links without
+  // typing /es. Gated on `user`, so the signed-out marketing landing keeps its own EN/ES
+  // toggle and is never redirected (we deliberately do NOT enable next-intl's global
+  // localeDetection, which would also govern the landing). No loop: an /es path already
+  // has `prefix` set and is skipped; 'en' is the unprefixed default so only 'es' redirects.
+  if (user && !prefix && request.cookies.get("NEXT_LOCALE")?.value === "es") {
+    const url = request.nextUrl.clone();
+    url.pathname = request.nextUrl.pathname === "/" ? "/es" : `/es${request.nextUrl.pathname}`;
+    // Signed-in hot path — must carry the rotated auth cookies (see withSession above).
+    return withSession(url);
   }
   return response;
 }

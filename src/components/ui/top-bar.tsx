@@ -101,8 +101,9 @@ export function TopBar({
         ) : null}
       </div>
 
-      {/* §1F: the monogram is a menu — Sign out lives here now; Billing when a
-          workspace exists; Profile/Settings/Admin arrive with their milestones. */}
+      {/* §A the monogram is the account menu. Workspace members get Team · Profile ·
+          Manage plan · Settings; a non-workspace user (a couple on a wedding surface)
+          sees only Settings + Sign out. Every item lands on a real page. */}
       <div className="relative">
         <button
           onClick={() => setMenuOpen((v) => !v)}
@@ -113,12 +114,16 @@ export function TopBar({
         {menuOpen ? (
           <>
             <button className="fixed inset-0 z-10 cursor-default" aria-hidden onClick={() => setMenuOpen(false)} />
-            <div className="absolute right-0 top-[46px] z-20 min-w-[180px] overflow-hidden rounded-2xl bg-paper text-ink shadow-hero">
+            <div className="absolute right-0 top-[46px] z-20 min-w-[200px] overflow-hidden rounded-2xl bg-paper text-ink shadow-hero">
               {workspaceName ? (
-                <Link href="/billing" onClick={() => setMenuOpen(false)} className="block px-4 py-3 text-[12.5px] [box-shadow:inset_0_-1px_0_var(--color-hairline)] hover:bg-bone">
-                  {t("billing")}
-                </Link>
+                <>
+                  <MenuLink href="/team" label={ts("team")} onNavigate={() => setMenuOpen(false)} />
+                  <MenuLink href="/profile" label={ts("profile")} onNavigate={() => setMenuOpen(false)} />
+                  <MenuLink href="/settings#plan" label={t("managePlan")} onNavigate={() => setMenuOpen(false)} />
+                </>
               ) : null}
+              <MenuLink href="/settings" label={t("settings")} onNavigate={() => setMenuOpen(false)} />
+              <div className="[box-shadow:inset_0_-1px_0_var(--color-hairline)]" />
               <form action={signOut}>
                 <button type="submit" className="w-full px-4 py-3 text-left text-[12.5px] text-muted hover:bg-bone hover:text-ink">
                   {t("signOut")}
@@ -129,5 +134,18 @@ export function TopBar({
         ) : null}
       </div>
     </div>
+  );
+}
+
+// A hairline account-menu row. Kept local so every item shares the paper-panel voice.
+function MenuLink({ href, label, onNavigate }: { href: string; label: string; onNavigate: () => void }) {
+  return (
+    <Link
+      href={href}
+      onClick={onNavigate}
+      className="block px-4 py-3 text-[12.5px] not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)] hover:bg-bone"
+    >
+      {label}
+    </Link>
   );
 }

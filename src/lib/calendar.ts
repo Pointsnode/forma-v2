@@ -40,13 +40,19 @@ export type CalendarData = {
   entries: CalEntry[];
 };
 
-export async function loadCalendar(supabase: SupabaseClient): Promise<CalendarData> {
+// §B4 — displayTz (the viewer's profiles.timezone) overrides the grid zone so the
+// account's timezone preference drives which day-cell a meeting lands in, "today", and
+// meeting times — all together, so the grid stays internally consistent (the M11
+// invariant, now keyed off the account instead of the Calendly connection). Falls back
+// to the connection zone when a preference isn't supplied. Wedding days and task due
+// dates are DATE-typed → zone-free → unaffected either way.
+export async function loadCalendar(supabase: SupabaseClient, displayTz?: string): Promise<CalendarData> {
   const { data: conn } = await supabase
     .from("calendly_connections")
     .select("timezone, calendly_user_uri, status")
     .limit(1)
     .maybeSingle();
-  const timezone = (conn?.timezone as string) ?? "America/Mexico_City";
+  const timezone = displayTz || (conn?.timezone as string) || "America/Mexico_City";
   const connected = !!conn && conn.status === "active";
 
   const [{ data: weds }, { data: meetings }, { data: events }, { data: tasks }] = await Promise.all([

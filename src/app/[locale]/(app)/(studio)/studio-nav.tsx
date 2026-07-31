@@ -14,7 +14,10 @@ export function StudioNav() {
   const tops = useTranslations("ops");
   const tc = useTranslations("contract");
   const path = usePathname();
-  const items: { href: "/" | "/weddings" | "/venues" | "/vendors" | "/contracts" | "/tasks" | "/calendar" | "/team" | "/profile"; label: string }[] = [
+  // §A2 Team & Profile moved OUT of the section nav into the account menu (top bar). The
+  // section nav is now exactly the 7 studio surfaces; /team and /profile are unchanged
+  // routes reached from the monogram menu.
+  const items: { href: "/" | "/weddings" | "/venues" | "/vendors" | "/contracts" | "/tasks" | "/calendar"; label: string }[] = [
     { href: "/", label: t("overview") },
     { href: "/weddings", label: t("weddings") },
     { href: "/venues", label: tv("venues") },
@@ -22,8 +25,6 @@ export function StudioNav() {
     { href: "/contracts", label: tc("tab") },
     { href: "/tasks", label: tops("tasksTab") },
     { href: "/calendar", label: t("calendar") },
-    { href: "/team", label: t("team") },
-    { href: "/profile", label: t("profile") },
   ];
   return (
     <nav className="sticky top-[62px] z-40 flex gap-7 overflow-x-auto bg-paper px-8 [box-shadow:inset_0_-1px_0_var(--color-hairline)] md:px-10">
