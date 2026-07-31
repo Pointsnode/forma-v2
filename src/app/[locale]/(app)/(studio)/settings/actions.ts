@@ -9,6 +9,7 @@ import { routing } from "@/i18n/routing";
 import { APP_URL } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import { currentWorkspace, loadMyGrants } from "@/lib/workspace";
+import { conciergeSeatCount } from "@/lib/seats.mjs";
 import { createSubscriptionCheckout, createPortalSession } from "@/lib/stripe";
 
 export type Result = { ok?: boolean; error?: string };
@@ -18,12 +19,16 @@ function localePrefix(locale: string): string {
   return locale === routing.defaultLocale ? "" : `/${locale}`;
 }
 
-// The live roster for the current workspace (owner-readable via workspace_roster).
+// The live roster for the current workspace (owner-readable via workspace_roster) →
+// billable seats. conciergeSeats routes through the shared helper, gated on whether
+// concierge is enabled, so Start bills exactly what Team/Settings display.
 async function rosterSeats(supabase: Awaited<ReturnType<typeof createClient>>, ws: string): Promise<{ accounts: number; conciergeSeats: number }> {
-  const { data } = await supabase.rpc("workspace_roster", { p_workspace: ws });
+  const [{ data }, { data: cs }] = await Promise.all([
+    supabase.rpc("workspace_roster", { p_workspace: ws }),
+    supabase.from("concierge_settings").select("enabled").eq("workspace_id", ws).maybeSingle(),
+  ]);
   const rows = ((data ?? []) as { role: string; grants: string[] | null }[]);
-  const conciergeSeats = rows.filter((m) => m.role === "owner" || (m.grants ?? []).includes("admin") || (m.grants ?? []).includes("concierge")).length;
-  return { accounts: rows.length, conciergeSeats };
+  return { accounts: rows.length, conciergeSeats: conciergeSeatCount(rows, !!cs?.enabled) };
 }
 
 // ── §B language & region ─────────────────────────────────────────────────────────

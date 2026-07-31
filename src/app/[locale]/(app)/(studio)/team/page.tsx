@@ -2,6 +2,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { currentWorkspace, loadMyGrants } from "@/lib/workspace";
 import { loadBudget } from "@/lib/concierge/session";
+import { conciergeSeatCount } from "@/lib/seats.mjs";
 import { Card } from "@/components/ui";
 import { TeamView, type RosterMember, type PendingInvite } from "./team-view";
 
@@ -55,7 +56,9 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
     id: string; email: string; grants: string[] | null; title: string | null; token: string; expires_at: string;
   }[]).map((i) => ({ id: i.id, email: i.email, grants: i.grants ?? [], title: i.title, token: i.token, expiresAt: i.expires_at }));
 
-  const conciergeSeats = roster.filter((m) => m.grants.includes("admin") || m.grants.includes("concierge")).length;
+  // Count from the RAW roster rows (role + real grants) via the shared helper — not the
+  // display-mapped `roster` — so Team's number is the same call the billing path makes.
+  const conciergeSeats = conciergeSeatCount(rosterRows as { role: string; grants: string[] | null }[], budget.enabled);
 
   return (
     <TeamView
