@@ -356,7 +356,15 @@
       "contract_created": "redactó un contrato",
       "task_created": "agregó una tarea",
       "task_assigned": "asignó una tarea",
-      "task_completed": "completó una tarea"
+      "task_completed": "completó una tarea",
+      "quote_sent": "envió una cotización",
+      "quote_accepted": "aceptó una cotización",
+      "quote_revision_requested": "pidió revisar una cotización",
+      "inquiry_converted": "convirtió una consulta",
+      "seat_assigned": "asignó un lugar",
+      "seat_unseated": "quitó un lugar",
+      "vendor_declined": "rechazó un proveedor",
+      "floor_plan_updated": "actualizó el plano"
     },
     "chaseTask": "tarea en espera",
     "byConcierge": "Concierge (para {planner})",
@@ -1259,7 +1267,8 @@
     "connect": "Conectar Calendly",
     "disconnect": "Desconectar",
     "bannerConnected": "Calendly conectado: tus citas se están sincronizando.",
-    "bannerError": "Algo salió mal al conectar Calendly. Inténtalo de nuevo."
+    "bannerError": "Algo salió mal al conectar Calendly. Inténtalo de nuevo.",
+    "connectedAccount": "Tu cuenta de Calendly está conectada."
   },
   "landing": {
     "metaTitle": "Forma — Planificación, refinada.",

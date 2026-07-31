@@ -23,7 +23,6 @@ export function CalendarView({
   entries,
   timezone,
   connected,
-  userUri,
   todayKey,
   weekStart,
   configured,
@@ -115,13 +114,15 @@ export function CalendarView({
       ) : null}
 
       {/* Connect card */}
-      <ConnectCard connected={connected} configured={configured} userUri={userUri} pending={pending} onDisconnect={() => start(async () => { await disconnectCalendly(); router.refresh(); })} />
+      <ConnectCard connected={connected} configured={configured} pending={pending} onDisconnect={() => start(async () => { await disconnectCalendly(); router.refresh(); })} />
 
       {/* Controls */}
       <div className="mb-3 mt-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <button onClick={() => step(-1)} className="rounded-full px-2.5 py-1 text-[15px] text-muted hover:bg-bone hover:text-ink" aria-label={t("prev")}>‹</button>
-          <span className="min-w-[9rem] text-center font-display text-[20px] capitalize text-ink">{view === "month" ? monthLabel : cursor.year}</span>
+          {/* No CSS `capitalize`: Intl already capitalises EN months ("July 2026"); in ES it
+              yields the correct lowercase "julio de 2026" — capitalize wrongly made it "Julio De 2026". */}
+          <span className="min-w-[9rem] text-center font-display text-[20px] text-ink">{view === "month" ? monthLabel : cursor.year}</span>
           <button onClick={() => step(1)} className="rounded-full px-2.5 py-1 text-[15px] text-muted hover:bg-bone hover:text-ink" aria-label={t("next")}>›</button>
           <button onClick={goToday} className="ml-1 rounded-full bg-bone px-3 py-1 text-[12px] text-ink hover:bg-sand-soft">{t("today")}</button>
         </div>
@@ -200,7 +201,7 @@ export function CalendarView({
             const total = d.meeting + d.wedding + d.task;
             return (
               <button key={m0} onClick={() => { setCursor({ year: cursor.year, month0: m0 }); setView("month"); }} className="rounded-2xl bg-paper p-4 text-left shadow-card transition-shadow hover:shadow-lift">
-                <p className="font-display text-[16px] capitalize text-ink">{new Intl.DateTimeFormat(locale, { month: "long", timeZone: "UTC" }).format(new Date(Date.UTC(cursor.year, m0, 1)))}</p>
+                <p className="font-display text-[16px] text-ink">{new Intl.DateTimeFormat(locale, { month: "long", timeZone: "UTC" }).format(new Date(Date.UTC(cursor.year, m0, 1)))}</p>
                 {total === 0 ? (
                   <p className="mt-2 text-[12px] text-muted">{t("quiet")}</p>
                 ) : (
@@ -244,7 +245,7 @@ export function CalendarView({
   );
 }
 
-function ConnectCard({ connected, configured, userUri, pending, onDisconnect }: { connected: boolean; configured: boolean; userUri: string | null; pending: boolean; onDisconnect: () => void }) {
+function ConnectCard({ connected, configured, pending, onDisconnect }: { connected: boolean; configured: boolean; pending: boolean; onDisconnect: () => void }) {
   const t = useTranslations("calendar");
   return (
     <Card className="flex flex-wrap items-center justify-between gap-3">
@@ -254,7 +255,9 @@ function ConnectCard({ connected, configured, userUri, pending, onDisconnect }: 
           <span className={cx("rounded-full px-2.5 py-[3px] text-[11px] font-medium", connected ? "bg-sage-soft text-sage-ink" : "bg-sand-soft text-taupe")}>{connected ? t("connected") : t("notConnected")}</span>
         </div>
         <p className="mt-1 text-[12.5px] text-muted">
-          {!configured ? t("notConfigured") : connected ? t("connectedAs", { who: userUri?.split("/").pop() ?? "" }) : t("connectHint")}
+          {/* The connection row stores no Calendly name/email (only the user URI, which ends in a
+              UUID) — so show a stable label, never the bare id. */}
+          {!configured ? t("notConfigured") : connected ? t("connectedAccount") : t("connectHint")}
         </p>
       </div>
       {configured ? (

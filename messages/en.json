@@ -356,7 +356,15 @@
       "contract_created": "drafted a contract",
       "task_created": "added a task",
       "task_assigned": "assigned a task",
-      "task_completed": "completed a task"
+      "task_completed": "completed a task",
+      "quote_sent": "sent a quote",
+      "quote_accepted": "accepted a quote",
+      "quote_revision_requested": "requested a quote revision",
+      "inquiry_converted": "converted an inquiry",
+      "seat_assigned": "seated a guest",
+      "seat_unseated": "unseated a guest",
+      "vendor_declined": "declined a vendor",
+      "floor_plan_updated": "updated the floor plan"
     },
     "chaseTask": "waiting task",
     "byConcierge": "Concierge (for {planner})",
@@ -1259,7 +1267,8 @@
     "connect": "Connect Calendly",
     "disconnect": "Disconnect",
     "bannerConnected": "Calendly connected — your bookings are syncing.",
-    "bannerError": "Something went wrong connecting Calendly. Please try again."
+    "bannerError": "Something went wrong connecting Calendly. Please try again.",
+    "connectedAccount": "Your Calendly account is connected."
   },
   "landing": {
     "metaTitle": "Forma — Planning, refined.",

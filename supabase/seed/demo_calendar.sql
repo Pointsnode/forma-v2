@@ -10,7 +10,10 @@ do $$
 declare
   v_ws uuid;
   pa uuid := 'd1a00001-0000-4000-a000-000000000001';  -- Priya & Arjun
-  d0 timestamptz := date_trunc('day', now());
+  -- Anchor the relative meetings to LOCAL midnight (America/Mexico_City), not UTC midnight: with
+  -- date_trunc('day', now()) (UTC midnight) a "+10 hours" meeting stored 10:00 UTC and rendered in
+  -- the studio's tz (UTC-6) as 4:00 AM. Local midnight makes "+10 hours" read as 10:00 in the grid.
+  d0 timestamptz := date_trunc('day', now() at time zone 'America/Mexico_City') at time zone 'America/Mexico_City';
 begin
   select id into v_ws from public.workspaces where name = 'Atelier Demo Studio' order by created_at limit 1;
   if v_ws is null then return; end if;
