@@ -10,6 +10,7 @@ import { countdownLabel, formatMoney, initials, phaseLabel, PHASE_ORDER, type Ph
 import { loadCockpit, loadInquiries } from "@/lib/cockpit";
 import { loadMoneyRadar } from "@/lib/money";
 import { loadNextMeeting } from "@/lib/calendar";
+import { loadDatePrefs } from "@/lib/prefs";
 import { InquiriesCard } from "./inquiries-card";
 
 export default async function StudioOverview({ params }: { params: Promise<{ locale: string }> }) {
@@ -71,7 +72,9 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
     .map((p) => tc("nInPhase", { count: byPhase.get(p)!, phase: tp(p) }))
     .join(" · ");
   const oldest = chase[0];
-  const today = new Intl.DateTimeFormat(lang === "es" ? "es-ES" : "en-US", { weekday: "long", month: "long", day: "numeric" }).format(new Date());
+  // §B4 — the greeting date reads "today" in the account's timezone preference.
+  const prefs = await loadDatePrefs(supabase, lang);
+  const today = new Intl.DateTimeFormat(lang === "es" ? "es-ES" : "en-US", { weekday: "long", month: "long", day: "numeric", timeZone: prefs.tz }).format(new Date());
 
   // Money radar / urgent (§12) — from the view, RLS-scoped to the viewer's weddings.
   const tmoney = await getTranslations("money");

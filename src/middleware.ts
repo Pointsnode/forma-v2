@@ -58,6 +58,19 @@ export async function middleware(request: NextRequest) {
     url.pathname = `/${loc}/landing`;
     return NextResponse.rewrite(url);
   }
+
+  // §B3 — app-only locale honouring. A SIGNED-IN user whose saved locale is Spanish
+  // (NEXT_LOCALE=es) hitting an unprefixed (default-locale) path is sent to the /es
+  // equivalent, so the Settings language choice survives reloads and deep-links without
+  // typing /es. Gated on `user`, so the signed-out marketing landing keeps its own EN/ES
+  // toggle and is never redirected (we deliberately do NOT enable next-intl's global
+  // localeDetection, which would also govern the landing). No loop: an /es path already
+  // has `prefix` set and is skipped; 'en' is the unprefixed default so only 'es' redirects.
+  if (user && !prefix && request.cookies.get("NEXT_LOCALE")?.value === "es") {
+    const url = request.nextUrl.clone();
+    url.pathname = request.nextUrl.pathname === "/" ? "/es" : `/es${request.nextUrl.pathname}`;
+    return NextResponse.redirect(url);
+  }
   return response;
 }
 

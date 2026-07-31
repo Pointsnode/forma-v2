@@ -7,6 +7,8 @@ import { WeddingShell } from "@/components/wedding/wedding-shell";
 import { AddLineForm, PayButton, MarkPaid } from "@/components/money/ledger-controls";
 import { Card, StatRow, Stat, SectionTitle, Row, RowMain, Badge, Tag, type BadgeTone } from "@/components/ui";
 import { formatMoney } from "@/lib/wedding";
+import { loadDatePrefs } from "@/lib/prefs";
+import { formatDate } from "@/lib/format-date";
 
 const STATUS_TONE: Record<string, BadgeTone> = {
   paid: "sage", settled: "sage", due: "wine", scheduled: "sand", expected: "sand", void: "sand",
@@ -25,6 +27,9 @@ export default async function BudgetTab({ params }: { params: Promise<{ locale: 
   const { lines, rollup, traceFor, slices } = await loadLedger(supabase, id);
   const eventLabel = new Map(events.map((e) => [e.id, e.label]));
   const fmt = (n: string | number | null) => formatMoney(n, lang) ?? "—";
+  // §B4 — ledger due dates honour the account's date-format preference (a DATE-typed
+  // value, reordered without a timezone shift).
+  const prefs = await loadDatePrefs(supabase, lang);
 
   return (
     <WeddingShell wedding={wedding} events={events} role={role} active="budget">
@@ -56,7 +61,7 @@ export default async function BudgetTab({ params }: { params: Promise<{ locale: 
                       {traceFor(l).map((tr, i) => (
                         <Tag key={i}>{tr.kind === "quote" ? tm("traceQuote") : tr.label}</Tag>
                       ))}
-                      {l.due_date ? <span className="text-taupe">· {l.due_date}</span> : null}
+                      {l.due_date ? <span className="text-taupe">· {formatDate(l.due_date, prefs)}</span> : null}
                     </span>
                   }
                 />
