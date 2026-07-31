@@ -14,15 +14,21 @@ export type DatePrefs = {
 
 const AUTO: Record<string, DateFormat> = { es: "DMY", en: "MDY" };
 
+// Defensive: an invalid stored tz would throw in DateTimeFormat and take down every date
+// render for that account. Fall back to UTC rather than crash (saveRegion guards the
+// write, so this only catches pre-existing bad data).
+function dtf(locale: string, tz: string, opts: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const lc = locale === "es" ? "es-MX" : "en-US";
+  try {
+    return new Intl.DateTimeFormat(lc, { timeZone: tz, ...opts });
+  } catch {
+    return new Intl.DateTimeFormat(lc, { timeZone: "UTC", ...opts });
+  }
+}
+
 function parts(value: Date | string, tz: string, locale: string) {
   const d = value instanceof Date ? value : new Date(value);
-  const dtf = new Intl.DateTimeFormat(locale === "es" ? "es-MX" : "en-US", {
-    timeZone: tz,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  const map = new Map(dtf.formatToParts(d).map((p) => [p.type, p.value]));
+  const map = new Map(dtf(locale, tz, { year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(d).map((p) => [p.type, p.value]));
   return { y: map.get("year") ?? "", m: map.get("month") ?? "", d: map.get("day") ?? "" };
 }
 
@@ -50,11 +56,5 @@ export function formatDate(value: Date | string | null | undefined, prefs: DateP
 export function formatLongDate(value: Date | string | null | undefined, prefs: DatePrefs): string {
   if (value == null || value === "") return "—";
   const d = value instanceof Date ? value : new Date(value);
-  return new Intl.DateTimeFormat(prefs.locale === "es" ? "es-MX" : "en-US", {
-    timeZone: prefs.tz,
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  }).format(d);
+  return dtf(prefs.locale, prefs.tz, { weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(d);
 }

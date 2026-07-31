@@ -36,7 +36,11 @@ export async function signIn(_prev: AuthState, formData: FormData): Promise<Auth
     data: { user },
   } = await supabase.auth.getUser();
   const { data: prof } = user ? await supabase.from("profiles").select("locale").eq("id", user.id).maybeSingle() : { data: null };
-  const savedLocale = (prof?.locale as string | null) === "es" ? "es" : await getLocale();
+  // Follow the PROFILE, not the URL the user happened to sign in from — signing in on an
+  // /es page with profiles.locale='en' must not seed an es cookie (it would diverge until
+  // the next toggle). Fall back to the URL locale only when the profile has none.
+  const profLocale = prof?.locale as string | null;
+  const savedLocale = profLocale === "es" || profLocale === "en" ? profLocale : await getLocale();
   if (savedLocale === "es") (await cookies()).set("NEXT_LOCALE", "es", { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
   // Return to the validated deep-link if one rode in (e.g. /join/team/<token>), else the
   // cockpit. safeNextPath rejects anything non-relative, so this can't be an open redirect.

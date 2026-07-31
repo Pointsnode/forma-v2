@@ -18,9 +18,23 @@ const REGION = z.object({
   dateFormat: z.enum(["auto", "DMY", "MDY", "YMD"]),
 });
 
+// A valid IANA zone only — a bad string would throw in Intl.DateTimeFormat({timeZone})
+// at every date render for that account. Fall back to a membership check when the
+// runtime lacks supportedValuesOf.
+function isValidZone(tz: string): boolean {
+  try {
+    const supported = (Intl as unknown as { supportedValuesOf?: (k: string) => string[] }).supportedValuesOf;
+    if (supported) return supported("timeZone").includes(tz);
+    new Intl.DateTimeFormat("en-US", { timeZone: tz });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function saveRegion(timezone: string, dateFormat: string): Promise<Result> {
   const parsed = REGION.safeParse({ timezone, dateFormat });
-  if (!parsed.success) return { error: "invalid" };
+  if (!parsed.success || !isValidZone(parsed.data.timezone)) return { error: "invalid" };
   const supabase = await createClient();
   const {
     data: { user },
