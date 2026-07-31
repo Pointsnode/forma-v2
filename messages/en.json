@@ -1427,7 +1427,8 @@
     "joinEmailMismatch": "This invitation was sent to {email}. Sign in with that address to accept.",
     "joinInvited": "<b>{inviter}</b> invited you to <b>{workspace}</b>.",
     "joinAccept": "Accept invitation",
-    "joinRejected": "This invitation can't be accepted."
+    "joinRejected": "This invitation can't be accepted.",
+    "nextPeriodNote": "Seat changes take effect on your next billing period — no mid-cycle charges."
   },
   "settings": {
     "title": "Settings",
@@ -1498,6 +1499,16 @@
     "usageSeatsTitle": "Seats in use",
     "seatsAccounts": "Accounts",
     "seatsConcierge": "Concierge seats",
-    "manageSeats": "Manage seats → Team"
+    "manageSeats": "Manage seats → Team",
+    "status_active": "Active",
+    "status_trialing": "Trial",
+    "status_past_due": "Past due",
+    "status_canceled": "Canceled",
+    "status_none": "Not started",
+    "renewsOn": "renews {date}",
+    "subStartHint": "Start your subscription to begin billing.",
+    "managePlanBtn": "Manage plan",
+    "startSubscription": "Start subscription",
+    "subErr": "Couldn't reach Stripe — try again."
   }
 }

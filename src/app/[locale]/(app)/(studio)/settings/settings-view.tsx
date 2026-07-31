@@ -9,6 +9,7 @@ import type { DateFormat } from "@/lib/format-date";
 import {
   saveRegion, setLocalePref, saveDisplayName, changeEmail, sendPasswordReset,
   signOutEverywhere, exportData, requestDeletion, undoDeletion,
+  startSubscription, openBillingPortal,
 } from "./actions";
 
 export type SettingsData = {
@@ -21,6 +22,7 @@ export type SettingsData = {
   dateFormat: DateFormat;
   plan: { accounts: number; conciergeSeats: number } | null;
   usage: { used: number; cap: number } | null;
+  subscription: { status: string; currentPeriodEnd: string | null } | null;
   stripeConfigured: boolean;
   deletionRequestedAt: string | null;
 };
@@ -165,10 +167,26 @@ function LanguageSection({ data, router, pathname }: { data: SettingsData; route
   );
 }
 
-// ── Plan & billing (PR1: the real seatBill + the honest not-connected state) ─────────
+// ── Plan & billing (§F: seatBill breakdown + the live subscription status/controls) ──
+const LIVE = new Set(["active", "trialing", "past_due"]);
 function PlanSection({ data }: { data: SettingsData }) {
   const t = useTranslations("settings");
+  const [pending, start] = useTransition();
+  const [err, setErr] = useState(false);
   const bill = data.plan ? seatBill(data.plan.accounts, data.plan.conciergeSeats) : null;
+  const status = data.subscription?.status ?? "none";
+  const isLive = LIVE.has(status);
+
+  // Server action → Stripe-hosted URL → full-page redirect (Checkout / Portal are external).
+  function goto(action: () => Promise<{ url?: string; error?: string }>) {
+    setErr(false);
+    start(async () => {
+      const r = await action();
+      if (r.url) window.location.href = r.url;
+      else setErr(true);
+    });
+  }
+
   return (
     <div className="flex flex-col gap-[18px]">
       <Card>
@@ -193,13 +211,42 @@ function PlanSection({ data }: { data: SettingsData }) {
       </Card>
 
       <Card>
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4">
           <div>
             <Heading className="text-[16px]">{t("subscriptionTitle")}</Heading>
-            <p className="mt-0.5 text-[12.5px] text-muted">{data.stripeConfigured ? t("subReady") : t("subNotConnected")}</p>
+            {!data.stripeConfigured ? (
+              // Honest not-connected state — no dead button (mirrors /billing when unconfigured).
+              <p className="mt-0.5 text-[12.5px] text-muted">{t("subNotConnected")}</p>
+            ) : isLive ? (
+              <p className="mt-0.5 text-[12.5px] text-muted">
+                {t(`status_${status}`)}
+                {data.subscription?.currentPeriodEnd ? ` · ${t("renewsOn", { date: new Date(data.subscription.currentPeriodEnd).toLocaleDateString(data.locale === "es" ? "es-MX" : "en-US") })}` : ""}
+              </p>
+            ) : (
+              <p className="mt-0.5 text-[12.5px] text-muted">{status === "canceled" ? t("status_canceled") : t("subStartHint")}</p>
+            )}
           </div>
-          <Badge tone="sand">{t("subComingSoon")}</Badge>
+          {data.stripeConfigured ? (
+            isLive ? (
+              <Badge tone="sage">{t(`status_${status}`)}</Badge>
+            ) : (
+              <Badge tone="sand">{t("status_none")}</Badge>
+            )
+          ) : (
+            <Badge tone="sand">{t("subComingSoon")}</Badge>
+          )}
         </div>
+
+        {data.stripeConfigured && data.isOwner ? (
+          <div className="mt-4 flex items-center gap-3">
+            {isLive ? (
+              <button onClick={() => goto(openBillingPortal)} disabled={pending} className="rounded-full border border-ink px-5 py-2 text-[13px] text-ink hover:bg-ink hover:text-bone disabled:opacity-50">{t("managePlanBtn")}</button>
+            ) : (
+              <button onClick={() => goto(startSubscription)} disabled={pending} className="rounded-full bg-ink px-5 py-2 text-[13px] text-bone hover:opacity-90 disabled:opacity-50">{t("startSubscription")}</button>
+            )}
+            {err ? <span className="text-[12.5px] text-wine">{t("subErr")}</span> : null}
+          </div>
+        ) : null}
       </Card>
 
       <Link href="/billing" className="text-[13px] text-ink underline underline-offset-2 hover:opacity-70">{t("paymentsLink")}</Link>

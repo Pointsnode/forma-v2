@@ -23,15 +23,18 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
   const workspaceId = await currentWorkspace(supabase);
   let plan: SettingsData["plan"] = null;
   let usage: SettingsData["usage"] = null;
+  let subscription: SettingsData["subscription"] = null;
   let isOwner = false;
   let deletionRequestedAt: string | null = null;
 
   if (workspaceId) {
-    const [{ data: rosterRows }, grants, budget, { data: wsRow }] = await Promise.all([
+    const [{ data: rosterRows }, grants, budget, { data: wsRow }, { data: subRow }] = await Promise.all([
       supabase.rpc("workspace_roster", { p_workspace: workspaceId }),
       loadMyGrants(supabase, workspaceId),
       loadBudget(supabase, workspaceId),
       supabase.from("workspaces").select("deletion_requested_at").eq("id", workspaceId).maybeSingle(),
+      // Owner-select only (0019 RLS); a non-owner read simply returns null → treated as 'none'.
+      supabase.from("workspace_subscriptions").select("status, current_period_end").eq("workspace_id", workspaceId).maybeSingle(),
     ]);
     const roster = ((rosterRows ?? []) as { role: string; grants: string[] | null }[]);
     const conciergeSeats = roster.filter((m) => m.role === "owner" || (m.grants ?? []).includes("admin") || (m.grants ?? []).includes("concierge")).length;
@@ -39,6 +42,10 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
     usage = { used: budget.used, cap: budget.cap };
     isOwner = grants.includes("admin");
     deletionRequestedAt = (wsRow?.deletion_requested_at as string | null) ?? null;
+    subscription = {
+      status: (subRow?.status as string | null) ?? "none",
+      currentPeriodEnd: (subRow?.current_period_end as string | null) ?? null,
+    };
   }
 
   const data: SettingsData = {
@@ -51,6 +58,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
     dateFormat: ((prof?.date_format as DateFormat | null) ?? "auto"),
     plan,
     usage,
+    subscription,
     stripeConfigured: stripeConfigured(),
     deletionRequestedAt,
   };
