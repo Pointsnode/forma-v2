@@ -5,3 +5,9 @@ node_modules
 .DS_Store
 *.tsbuildinfo
 next-env.d.ts
+
+# Demo photo source assets (originals live outside the repo; the 55 curated
+# JPGs live in supabase/seed/media/, rehydrated by scripts/seed-demo-media.mjs).
+demo pictures/
+
+supabase/.temp/
