@@ -26,10 +26,10 @@ export function Landing({ locale, cards, regions }: { locale: Locale; cards: Dir
   const [panel, setPanel] = useState<Panel | null>(null);
 
   return (
-    <div className="bg-bone text-ink">
+    <div className="brand bg-bone text-ink">
       {/* Nav */}
       <nav className="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-5 py-4 sm:px-8">
-        <Link href="/" className="font-display text-[20px] tracking-[0.04em] text-bone mix-blend-difference">Forma</Link>
+        <Link href="/" className="wordmark font-display text-[20px] text-bone mix-blend-difference">Forma</Link>
         <div className="flex items-center gap-3 text-[12px] text-bone mix-blend-difference sm:gap-5">
           <button onClick={() => setPanel("pricing")} className="hidden uppercase tracking-[0.14em] hover:opacity-70 sm:inline">{t("navPricing")}</button>
           <button onClick={() => setPanel("about")} className="hidden uppercase tracking-[0.14em] hover:opacity-70 sm:inline">{t("navAbout")}</button>
@@ -68,7 +68,7 @@ export function Landing({ locale, cards, regions }: { locale: Locale; cards: Dir
         {/* centered wordmark overlay */}
         <div className="pointer-events-none absolute inset-0 hidden items-center justify-center md:flex">
           <div className="text-center text-bone mix-blend-difference">
-            <div className="font-display text-[clamp(48px,7vw,104px)] leading-none tracking-[0.02em]">Forma</div>
+            <div className="wordmark font-display text-[clamp(48px,7vw,104px)] leading-none">Forma</div>
             <div className="mt-3 text-[12px] uppercase tracking-[0.42em] text-bone/90">{t("wordmarkTag")}</div>
           </div>
         </div>
@@ -120,7 +120,7 @@ export function Landing({ locale, cards, regions }: { locale: Locale; cards: Dir
       <footer className="border-t border-hairline bg-paper">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-6 py-12 text-center sm:flex-row sm:justify-between sm:text-left">
           <div>
-            <div className="font-display text-[20px] tracking-[0.04em]">Forma</div>
+            <div className="wordmark font-display text-[20px]">Forma</div>
             <div className="mt-1 text-[10px] uppercase tracking-[0.34em] text-taupe">{t("wordmarkTag")}</div>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-4 text-[12px] uppercase tracking-[0.14em] text-muted">

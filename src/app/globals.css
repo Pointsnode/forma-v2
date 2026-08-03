@@ -4,11 +4,14 @@
    Neutral #121212 ink on bone/paper. Status accents: sand/taupe/wine/maroon/
    sage. Borderless surfaces on soft shadow. No gradients anywhere. */
 @theme {
-  --color-ink: #121212;
+  --color-ink: #0F0F0E;
   --color-ink-soft: #2a2a2a;
-  --color-bone: #f7f4ee;
-  --color-paper: #fffdf9;
-  --color-muted: #8a867e;
+  --color-char: #1C1C1B;      /* raised surfaces on ink (cards, sheets) */
+  --color-graphite: #3A3A38;  /* body copy on bone */
+  --color-ash: #8A8880;       /* labels, captions, hairline text */
+  --color-bone: #F3EFE7;
+  --color-paper: #FAF8F3;
+  --color-muted: var(--color-ash); /* muted is now an alias of ash (back-compat) */
   --color-hairline: #eae6dc;
   --color-hairline-dark: #2c2c2c;
   --color-sand: #d8c7b0;
@@ -39,3 +42,33 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
+
+/* ── Brand scope (landing only) ────────────────────────────────────────────────
+   Applied to the landing root. Remaps the font tokens onto the brand faces so the
+   Tailwind font-display/-accent/-sans utilities render Hosgura + Instrument Sans —
+   while every studio/app surface keeps the global tokens untouched (resolution 2).
+   Colour corrections are global (token level); only the FONTS are scoped here. */
+.brand {
+  --font-display: var(--font-hosgura), Georgia, serif;
+  --font-accent:  var(--font-hosgura), Georgia, serif;
+  --font-sans:    var(--font-instrument), system-ui, sans-serif;
+  font-family: var(--font-sans);
+}
+
+/* The Forma mark: uppercase Hosgura, tracking never below 0.24em (brand guide). */
+.brand .wordmark {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+}
+
+/* Brand type scale (Typography slide) — reference utilities for the brand context,
+   not applied to existing components (a full app type-role pass is a separate spec).
+   Display roles are Hosgura; text roles are Instrument Sans. */
+.brand .t-display { font-family: var(--font-display); font-size: 132px; line-height: 1.02; letter-spacing: 0.01em; }
+.brand .t-h1      { font-family: var(--font-display); font-size: 64px;  line-height: 1.0;  letter-spacing: 0.01em; }
+.brand .t-h2      { font-family: var(--font-display); font-size: 40px;  line-height: 1.15; letter-spacing: 0.02em; }
+.brand .t-lead    { font-family: var(--font-sans);    font-size: 20px;  line-height: 1.55; letter-spacing: -0.01em; }
+.brand .t-body    { font-family: var(--font-sans);    font-size: 16px;  line-height: 1.70; }
+.brand .t-caption { font-family: var(--font-sans);    font-size: 13px;  line-height: 1.60; }
+.brand .t-label   { font-family: var(--font-sans);    font-size: 11px;  line-height: 1.0;  letter-spacing: 0.20em; text-transform: uppercase; }
