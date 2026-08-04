@@ -64,18 +64,17 @@ nav a.cta{border:1px solid #F5F2EB;color:#F5F2EB;font-size:12px;font-weight:500;
 .inside .wrap{max-width:1060px;margin:0 auto}
 .inside .head{text-align:center;max-width:640px;margin:0 auto 60px}
 .inside h2{font-size:clamp(30px,3.4vw,44px);line-height:1.18;margin:24px 0 0;color:#F5F2EB}
-.caro{overflow:hidden;margin:0 -56px}
-.ctrack{display:flex;align-items:stretch;width:max-content;animation:drift 60s linear infinite}
-.ctrack:hover{animation-play-state:paused}
-@keyframes drift{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.cap{width:330px;flex:none;padding:0 44px;text-align:center;position:relative}
-.cap:after{content:'';position:absolute;right:0;top:8px;bottom:8px;width:1px;background:#D7C3A5;opacity:.35}
+.caro{overflow-x:auto;overflow-y:hidden;margin:0 -56px;scrollbar-width:none;-webkit-overflow-scrolling:touch;cursor:grab}
+.caro::-webkit-scrollbar{display:none}
+.caro.dragging{cursor:grabbing}
+.ctrack{display:flex;align-items:flex-start;width:max-content;padding:26px 0 8px}
+.cap{width:330px;flex:none;padding:0 40px;text-align:center;will-change:transform,opacity;transform-origin:center center}
 .cap .shot{height:110px;border:1px solid #D7C3A5;margin-bottom:22px;display:flex;align-items:center;justify-content:center}
 .cap .shot span{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:#D7C3A5;opacity:.7}
 .cap svg{display:block;margin:0 auto 16px}
 .cap .nm{font-family:'Playfair Display',Georgia,serif;font-size:21px;color:#F5F2EB;margin-bottom:8px}
 .cap .d{font-size:13px;line-height:1.6;color:#D7C3A5}
-@media(prefers-reduced-motion:reduce){.ctrack{animation:none;flex-wrap:wrap;width:auto;justify-content:center}}
+
 .inside .after{text-align:center;margin-top:54px}
 .inside .go{color:#D7C3A5;border-bottom-color:#D7C3A5}
 .go{display:inline-block;font-size:13px;font-weight:400;letter-spacing:.06em;color:#111111;text-decoration:none;border-bottom:1px solid #D7C3A5;padding-bottom:4px}
@@ -270,7 +269,13 @@ footer .fine{margin-top:42px;font-size:11px;letter-spacing:.18em;text-transform:
     <svg width="22" height="22" viewBox="-105 -105 210 210" aria-hidden="true"><path d="M0.000,-100.000 L29.289,-70.711 L70.711,-70.711 L70.711,-29.289 L100.000,0.000 L70.711,29.289 L70.711,70.711 L29.289,70.711 L0.000,100.000 L-29.289,70.711 L-70.711,70.711 L-70.711,29.289 L-100.000,0.000 L-70.711,-29.289 L-70.711,-70.711 L-29.289,-70.711 Z" fill="#D7C3A5"/></svg>
     <h2 data-i18n="insideH2">Everything the wedding needs, native.</h2>
   </div>
-  <div class="caro"><div class="ctrack">
+  <div class="caro" id="caro"><div class="ctrack" id="ctrack">
+    <div class="cap"><div class="shot"><span>forma</span></div><svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#D7C3A5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 5h14l6 6v24H10z"/><path d="M24 5v6h6"/><path d="M15 26c2-3 4-3 5-1s3 1 5-2"/><path d="M15 15h10M15 19h10"/></svg><div class="nm" data-i18n="s1n">Contracts, signed</div><div class="d" data-i18n="s1d">Proposal to signature to deposit, one unbroken flow.</div></div>
+    <div class="cap"><div class="shot"><span>forma</span></div><svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#D7C3A5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="9" width="26" height="24"/><path d="M7 16h26M14 6v6M26 6v6"/><circle cx="20" cy="24" r="1" fill="${CHAMP}"/><circle cx="26" cy="24" r="1" fill="${CHAMP}"/><circle cx="14" cy="24" r="1" fill="${CHAMP}"/><circle cx="14" cy="28.5" r="1" fill="${CHAMP}"/><circle cx="20" cy="28.5" r="1" fill="${CHAMP}"/></svg><div class="nm" data-i18n="s2n">Scheduling</div><div class="d" data-i18n="s2d">Calendly woven in; consultations book themselves.</div></div>
+    <div class="cap"><div class="shot"><span>forma</span></div><svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#D7C3A5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="11" width="28" height="19"/><path d="M6 17h28"/><path d="M11 25h7"/><path d="M27 25h2"/></svg><div class="nm" data-i18n="s3n">Payments</div><div class="d" data-i18n="s3d">Powered by Stripe. Smart money flows.</div></div>
+    <div class="cap"><div class="shot"><span>forma</span></div><svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#D7C3A5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="15" width="24" height="18"/><path d="M20 15v18M8 21h24"/><path d="M20 15c-6 0-8-3-7-6 1-2 5-2 7 6zM20 15c6 0 8-3 7-6-1-2-5-2-7 6z"/></svg><div class="nm" data-i18n="s4n">The registry</div><div class="d" data-i18n="s4d">Collected through forma. Easy, convenient, fast.</div></div>
+    <div class="cap"><div class="shot"><span>forma</span></div><svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#D7C3A5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="8" width="28" height="24"/><path d="M6 14h28"/><circle cx="10" cy="11" r=".8" fill="${CHAMP}"/><circle cx="14" cy="11" r=".8" fill="${CHAMP}"/><path d="M13 24l4-5 4 4 3-3 3 4"/><path d="M13 28h14"/></svg><div class="nm" data-i18n="s5n">Wedding websites</div><div class="d" data-i18n="s5d">A site for each couple, drawn in the same hand.</div></div>
+    <div class="cap"><div class="shot"><span>forma</span></div><svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#D7C3A5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 28a10 10 0 0 1 20 0"/><path d="M7 28h26"/><path d="M7 31h26"/><path d="M20 18v-3"/><circle cx="20" cy="13" r="1.6"/></svg><div class="nm" data-i18n="s6n">The AI concierge</div><div class="d" data-i18n="s6d">Your personal assistant, 24/7.</div></div>
     <div class="cap"><div class="shot"><span>forma</span></div><svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#D7C3A5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 5h14l6 6v24H10z"/><path d="M24 5v6h6"/><path d="M15 26c2-3 4-3 5-1s3 1 5-2"/><path d="M15 15h10M15 19h10"/></svg><div class="nm" data-i18n="s1n">Contracts, signed</div><div class="d" data-i18n="s1d">Proposal to signature to deposit, one unbroken flow.</div></div>
     <div class="cap"><div class="shot"><span>forma</span></div><svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#D7C3A5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="9" width="26" height="24"/><path d="M7 16h26M14 6v6M26 6v6"/><circle cx="20" cy="24" r="1" fill="${CHAMP}"/><circle cx="26" cy="24" r="1" fill="${CHAMP}"/><circle cx="14" cy="24" r="1" fill="${CHAMP}"/><circle cx="14" cy="28.5" r="1" fill="${CHAMP}"/><circle cx="20" cy="28.5" r="1" fill="${CHAMP}"/></svg><div class="nm" data-i18n="s2n">Scheduling</div><div class="d" data-i18n="s2d">Calendly woven in; consultations book themselves.</div></div>
     <div class="cap"><div class="shot"><span>forma</span></div><svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#D7C3A5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="11" width="28" height="19"/><path d="M6 17h28"/><path d="M11 25h7"/><path d="M27 25h2"/></svg><div class="nm" data-i18n="s3n">Payments</div><div class="d" data-i18n="s3d">Powered by Stripe. Smart money flows.</div></div>
@@ -406,6 +411,89 @@ footer .fine{margin-top:42px;font-size:11px;letter-spacing:.18em;text-transform:
   addEventListener('scroll', onScroll, { passive: true })
   addEventListener('resize', onScroll)
   frame(); extras()
+
+  // premium services carousel: user-driven, endless, center card 30 percent larger
+  const caro = document.getElementById('caro')
+  const ctrack = document.getElementById('ctrack')
+  const caps = [...ctrack.children]
+  let oneSet = 0
+  function caroLayout() {
+    const mid = caro.scrollLeft + caro.clientWidth / 2
+    for (const c of caps) {
+      const cc = c.offsetLeft + c.offsetWidth / 2
+      const t = Math.min(1, Math.abs(cc - mid) / (c.offsetWidth * 1.2))
+      const sc = 1 - 0.231 * t
+      c.style.transform = 'scale(' + sc.toFixed(3) + ')'
+      c.style.opacity = String(1 - 0.28 * t)
+    }
+    if (oneSet > 0) {
+      if (caro.scrollLeft < oneSet * 0.5) caro.scrollLeft += oneSet
+      else if (caro.scrollLeft > oneSet * 1.5) caro.scrollLeft -= oneSet
+    }
+  }
+  function caroInit() {
+    oneSet = ctrack.scrollWidth / 3
+    caro.scrollLeft = oneSet + (oneSet / 6) / 2 - caro.clientWidth / 2 + (oneSet / 6) * 1.5
+    caroLayout()
+  }
+  addEventListener('resize', caroInit)
+  setTimeout(caroInit, 120)
+  // carousel physics: flick momentum that decays like a spun wheel, then a soft
+  // magnetic settle onto the nearest card. No CSS snap; nothing ever clunks.
+  let dragX = null, dragSL = 0, lastX = 0, vel = 0, animRAF = null, driving = false
+  function cancelAnim() { if (animRAF) cancelAnimationFrame(animRAF); animRAF = null; driving = false }
+  function nearestDelta() {
+    const mid = caro.scrollLeft + caro.clientWidth / 2
+    let best = 1e9, delta = 0
+    for (const c of caps) { const d = c.offsetLeft + c.offsetWidth / 2 - mid; if (Math.abs(d) < Math.abs(best)) { best = d; delta = d } }
+    return delta
+  }
+  function settle() {
+    cancelAnim()
+    const step = () => {
+      const d = nearestDelta()
+      if (Math.abs(d) < .75) { cancelAnim(); caroLayout(); return }
+      driving = true
+      caro.scrollLeft += d > 0 ? Math.max(.6, d * .06) : Math.min(-.6, d * .06)
+      caroLayout()
+      animRAF = requestAnimationFrame(step)
+    }
+    animRAF = requestAnimationFrame(step)
+  }
+  function fling() {
+    cancelAnim()
+    const step = () => {
+      if (Math.abs(vel) < 1.1) { settle(); return }
+      driving = true
+      caro.scrollLeft -= vel
+      vel *= .95
+      caroLayout()
+      animRAF = requestAnimationFrame(step)
+    }
+    animRAF = requestAnimationFrame(step)
+  }
+  let settleTimer = null
+  caro.addEventListener('scroll', () => {
+    requestAnimationFrame(caroLayout)
+    if (driving || dragX !== null) return
+    clearTimeout(settleTimer)
+    settleTimer = setTimeout(() => { if (!driving && dragX === null) settle() }, 160)
+  }, { passive: true })
+  caro.addEventListener('pointerdown', (e) => {
+    cancelAnim()
+    if (e.pointerType !== 'mouse') return
+    dragX = e.clientX; lastX = e.clientX; dragSL = caro.scrollLeft; vel = 0
+    caro.classList.add('dragging'); caro.setPointerCapture(e.pointerId)
+  })
+  caro.addEventListener('pointermove', (e) => {
+    if (dragX === null) return
+    caro.scrollLeft = dragSL - (e.clientX - dragX)
+    vel = (e.clientX - lastX) * .8 + vel * .2
+    lastX = e.clientX
+  })
+  const dragEnd = () => { if (dragX === null) return; dragX = null; caro.classList.remove('dragging'); fling() }
+  caro.addEventListener('pointerup', dragEnd)
+  caro.addEventListener('pointercancel', dragEnd)
 
   // post-convergence chrome: fixed header + concierge floater
   const tophead = document.getElementById('tophead')
