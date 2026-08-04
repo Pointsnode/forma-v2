@@ -4,8 +4,16 @@
    --font-cormorant) instead of the reference's inlined @font-face. Palette is local to
    this file; the app keeps its own tokens until the phase-2 portal rebrand. */
 
-.ed1 { background:#F5F2EB; color:#3B3833; font-family:var(--font-inter),system-ui,sans-serif; font-weight:300; -webkit-font-smoothing:antialiased; position:relative; overflow-x:hidden }
+/* overflow-x:clip (NOT hidden) contains any horizontal bleed WITHOUT creating a scroll
+   container: with overflow-y left visible, x:clip keeps y visible per the CSS Overflow
+   clip exception, so position:sticky on the convergence stage survives and .ed1 gets no
+   scrollbar. Never put hidden/auto/scroll here or the whole convergence goes blank. */
+.ed1 { background:#F5F2EB; color:#3B3833; font-family:var(--font-inter),system-ui,sans-serif; font-weight:300; -webkit-font-smoothing:antialiased; position:relative; overflow-x:clip }
 .ed1 *{ box-sizing:border-box }
+/* Tailwind preflight forces svg{display:block}, which left-aligns the stars the reference
+   centers via text-align. Restore inline-block so they center; the carousel icons
+   re-assert block+auto below (.cap svg has higher specificity). */
+.ed1 svg{ display:inline-block; vertical-align:middle }
 .ed1 h1,.ed1 h2{ font-family:var(--font-playfair),Georgia,serif; font-weight:400; color:#111111 }
 .ed1 .wordmark{ font-family:var(--font-playfair),Georgia,serif; font-size:27px; color:#111111; text-decoration:none }
 .ed1 .wordmark i{ font-style:italic; margin-right:.5px }
