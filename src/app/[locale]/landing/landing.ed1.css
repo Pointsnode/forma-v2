@@ -118,7 +118,10 @@
 .ed1 .tophead{ position:fixed; top:0; left:0; right:0; z-index:40; background:#F5F2EB; border-bottom:1px solid #E4DFD3; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; padding:13px 28px; opacity:0; pointer-events:none; transition:opacity .35s ease }
 .ed1 .tophead.on{ opacity:1; pointer-events:auto }
 .ed1 .burger{ justify-self:start; background:none; border:none; cursor:pointer; padding:8px 4px; display:flex; flex-direction:column; gap:5px }
-.ed1 .burger span{ display:block; width:22px; height:1.5px; background:#111111 }
+/* Three identical stripes at an even integer thickness: 1.5px rounds unevenly across
+   device pixel ratios (the reference's bug); 2px with the 5px gap keeps all three crisp
+   and equal at 1x and 2x. */
+.ed1 .burger span{ display:block; width:22px; height:2px; background:#111111 }
 .ed1 .tophead .cwm{ justify-self:center; font-family:var(--font-playfair),Georgia,serif; font-size:23px; color:#111111; text-decoration:none }
 .ed1 .tophead .cwm i{ font-style:italic }
 .ed1 .tophead .auth{ justify-self:end; display:flex; gap:20px; align-items:center }
