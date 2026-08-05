@@ -16,7 +16,6 @@ export default function OpengraphImage() {
   return new ImageResponse(
     (
       <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#111111", color: "#F5F2EB" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img width="118" height="118" src={src} alt="" />
         <div style={{ fontSize: 92, marginTop: 28 }}>forma</div>
         <div style={{ fontSize: 21, letterSpacing: 14, marginTop: 22, color: "#D7C3A5" }}>WEDDING ATELIER SOFTWARE</div>

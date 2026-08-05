@@ -356,9 +356,9 @@ export function Landing({ locale }: { locale: Locale }) {
       <div className={`menuovl${menuOpen ? " open" : ""}`}>
         <button className="x" onClick={() => setMenuOpen(false)} {...H("menuClose")} />
         <div>
-          <Link href="/sign-up" {...H("menuAbout")} />
-          <Link href="/sign-up" {...H("menuPricing")} />
-          <Link href="/sign-up" {...H("menuFeatures")} />
+          <Link href="/about" {...H("menuAbout")} />
+          <Link href="/pricing" {...H("menuPricing")} />
+          <Link href="/atelier" {...H("navAtelier")} />
           <div className="small"><Link href="/sign-in" {...H("authLogin")} /><Link href="/sign-up" {...H("authSignup")} /></div>
         </div>
       </div>
@@ -390,8 +390,8 @@ export function Landing({ locale }: { locale: Locale }) {
       <nav>
         <Wordmark className="wordmark" />
         <div className="links">
-          <Link className="nl" href="/sign-up" {...H("navAtelier")} />
-          <Link className="nl" href="/sign-up" {...H("navPricing")} />
+          <Link className="nl" href="/atelier" {...H("navAtelier")} />
+          <Link className="nl" href="/pricing" {...H("navPricing")} />
           <Link className="nl" href="/sign-in" {...H("navSignin")} />
           <Link className="cta" href="/sign-up" {...H("navCta")} />
         </div>
@@ -507,8 +507,9 @@ export function Landing({ locale }: { locale: Locale }) {
         <Star size={16} fill="#F5F2EB" /><br />
         <Wordmark className="wordmark" />
         <div className="row2">
-          <Link href="/sign-up" {...H("navAtelier")} />
-          <Link href="/sign-up" {...H("navPricing")} />
+          <Link href="/atelier" {...H("navAtelier")} />
+          <Link href="/pricing" {...H("navPricing")} />
+          <Link href="/about" {...H("menuAbout")} />
           <Link href="/planners" {...H("footDirectory")} />
           <button type="button" onClick={() => setLangOpen((v) => !v)} {...H("footLanguage")} />
           <Link href="/sign-in" {...H("navSignin")} />

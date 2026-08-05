@@ -16,7 +16,7 @@ type Entry = [keywords: string[], answer: string];
 
 const KB_EN: Entry[] = [
   [["price", "cost", "how much", "pricing", "expensive"],
-   "A studio is seventy nine dollars a month. A solo planner, forty nine. An additional seat, fifteen. No tiers and no asterisks. The full pricing page is one door away."],
+   "The first account is seventy nine dollars a month, and it carries fifty weddings a year for the whole team. Each additional account is forty nine. The concierge, which is to say me, is fifteen a month for each account that wants it. The full pricing page is one door away."],
   [["concierge", " ai", "assistant", "chatbot", "you do"],
    "I am the concierge. Inside the atelier I know every wedding in your studio: I draft, I summarize, I keep watch overnight, and I answer questions like this one at any hour."],
   [["language", "spanish", "french", "italian", "espanol", "idioma"],
@@ -45,7 +45,7 @@ const FALLBACK_EN =
 
 const KB_ES: Entry[] = [
   [["price", "cost", "how much", "pricing", "expensive", "precio"],
-   "Un estudio son setenta y nueve dólares al mes. Una planner sola, cuarenta y nueve. Una cuenta adicional, quince. Sin niveles y sin asteriscos. La página de precios completa está a un paso."],
+   "La primera cuenta cuesta setenta y nueve dólares al mes, y lleva cincuenta bodas al año para todo el equipo. Cada cuenta adicional, cuarenta y nueve. El conserje, es decir yo, cuesta quince al mes por cada cuenta que lo quiera. La página de precios completa está a una puerta."],
   [["concierge", " ai", "assistant", "chatbot", "you do"],
    "Soy el concierge. Dentro del atelier conozco cada boda de tu estudio: redacto, resumo, vigilo durante la noche y respondo preguntas como esta a cualquier hora."],
   [["language", "spanish", "french", "italian", "espanol", "idioma"],
