@@ -94,7 +94,6 @@ export function Landing({ locale }: { locale: Locale }) {
 
   // ---- scroll choreography (imperative, rAF-throttled) ----
   const conv = useRef<HTMLElement>(null);
-  const words = useRef<HTMLDivElement[]>([]);
   const center = useRef<HTMLDivElement>(null);
   const cstar = useRef<HTMLDivElement>(null);
   const cw = useRef<HTMLDivElement>(null);
@@ -123,12 +122,15 @@ export function Landing({ locale }: { locale: Locale }) {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const starts: Record<string, [number, number]> = { planner: [-0.82, -0.62], couple: [0.82, -0.62], vendors: [-0.82, 0.62], guests: [0.82, 0.62] };
     const ends: Record<string, [number, number]> = { planner: [0, -0.34], couple: [0, 0.34], vendors: [-0.5, 0], guests: [0.5, 0] };
+    // Query the words from the DOM once (matches the reference), rather than a ref-callback
+    // array — no staleness, and a missing node just no-ops.
+    const wordEls = conv.current ? Array.from(conv.current.querySelectorAll<HTMLElement>(".word")) : [];
 
     const paint = (t1: number, t2: number, t3: number, t4: number) => {
       const vw = innerWidth / 2, vh = innerHeight / 2;
-      for (const w of words.current) {
-        if (!w) continue;
-        const side = w.dataset.side as string;
+      for (const w of wordEls) {
+        const side = w.dataset.side;
+        if (!side || !starts[side]) continue;
         const st = starts[side], e = ends[side];
         const x = (st[0] + (e[0] - st[0]) * t1) * vw;
         const y = (st[1] + (e[1] - st[1]) * t1) * vh;
@@ -203,7 +205,13 @@ export function Landing({ locale }: { locale: Locale }) {
         tr.style.transform = `translateX(${-over * pr + innerWidth * 0.06 * (1 - pr) - innerWidth * 0.03}px)`;
       }
     };
-    const onScroll = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; frame(); }); };
+    // Reset the throttle flag BEFORE the work and catch any throw (dev-logged, not
+    // swallowed): a single mid-frame exception must never brick the whole scene.
+    const tick = () => {
+      raf = 0;
+      try { frame(); } catch (e) { if (process.env.NODE_ENV !== "production") console.error("[landing scroll frame]", e); }
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(tick); };
     addEventListener("scroll", onScroll, { passive: true });
     addEventListener("resize", onScroll);
     frame();
@@ -224,7 +232,10 @@ export function Landing({ locale }: { locale: Locale }) {
     let settleTimer: ReturnType<typeof setTimeout> | null = null;
 
     const caroLayout = () => {
-      const mid = caroEl.scrollLeft + caroEl.clientWidth / 2;
+      // Center on the true viewport center (innerWidth/2), derived via the container's own
+      // rect so a window scrollbar can't offset it. Card centers stay offsetLeft-based
+      // (scale-independent); only the unscaled container uses getBoundingClientRect.
+      const mid = caroEl.scrollLeft + innerWidth / 2 - caroEl.getBoundingClientRect().left;
       for (const c of caps()) {
         const cc = c.offsetLeft + c.offsetWidth / 2;
         const t = Math.min(1, Math.abs(cc - mid) / (c.offsetWidth * 1.2));
@@ -243,7 +254,10 @@ export function Landing({ locale }: { locale: Locale }) {
     };
     const cancelAnim = () => { if (animRAF) cancelAnimationFrame(animRAF); animRAF = null; driving = false; };
     const nearestDelta = () => {
-      const mid = caroEl.scrollLeft + caroEl.clientWidth / 2;
+      // Center on the true viewport center (innerWidth/2), derived via the container's own
+      // rect so a window scrollbar can't offset it. Card centers stay offsetLeft-based
+      // (scale-independent); only the unscaled container uses getBoundingClientRect.
+      const mid = caroEl.scrollLeft + innerWidth / 2 - caroEl.getBoundingClientRect().left;
       let best = 1e9, delta = 0;
       for (const c of caps()) { const dd = c.offsetLeft + c.offsetWidth / 2 - mid; if (Math.abs(dd) < Math.abs(best)) { best = dd; delta = dd; } }
       return delta;
@@ -397,8 +411,8 @@ export function Landing({ locale }: { locale: Locale }) {
       {/* the convergence */}
       <section className="conv" ref={conv}>
         <div className="stage">
-          {(["planner", "couple", "vendors", "guests"] as const).map((side, i) => (
-            <div key={side} className="word" data-side={side} ref={(el) => { if (el) words.current[i] = el; }} {...H(`w${side[0].toUpperCase()}${side.slice(1)}`)} />
+          {(["planner", "couple", "vendors", "guests"] as const).map((side) => (
+            <div key={side} className="word" data-side={side} {...H(`w${side[0].toUpperCase()}${side.slice(1)}`)} />
           ))}
           <div className="center" ref={center}>
             <div className="cstar" ref={cstar}><Star size={40} fill="#111111" /></div>
