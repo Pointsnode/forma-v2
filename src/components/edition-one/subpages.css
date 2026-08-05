@@ -1,0 +1,110 @@
+/* Edition One subpages (atelier, pricing, about). Page classes scoped under .ed1 so they
+   never leak; faithful to the reference CSS, with fonts mapped to the app's next/font
+   vars. Chrome (tophead/footer/menuovl/langmenu/deskpanel/fab) is reused from
+   landing.ed1.css; the .ed1.subpage overrides below make the header sticky-from-load and
+   the concierge floater always visible (no docking on the subpages). */
+
+/* static chrome: header sticky + visible, floater always on */
+.ed1.subpage .tophead { position: sticky; top: 0; opacity: 1; pointer-events: auto; }
+.ed1.subpage .fab { opacity: 1; pointer-events: auto; transform: none; }
+
+.ed1 h3 { font-family: var(--font-playfair), Georgia, serif; font-weight: 400; color: #111111; }
+
+.ed1 .pagehead { max-width: 760px; margin: 0 auto; text-align: center; padding: 110px 32px 80px; }
+.ed1 .pagehead h1 { font-size: clamp(42px, 5vw, 68px); line-height: 1.08; margin: 26px 0 20px; }
+.ed1 .pagehead p { font-size: 16.5px; line-height: 1.7; max-width: 32em; margin: 0 auto; }
+
+.ed1 main { max-width: 1120px; margin: 0 auto; padding: 0 40px; }
+.ed1 .scene { display: grid; grid-template-columns: 5fr 7fr; gap: 64px; align-items: center; padding: 90px 0; border-top: 1px solid #E4DFD3; }
+.ed1 .scene.flip .copy { order: 2; }
+.ed1 .scene.flip .show { order: 1; }
+.ed1 .scene h2 { font-size: clamp(30px, 3.2vw, 44px); line-height: 1.14; margin: 20px 0 16px; }
+.ed1 .scene p { font-size: 15.5px; line-height: 1.7; max-width: 26em; }
+
+.ed1 .sheet { background: #F5F2EB; border: 1px solid #E4DFD3; }
+.ed1 .sheetbar { display: flex; align-items: center; gap: 9px; padding: 11px 18px; border-bottom: 1px solid #E4DFD3; font-size: 10.5px; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: #6B655B; }
+.ed1 .pad { padding: 24px 26px; }
+.ed1 .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 2px; border-bottom: 1px solid #E4DFD3; font-size: 14px; color: #111111; }
+.ed1 .row:last-child { border-bottom: none; }
+.ed1 .row .m { color: #6B655B; font-size: 12.5px; }
+.ed1 .chip { font-size: 10.5px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; padding: 5px 10px; }
+.ed1 .chip.teal { background: #2F5552; color: #F5F2EB; }
+.ed1 .chip.line { border: 1px solid #E4DFD3; color: #6B655B; }
+.ed1 .btn { display: inline-block; background: #111111; color: #F5F2EB; font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; padding: 12px 22px; border: none; }
+.ed1 .steps { display: flex; }
+.ed1 .steps .st { flex: 1; padding: 22px 20px; border-right: 1px solid #E4DFD3; }
+.ed1 .steps .st:last-child { border-right: none; }
+.ed1 .steps .n { font-size: 11px; letter-spacing: .2em; color: #8A7557; margin-bottom: 9px; }
+.ed1 .steps .t { font-size: 15px; color: #111111; margin-bottom: 6px; }
+.ed1 .steps .d { font-size: 12.5px; color: #6B655B; line-height: 1.5; }
+.ed1 .phone { width: 290px; border: 1px solid #E4DFD3; margin: 0 auto; background: #F5F2EB; }
+.ed1 .phone .screen { padding: 20px 18px; }
+.ed1 .bar { height: 8px; background: #E4DFD3; position: relative; margin: 10px 0 4px; }
+.ed1 .bar .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 62%; background: #2F5552; }
+.ed1 .cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.ed1 .wcard { background: #F5F2EB; border: 1px solid #E4DFD3; padding: 15px 14px; }
+.ed1 .wcard .nm { font-family: var(--font-playfair), Georgia, serif; font-size: 17px; color: #111111; }
+.ed1 .wcard .dt { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: #8A7557; margin: 6px 0 9px; }
+.ed1 .wcard .st { font-size: 11px; color: #6B655B; }
+.ed1 .wcard .ok { color: #2F5552; font-weight: 500; }
+
+.ed1 .compare { padding: 100px 0 90px; border-top: 1px solid #E4DFD3; }
+.ed1 .compare .head { text-align: center; max-width: 640px; margin: 0 auto 56px; }
+.ed1 .compare h2 { font-size: clamp(32px, 3.6vw, 48px); line-height: 1.12; margin: 22px 0 14px; }
+.ed1 .compare p { font-size: 15px; line-height: 1.7; color: #6B655B; }
+.ed1 table { width: 100%; border-collapse: collapse; }
+.ed1 th, .ed1 td { padding: 15px 16px; border-bottom: 1px solid #E4DFD3; font-size: 14px; text-align: center; }
+.ed1 th { font-size: 11px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: #8A7557; padding-bottom: 12px; }
+.ed1 td:first-child, .ed1 th:first-child { text-align: left; color: #111111; }
+.ed1 td .no { color: #6B655B; opacity: .55; }
+.ed1 td .note { display: block; font-size: 11px; color: #6B655B; margin-top: 3px; }
+.ed1 th.f { color: #111111; }
+.ed1 .compare .fine { margin-top: 26px; text-align: center; font-size: 12.5px; color: #6B655B; }
+
+.ed1 .prices { display: grid; grid-template-columns: 1fr 1fr 1fr; border: 1px solid #E4DFD3; margin-top: 20px; }
+.ed1 .price { padding: 44px 40px; border-right: 1px solid #E4DFD3; }
+.ed1 .price:last-child { border-right: none; }
+.ed1 .price .amt { font-family: var(--font-playfair), Georgia, serif; font-size: 56px; color: #111111; }
+.ed1 .price .amt span { font-size: 20px; vertical-align: 26px; }
+.ed1 .price .who { font-size: 11px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: #8A7557; margin: 12px 0 10px; }
+.ed1 .price .note { font-size: 13.5px; color: #6B655B; line-height: 1.6; }
+.ed1 .included { max-width: 760px; margin: 90px auto 0; text-align: center; }
+.ed1 .included h2 { font-size: clamp(28px, 3vw, 40px); margin-bottom: 36px; }
+.ed1 .inc { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px 34px; }
+.ed1 .inc span { display: flex; align-items: center; gap: 9px; font-size: 14px; color: #3B3833; }
+.ed1 .faq { max-width: 760px; margin: 100px auto 0; border-top: 1px solid #E4DFD3; }
+.ed1 .qa { padding: 28px 6px; border-bottom: 1px solid #E4DFD3; }
+.ed1 .qa .q { font-family: var(--font-playfair), Georgia, serif; font-size: 21px; color: #111111; margin-bottom: 8px; }
+.ed1 .qa .a { font-size: 14.5px; line-height: 1.65; color: #3B3833; }
+.ed1 .capnote { text-align: center; font-size: 12.5px; color: #6B655B; margin: 26px auto 0; max-width: 40em; }
+.ed1 .trial { text-align: center; margin-top: 54px; font-size: 13px; letter-spacing: .05em; color: #6B655B; }
+
+.ed1 .envelope { background: #8A7557; padding: 100px 32px; margin-top: 100px; }
+.ed1 .envelope .in2 { max-width: 680px; margin: 0 auto; text-align: center; }
+.ed1 .envelope h2 { color: #F5F2EB; font-size: clamp(28px, 3.2vw, 42px); line-height: 1.18; margin: 22px 0 18px; }
+.ed1 .envelope p { color: #D7C3A5; font-size: 15px; line-height: 1.75; }
+.ed1 .principles { max-width: 820px; margin: 0 auto; padding: 100px 32px; }
+.ed1 .principles .rowp { display: grid; grid-template-columns: 280px 1fr; gap: 32px; align-items: baseline; padding: 30px 4px; border-bottom: 1px solid #E4DFD3; }
+.ed1 .principles .rowp:first-child { border-top: 1px solid #E4DFD3; }
+.ed1 .principles .who { font-family: var(--font-playfair), Georgia, serif; font-size: 25px; color: #111111; display: flex; gap: 13px; align-items: center; }
+.ed1 .principles .what { font-size: 14.5px; line-height: 1.65; }
+
+/* subpage close variant + footer wordmark/button (footer base comes from landing.ed1.css) */
+.ed1.subpage .close { padding: 110px 32px; margin-top: 110px; }
+.ed1.subpage .close h2 { font-size: clamp(38px, 4.6vw, 60px); margin: 30px 0 36px; }
+.ed1 footer .cwm { font-family: var(--font-playfair), Georgia, serif; color: #F5F2EB; font-size: 29px; display: inline-block; margin-top: 12px; text-decoration: none; }
+.ed1 footer .cwm i { font-style: italic; }
+.ed1 footer .row2 button { color: #F5F2EB; opacity: .66; font-size: 12.5px; letter-spacing: .06em; background: none; border: none; cursor: pointer; font-family: var(--font-inter), system-ui, sans-serif; padding: 0; }
+.ed1 footer .row2 button:hover { opacity: 1; }
+
+@media (max-width: 900px) {
+  .ed1 .scene { grid-template-columns: 1fr; gap: 40px; }
+  .ed1 .scene.flip .copy { order: 1; }
+  .ed1 .scene.flip .show { order: 2; }
+  .ed1 .prices { grid-template-columns: 1fr; }
+  .ed1 .price { border-right: none; border-bottom: 1px solid #E4DFD3; }
+  .ed1 .principles .rowp { grid-template-columns: 1fr; gap: 8px; }
+  .ed1 main { padding: 0 24px; }
+  .ed1 table { font-size: 12px; }
+  .ed1 th, .ed1 td { padding: 11px 6px; }
+}

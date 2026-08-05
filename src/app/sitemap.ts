@@ -15,6 +15,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const paths = [
     "/", // the landing (M12) — the page search engines should index first
+    "/atelier",
+    "/pricing",
+    "/about",
     "/planners",
     ...[...new Set(regions.map((r) => slugifyRegion(r.region)))].filter(Boolean).map((r) => `/planners/${r}`),
     ...slugs.map((s) => `/p/${s}`),
