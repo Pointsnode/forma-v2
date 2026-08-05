@@ -92,7 +92,7 @@ export async function loadCalendar(supabase: SupabaseClient, displayTz?: string)
       id: `w-${e.id}`,
       species: "wedding",
       date: e.event_date,
-      title: couple ? `${couple} — ${e.label}` : e.label,
+      title: couple ? `${couple} · ${e.label}` : e.label,
       weddingId: e.wedding_id,
       eventId: e.id,
       tag: initials(couple),

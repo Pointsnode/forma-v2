@@ -6,7 +6,7 @@ import { cx } from "@/components/ui";
 import { toggleInvited } from "@/app/[locale]/(app)/wedding/[id]/guest-actions";
 
 type Row = { guest_id: string; full_name: string; invited: boolean; rsvp_status: string };
-const RSVP_TONE: Record<string, string> = { yes: "text-sage-ink", no: "text-wine", maybe: "text-taupe", pending: "text-muted" };
+const RSVP_TONE: Record<string, string> = { yes: "text-teal", no: "text-wine", maybe: "text-taupe", pending: "text-muted" };
 
 export function EventPruning({ weddingId, eventId, rows, readOnly }: { weddingId: string; eventId: string; rows: Row[]; readOnly: boolean }) {
   const t = useTranslations("guests");
@@ -30,7 +30,7 @@ function PruneRow({ weddingId, eventId, row, readOnly }: { weddingId: string; ev
         <button
           disabled={pending}
           onClick={() => start(async () => { const next = !invited; setInvited(next); await toggleInvited(eventId, row.guest_id, weddingId, next); })}
-          className={cx("shrink-0 rounded-full px-3 py-1 text-[12.5px]", invited ? "bg-ink text-bone" : "bg-bone text-muted shadow-card")}
+          className={cx("shrink-0 rounded-[var(--radius)] px-3 py-1 text-[12.5px]", invited ? "bg-ink text-bone" : "bg-bone text-muted")}
         >
           {t("invitedToggle")}
         </button>

@@ -58,7 +58,7 @@ export async function loadStudioContracts(supabase: SupabaseClient): Promise<Stu
   }
 
   const rows = contracts.map((c) => ({
-    id: c.id, weddingId: c.wedding_id, weddingName: c.weddings?.couple_display ?? "—",
+    id: c.id, weddingId: c.wedding_id, weddingName: c.weddings?.couple_display ?? "·",
     coupleInitials: initials(c.weddings?.couple_display ?? ""), title: c.title, kind: c.kind, status: c.status,
     blockingTitle: c.blocking_proposal_id ? blockTitles.get(c.blocking_proposal_id) ?? null : null,
     signers: signersBy.get(c.id) ?? [],

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button, cx } from "@/components/ui";
 import { createVendor, uploadVendorMedia, presentVendor, type VendorResult } from "@/app/[locale]/(app)/(studio)/vendors/actions";
 
-const input = "w-full rounded-xl bg-bone px-3.5 py-2.5 text-[14px] text-ink shadow-card outline-none focus:shadow-lift";
+const input = "w-full rounded-[var(--radius)] border border-hairline bg-bone px-3.5 py-2.5 text-[14px] text-ink outline-none focus:border-ink";
 const mlbl = "mt-4 block text-[10.5px] uppercase tracking-[0.14em] text-muted";
 const KINDS = ["venue", "catering", "florals", "music", "photo_video", "beauty", "decor", "rentals", "other"] as const;
 const kindKey = (k: string) => `kind${k.charAt(0).toUpperCase()}${k.slice(1)}`;
@@ -50,7 +50,7 @@ export function MediaUpload({ vendorId, kind }: { vendorId: string; kind: "photo
     <form action={action} className="flex items-center gap-2">
       <input type="file" name="file" required accept={kind === "photo" ? "image/*" : "image/*,application/pdf"} className="text-[13px]" />
       {kind === "file" ? (
-        <select name="label" className="rounded-lg bg-bone px-2 py-1.5 text-[13px] shadow-card outline-none">
+        <select name="label" className="rounded-[var(--radius)] bg-bone px-2 py-1.5 text-[13px] outline-none">
           {["packet", "rates", "menu", "other"].map((l) => <option key={l} value={l}>{t(`label${l.charAt(0).toUpperCase()}${l.slice(1)}`)}</option>)}
         </select>
       ) : null}
@@ -101,7 +101,7 @@ export function PresentForm({ vendorKind, weddingId, events, onDone, doPresent }
               const on = selEvents.includes(e.id);
               return (
                 <button key={e.id} type="button" onClick={() => setSelEvents(on ? selEvents.filter((x) => x !== e.id) : [...selEvents, e.id])}
-                  className={cx("rounded-full px-3.5 py-1.5 text-[12px]", on ? "bg-ink text-bone" : "bg-sand-soft text-ink-soft")}>{e.label}</button>
+                  className={cx("rounded-[var(--radius)] px-3.5 py-1.5 text-[12px]", on ? "bg-ink text-bone" : "bg-bone text-ink-soft")}>{e.label}</button>
               );
             })}
           </div>
@@ -111,14 +111,14 @@ export function PresentForm({ vendorKind, weddingId, events, onDone, doPresent }
       ) : null}
 
       <label className={mlbl}>{t("estimate")}</label>
-      <input value={estimate} onChange={(e) => setEstimate(e.target.value)} inputMode="numeric" className={cx(input, "mt-1.5")} placeholder="$ —" />
+      <input value={estimate} onChange={(e) => setEstimate(e.target.value)} inputMode="numeric" className={cx(input, "mt-1.5")} placeholder="$ ·" />
       <label className={mlbl}>{t("note")}</label>
       <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className={cx(input, "mt-1.5 min-h-16 resize-y")} />
 
       {err ? <p className="mt-2 text-[13px] text-wine">{err}</p> : null}
       <div className="mt-5 flex justify-end gap-2.5">
         <button type="button" onClick={submit} disabled={pending || !weddingId}
-          className="inline-flex items-center justify-center rounded-full bg-wine px-5 py-2.5 text-[14px] font-medium text-bone transition-opacity hover:opacity-90 disabled:opacity-50">{t("confirmSend")}</button>
+          className="inline-flex items-center justify-center rounded-[var(--radius)] bg-wine px-5 py-2.5 text-[14px] font-medium text-bone transition-opacity hover:opacity-90 disabled:opacity-50">{t("confirmSend")}</button>
       </div>
     </div>
   );
@@ -144,7 +144,7 @@ export function PresentModal({ vendorId, vendorName, vendorKind, weddings }: { v
       {open ? (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
           <button aria-hidden className="absolute inset-0 cursor-default bg-[rgba(21,18,16,0.55)]" onClick={() => setOpen(false)} />
-          <div className="relative w-full max-w-[530px] rounded-[18px] bg-paper p-7 shadow-hero">
+          <div className="relative w-full max-w-[530px] rounded-[var(--radius)] bg-bone p-7">
             <h3 className="font-display text-[23px] text-ink">{t("presentVendor", { vendor: vendorName })}</h3>
             <p className="mb-2 mt-0.5 font-accent text-[15px] italic text-taupe">{t("presentSub")}</p>
             <label className={mlbl}>{t("pickWedding")}</label>
@@ -156,7 +156,7 @@ export function PresentModal({ vendorId, vendorName, vendorKind, weddings }: { v
           </div>
         </div>
       ) : null}
-      {toast ? <div className="fixed bottom-16 left-1/2 z-[95] w-max max-w-[92vw] -translate-x-1/2 rounded-full bg-ink px-6 py-3 text-center text-[12.5px] text-bone shadow-hero">{toast}</div> : null}
+      {toast ? <div className="fixed bottom-16 left-1/2 z-[95] w-max max-w-[92vw] -translate-x-1/2 rounded-[var(--radius)] bg-ink px-6 py-3 text-center text-[12.5px] text-bone">{toast}</div> : null}
     </>
   );
 }

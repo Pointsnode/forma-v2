@@ -52,12 +52,12 @@ export function PhotoFrame({
 }) {
   const url = publicImageUrl(path);
   return (
-    <div className={cx("relative overflow-hidden bg-sand-soft", className)}>
+    <div className={cx("relative overflow-hidden bg-bone", className)}>
       {url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={url} alt={alt} sizes={sizes} loading={priority ? "eager" : "lazy"} className="absolute inset-0 h-full w-full object-cover" />
       ) : (
-        <div className="absolute inset-0 flex items-center justify-center bg-[linear-gradient(135deg,var(--color-sand-soft),var(--color-sand))]">
+        <div className="absolute inset-0 flex items-center justify-center bg-[linear-gradient(135deg,var(--color-bone),var(--color-champagne))]">
           <span className="font-accent text-[15%] italic leading-none text-taupe/70">{initials}</span>
         </div>
       )}
@@ -78,7 +78,7 @@ export function PlannerCard({ card, locale }: { card: DirectoryCard; locale: Loc
         path={card.profile.hero}
         alt={card.name}
         initials={toInitials(card.name)}
-        className="aspect-[4/5] w-full rounded-[14px] shadow-card transition-shadow group-hover:shadow-lift"
+        className="aspect-[4/5] w-full rounded-[var(--radius)]"
         sizes="(max-width: 768px) 100vw, 33vw"
       />
       <div className="mt-3.5">

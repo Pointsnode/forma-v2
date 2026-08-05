@@ -34,13 +34,13 @@ function CoupleProposalCard({ weddingId, p }: { weddingId: string; p: ViewPropos
   }
 
   return (
-    <div className="rounded-2xl bg-paper p-4 shadow-card">
+    <div className="rounded-[var(--radius)] bg-bone p-4">
       <button onClick={toggle} className="flex w-full items-start gap-3 text-left">
         <span className="min-w-0 flex-1">
           <span className="block font-medium text-[15px] text-ink">{p.title}</span>
           {meta ? <span className="block font-accent text-[13.5px] text-muted">{meta}</span> : null}
         </span>
-        <span className={cx("shrink-0 rounded-full px-2.5 py-1 text-[11.5px]", statusClass(p.status))}>{tp(`status.${p.status}`)}</span>
+        <span className={cx("shrink-0 rounded-[var(--radius)] px-2.5 py-1 text-[11.5px]", statusClass(p.status))}>{tp(`status.${p.status}`)}</span>
       </button>
 
       {open ? (
@@ -49,10 +49,10 @@ function CoupleProposalCard({ weddingId, p }: { weddingId: string; p: ViewPropos
           <div className="flex flex-col gap-2.5">
             {p.messages.map((m) => (
               <div key={m.id} className="flex gap-2.5">
-                <span className={cx("flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9px] font-semibold", m.isCouple ? "bg-wine text-bone" : "bg-sand text-ink")}>
+                <span className={cx("flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius)] text-[9px] font-semibold", m.isCouple ? "bg-wine text-bone" : "bg-champagne text-ink")}>
                   {m.authorInitials}
                 </span>
-                <div className="rounded-xl bg-bone px-3 py-2 text-[13px] text-ink">
+                <div className="rounded-[var(--radius)] bg-bone px-3 py-2 text-[13px] text-ink">
                   <div className="mb-0.5 text-[11px] font-semibold text-taupe">{m.authorName}</div>
                   {m.body}
                 </div>
@@ -65,7 +65,7 @@ function CoupleProposalCard({ weddingId, p }: { weddingId: string; p: ViewPropos
               {changing ? (
                 <>
                   <textarea value={msg} onChange={(e) => setMsg(e.target.value)} rows={2} placeholder={t("changePlaceholder")}
-                    className="w-full rounded-xl bg-bone px-3 py-2 text-[13.5px] text-ink shadow-card outline-none focus:shadow-lift" />
+                    className="w-full rounded-[var(--radius)] bg-bone px-3 py-2 text-[13.5px] text-ink outline-none" />
                   <div className="flex gap-2">
                     <Button onClick={() => { if (msg.trim()) run(() => respondProposal(weddingId, p.id, "request_change", msg.trim())); }} disabled={pending || !msg.trim()}>
                       {t("requestChange")}
@@ -93,7 +93,7 @@ function CoupleProposalCard({ weddingId, p }: { weddingId: string; p: ViewPropos
           ) : (
             <div className="mt-3 flex gap-2">
               <input value={reply} onChange={(e) => setReply(e.target.value)} placeholder={tp("composer")}
-                className="flex-1 rounded-xl bg-bone px-3 py-2 text-[13.5px] text-ink shadow-card outline-none focus:shadow-lift" />
+                className="flex-1 rounded-[var(--radius)] bg-bone px-3 py-2 text-[13.5px] text-ink outline-none" />
               <Button onClick={() => { if (reply.trim()) run(() => postMessage(weddingId, p.id, reply.trim()), () => setReply("")); }} disabled={pending || !reply.trim()}>
                 {t("reply")}
               </Button>
@@ -114,7 +114,7 @@ export function DecisionInbox({ weddingId, inCourt, settled }: { weddingId: stri
         <p className="font-accent text-[16px] text-muted">{t("inboxHint")}</p>
       </div>
       {inCourt.length === 0 ? (
-        <div className="rounded-2xl bg-paper p-8 text-center shadow-card">
+        <div className="rounded-[var(--radius)] bg-bone p-8 text-center">
           <p className="font-accent text-[17px] text-ink">{t("empty")}</p>
           <p className="mt-1 font-accent text-[14.5px] text-muted">{t("emptyHint")}</p>
         </div>

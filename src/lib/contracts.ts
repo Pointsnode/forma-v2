@@ -53,7 +53,7 @@ export async function resolveMergeFields(
       case "vendor_contact": out[f.field_key] = [vendor?.contact_name, vendor?.contact_email].filter(Boolean).join(" · "); break;
       case "venue_restrictions": out[f.field_key] = vendor?.restrictions ?? ""; break;
       case "event_ref": out[f.field_key] = events.join(", "); break;
-      case "quote_amount": out[f.field_key] = formatMoney(quoteAmt, locale) ?? "—"; break;
+      case "quote_amount": out[f.field_key] = formatMoney(quoteAmt, locale) ?? "·"; break;
       case "ledger_schedule": out[f.field_key] = (ledger ?? []).map((l: { title: string; amount: number }) => `${l.title}: ${formatMoney(l.amount, locale)}`).join(" · "); break;
       default: break; // manual
     }

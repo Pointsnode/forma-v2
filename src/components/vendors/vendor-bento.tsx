@@ -62,7 +62,7 @@ export function VendorBento({ vendors }: { vendors: VendorCard[] }) {
   return (
     <Bento>
       {featured ? (
-        <div className="flex flex-col overflow-hidden rounded-2xl bg-paper shadow-card md:col-span-2">
+        <div className="flex flex-col overflow-hidden rounded-[var(--radius)] bg-bone md:col-span-2">
           <Link href={profileHref(featured)} className="block">{hero(featured, heroToneAt(0), 22)}</Link>
           <div className="flex flex-1 flex-col p-5">
             {desc(featured)}
@@ -90,7 +90,7 @@ export function VendorBento({ vendors }: { vendors: VendorCard[] }) {
       ) : null}
 
       {rest.map((v, i) => (
-        <div key={v.id} className="group flex flex-col overflow-hidden rounded-2xl bg-paper shadow-card transition-shadow hover:shadow-lift">
+        <div key={v.id} className="group flex flex-col overflow-hidden rounded-[var(--radius)] bg-bone transition-shadow">
           <Link href={profileHref(v)} className="block">{hero(v, heroToneAt(i + 1), 18)}</Link>
           <div className="flex flex-1 flex-col p-4">
             {desc(v)}

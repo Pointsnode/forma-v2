@@ -49,11 +49,11 @@ export async function VendorProfile({ id }: { id: string }) {
         <div className="flex gap-2 overflow-x-auto">
           {photos.map((p) => p.url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img key={p.id} src={p.url} alt={p.caption ?? vendor.name} className="h-40 w-56 shrink-0 rounded-xl object-cover shadow-card" />
+            <img key={p.id} src={p.url} alt={p.caption ?? vendor.name} className="h-40 w-56 shrink-0 rounded-[var(--radius)] object-cover" />
           ) : null)}
         </div>
       ) : (
-        <div className="flex h-40 items-end rounded-xl p-4 text-[rgba(255,253,249,0.95)] shadow-card" style={{ background: heroTone(vendor.id) }}>
+        <div className="flex h-40 items-end rounded-[var(--radius)] p-4 text-[rgba(255,253,249,0.95)]" style={{ background: heroTone(vendor.id) }}>
           <BentoBig size={24}>{vendor.name}</BentoBig>
         </div>
       )}

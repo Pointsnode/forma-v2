@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { RsvpForm } from "./rsvp-form";
 import { formatDateRange } from "@/lib/wedding";
+import { Wordmark } from "@/components/ui";
 
 type LookupPayload = {
   guest: { full_name: string; plus_one_allowed: boolean; plus_one_name: string | null; dietary: string | null };
@@ -14,7 +15,7 @@ type LookupPayload = {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-paper px-5 py-12">
+    <div className="min-h-screen bg-bone px-5 py-12">
       <div className="mx-auto max-w-md">{children}</div>
     </div>
   );
@@ -48,7 +49,7 @@ export default async function RsvpPage({
   return (
     <Shell>
       <div className="mb-6">
-        <p className="mb-1 text-[12px] font-medium uppercase tracking-[0.18em] text-muted">Forma</p>
+        <Wordmark size={15} className="mb-1 block" />
         <h1 className="font-display text-[30px] leading-tight text-ink">{payload.wedding.couple_display}</h1>
         <p className="mt-1 font-accent text-[16px] text-taupe">
           {[range, payload.wedding.location_city].filter(Boolean).join(" · ")}
@@ -56,7 +57,7 @@ export default async function RsvpPage({
       </div>
 
       {!payload.open ? (
-        <div className="rounded-2xl bg-bone p-6 shadow-card">
+        <div className="rounded-[var(--radius)] bg-bone p-6">
           <p className="mb-1 font-display text-[20px] text-ink">{payload.closed_reason === "expired" ? t("expiredTitle") : t("closedTitle")}</p>
           <p className="font-accent text-[15.5px] text-muted">{payload.closed_reason === "expired" ? t("expiredBody") : t("closedBody")}</p>
         </div>

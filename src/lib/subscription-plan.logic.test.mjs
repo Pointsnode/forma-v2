@@ -49,7 +49,7 @@ assert.equal(mapSubStatus("something_new"), "incomplete");
   const { setQty, add, remove } = reconcileItems(existing, 2, 1, PRICES);
   assert.deepEqual(setQty, [{ id: "si_add", quantity: 1 }], "additional corrected 2→1");
   assert.deepEqual(remove, [], "nothing removed");
-  assert.deepEqual(add, [{ amountCents: 1500, quantity: 1, name: "Forma — Concierge seat" }], "concierge added");
+  assert.deepEqual(add, [{ amountCents: 1500, quantity: 1, name: "Forma · Concierge seat" }], "concierge added");
 }
 {
   // live sub: admin + additional + concierge. Roster shrinks to solo (accounts 1, concierge 0).

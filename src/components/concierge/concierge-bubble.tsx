@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname, Link } from "@/i18n/navigation";
+import { DomainStar } from "@/components/ui";
 
 type DraftCard = { kind: string; id: string; title: string };
 type ActionCard = { messageId: string; fn: string; summary: string; heading?: string; status: "pending" | "approved" | "dismissed" | "failed"; error?: string };
@@ -151,7 +152,7 @@ export function ConciergeBubble({ weddings, usage: usage0, initialPending = 0 }:
   return (
     <div className="fixed bottom-5 right-5 z-[60] flex flex-col items-end gap-3 print:hidden">
       {open ? (
-        <section className="flex h-[600px] max-h-[calc(100vh-7rem)] w-[420px] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-2xl bg-paper shadow-lift">
+        <section className="flex h-[600px] max-h-[calc(100vh-7rem)] w-[420px] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-[var(--radius)] bg-bone border border-hairline">
           <header className="flex items-center gap-2 border-b border-hairline px-4 py-3">
             <Glyph />
             <div className="min-w-0 flex-1">
@@ -159,17 +160,17 @@ export function ConciergeBubble({ weddings, usage: usage0, initialPending = 0 }:
               <p className="truncate text-[11.5px] text-muted">{scopeName ? t("scopedHint") : t("orchestratorHint")}</p>
             </div>
             {convo.threads.length > 0 || convo.messages.length > 0 ? (
-              <button onClick={() => setConvo((c) => ({ ...c, threadId: null, messages: [] }))} className="rounded-lg px-2 py-1 text-[12px] text-muted hover:bg-bone hover:text-ink" title={t("newThread")}>{t("newThread")}</button>
+              <button onClick={() => setConvo((c) => ({ ...c, threadId: null, messages: [] }))} className="rounded-[var(--radius)] px-2 py-1 text-[12px] text-muted hover:bg-bone hover:text-ink" title={t("newThread")}>{t("newThread")}</button>
             ) : null}
-            <button onClick={() => setOpen(false)} aria-label={t("collapse")} className="rounded-lg px-2 py-1 text-[13px] text-muted hover:bg-bone hover:text-ink">✕</button>
+            <button onClick={() => setOpen(false)} aria-label={t("collapse")} className="rounded-[var(--radius)] px-2 py-1 text-[13px] text-muted hover:bg-bone hover:text-ink">✕</button>
           </header>
 
           {convo.threads.length > 1 ? (
             <div className="flex gap-1 overflow-x-auto border-b border-hairline px-3 py-1.5">
               {convo.threads.map((th) => (
                 <button key={th.id} onClick={() => loadHistory(th.id)}
-                  className={`shrink-0 rounded-full px-2.5 py-1 text-[11.5px] ${th.id === convo.threadId ? "bg-ink text-bone" : "bg-bone text-muted hover:text-ink"}`}>
-                  {th.title || "—"}
+                  className={`shrink-0 rounded-[var(--radius)] px-2.5 py-1 text-[11.5px] ${th.id === convo.threadId ? "bg-ink text-bone" : "bg-bone text-muted hover:text-ink"}`}>
+                  {th.title || "·"}
                 </button>
               ))}
             </div>
@@ -181,13 +182,13 @@ export function ConciergeBubble({ weddings, usage: usage0, initialPending = 0 }:
             ) : convo.messages.map((m, i) => (
               <div key={i} className={m.role === "planner" ? "flex justify-end" : ""}>
                 <div className={m.role === "planner"
-                  ? "max-w-[85%] rounded-2xl rounded-br-sm bg-ink px-3.5 py-2 text-[13.5px] text-bone"
+                  ? "max-w-[85%] rounded-[var(--radius)] rounded-br-sm bg-ink px-3.5 py-2 text-[13.5px] text-bone"
                   : "max-w-[92%] text-[13.5px] leading-[1.6] text-ink-soft"}>
                   {m.content || (busy && i === convo.messages.length - 1 ? <span className="text-muted">…</span> : null)}
                   {m.draft ? (
                     <Link href={draftHref(m.draft.kind, m.draft.id, weddingId)}
-                      className="mt-2 flex items-center gap-2 rounded-xl bg-bone px-3 py-2 shadow-card hover:shadow-lift">
-                      <span className="rounded bg-paper px-1.5 py-0.5 text-[10px] uppercase tracking-[0.08em] text-muted">{t(`draftKind_${m.draft.kind}`)}</span>
+                      className="mt-2 flex items-center gap-2 rounded-[var(--radius)] bg-bone px-3 py-2">
+                      <span className="rounded bg-bone px-1.5 py-0.5 text-[10px] uppercase tracking-[0.08em] text-muted">{t(`draftKind_${m.draft.kind}`)}</span>
                       <span className="min-w-0 flex-1 truncate text-[12.5px] text-ink">{m.draft.title}</span>
                       <span className="text-[12px] text-wine">{t("openDraft")} →</span>
                     </Link>
@@ -203,8 +204,8 @@ export function ConciergeBubble({ weddings, usage: usage0, initialPending = 0 }:
               <textarea value={input} onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
                 rows={1} placeholder={t("placeholder")} disabled={busy}
-                className="max-h-24 flex-1 resize-none rounded-xl bg-bone px-3 py-2 text-[13.5px] text-ink outline-none placeholder:text-muted" />
-              <button onClick={send} disabled={busy || !input.trim()} className="rounded-xl bg-ink px-3 py-2 text-[13px] text-bone disabled:opacity-40">{t("send")}</button>
+                className="max-h-24 flex-1 resize-none rounded-[var(--radius)] bg-bone px-3 py-2 text-[13.5px] text-ink outline-none placeholder:text-muted" />
+              <button onClick={send} disabled={busy || !input.trim()} className="rounded-[var(--radius)] bg-ink px-3 py-2 text-[13px] text-bone disabled:opacity-40">{t("send")}</button>
             </div>
             <p className="mt-1.5 px-1 text-[11px] text-muted">{t("meter", { used: fmtTokens(usage.used), cap: fmtTokens(usage.cap) })}{usage.cap > 0 ? ` · ${capPct}%` : ""}</p>
           </div>
@@ -212,11 +213,11 @@ export function ConciergeBubble({ weddings, usage: usage0, initialPending = 0 }:
       ) : null}
 
       <button onClick={() => setOpen((o) => !o)}
-        className="relative flex items-center gap-2 rounded-full bg-ink px-4 py-3 text-bone shadow-lift transition-transform hover:scale-[1.03]" title={t("helper")}>
+        className="relative flex items-center gap-2 rounded-[var(--radius)] bg-ink px-4 py-3 text-bone border border-hairline-dark transition-transform hover:scale-[1.03]" title={t("helper")}>
         <Glyph />
         <span className="text-[13px] font-medium">{t("name")}</span>
         {!open && pendingTotal > 0 ? (
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-wine px-1 text-[11px] font-medium text-bone">{pendingTotal}</span>
+          <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-[var(--radius)] bg-wine px-1 text-[11px] font-medium text-bone">{pendingTotal}</span>
         ) : null}
       </button>
     </div>
@@ -224,18 +225,18 @@ export function ConciergeBubble({ weddings, usage: usage0, initialPending = 0 }:
 }
 
 function ActionCardView({ card, t, onDecide }: { card: ActionCard; t: ReturnType<typeof useTranslations>; onDecide: (id: string, d: "approve" | "dismiss") => void }) {
-  const tone = card.status === "approved" ? "border-sage bg-sage-soft" : card.status === "failed" ? "border-wine bg-[rgba(92,43,53,0.06)]" : card.status === "dismissed" ? "border-hairline bg-bone" : "border-wine bg-[rgba(92,43,53,0.06)]";
+  const tone = card.status === "approved" ? "border-teal bg-bone" : card.status === "failed" ? "border-wine bg-[rgba(92,43,53,0.06)]" : card.status === "dismissed" ? "border-hairline bg-bone" : "border-wine bg-[rgba(92,43,53,0.06)]";
   return (
-    <div className={`mt-2 rounded-xl border px-3 py-2 ${tone}`}>
+    <div className={`mt-2 rounded-[var(--radius)] border px-3 py-2 ${tone}`}>
       {card.heading ? <p className="mb-0.5 text-[11px] font-medium uppercase tracking-[0.06em] text-taupe">{card.heading}</p> : null}
       <p className="text-[12.5px] text-ink">{card.summary}</p>
       {card.status === "pending" ? (
         <div className="mt-2 flex gap-2">
-          <button onClick={() => onDecide(card.messageId, "approve")} className="rounded-lg bg-ink px-2.5 py-1 text-[12px] text-bone">{t("approve")}</button>
-          <button onClick={() => onDecide(card.messageId, "dismiss")} className="rounded-lg px-2.5 py-1 text-[12px] text-muted hover:text-ink">{t("dismiss")}</button>
+          <button onClick={() => onDecide(card.messageId, "approve")} className="rounded-[var(--radius)] bg-ink px-2.5 py-1 text-[12px] text-bone">{t("approve")}</button>
+          <button onClick={() => onDecide(card.messageId, "dismiss")} className="rounded-[var(--radius)] px-2.5 py-1 text-[12px] text-muted hover:text-ink">{t("dismiss")}</button>
         </div>
       ) : (
-        <p className={`mt-1 text-[11.5px] ${card.status === "approved" ? "text-sage-ink" : card.status === "failed" ? "text-wine" : "text-muted"}`}>
+        <p className={`mt-1 text-[11.5px] ${card.status === "approved" ? "text-teal" : card.status === "failed" ? "text-wine" : "text-muted"}`}>
           {card.status === "approved" ? t("statusApproved") : card.status === "dismissed" ? t("statusDismissed") : card.error || t("actionFailed")}
         </p>
       )}
@@ -259,6 +260,13 @@ function setAction(c: Convo, messageId: string, fn: (a: ActionCard) => ActionCar
   return { ...c, messages: c.messages.map((m) => (m.action?.messageId === messageId ? { ...m, action: fn(m.action) } : m)) };
 }
 
+// The concierge floater IS the star, everywhere (matches the landing ConciergeFloater):
+// bone 8-point DomainStar on the charcoal tile. Never rotated — a busy state pulses
+// opacity, never spins.
 function Glyph() {
-  return <span aria-hidden className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[rgba(247,244,238,0.14)] font-display text-[13px] leading-none text-bone">c</span>;
+  return (
+    <span aria-hidden className="flex shrink-0 items-center justify-center">
+      <DomainStar fill="#F5F2EB" size={22} />
+    </span>
+  );
 }

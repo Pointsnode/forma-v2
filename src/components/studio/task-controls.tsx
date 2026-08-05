@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button, cx } from "@/components/ui";
 import { addTask, toggleTask } from "@/app/[locale]/(app)/wedding/[id]/ops-actions";
 
-const input = "rounded-lg bg-bone px-2.5 py-1.5 text-[13px] shadow-card outline-none";
+const input = "rounded-[var(--radius)] border border-hairline bg-bone px-2.5 py-1.5 text-[13px] outline-none";
 
 export function AddTask({ workspaceId, weddings }: { workspaceId: string; weddings: { id: string; name: string }[] }) {
   const t = useTranslations("ops");
@@ -30,6 +30,6 @@ export function TaskToggle({ taskId, done }: { taskId: string; done: boolean }) 
   const [pending, start] = useTransition();
   return (
     <button onClick={() => start(async () => { await toggleTask(taskId, !done); })} disabled={pending}
-      className={cx("flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full text-[11px]", done ? "bg-sage text-ink" : "ring-1 ring-hairline")}>{done ? "✓" : ""}</button>
+      className={cx("flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[var(--radius)] text-[11px]", done ? "bg-teal text-ink" : "ring-1 ring-hairline")}>{done ? "✓" : ""}</button>
   );
 }

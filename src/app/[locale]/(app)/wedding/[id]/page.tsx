@@ -67,12 +67,12 @@ export default async function WeddingFloor({ params }: { params: Promise<{ local
       </div>
       <StatRow>
         <Stat value={wedding.guest_target ?? guestRollup.invited} label={tw("statGuests")} sub={guestRollup.answered ? tw("statGuestsSub", { count: guestRollup.answered }) : undefined} />
-        <Stat value={money ?? "—"} label={tw("statBudget")} />
+        <Stat value={money ?? "·"} label={tw("statBudget")} />
         {engagements.length ? (
           <Stat value={<>{booked}<span className="text-[16px] text-muted">/{engagements.length}</span></>} label={tw("statBookings")} />
         ) : null}
         <Stat
-          value={wedding.phase === "closed" ? tw("settled") : days == null ? "—" : days >= 0 ? days : tw("daysAgo", { count: -days })}
+          value={wedding.phase === "closed" ? tw("settled") : days == null ? "·" : days >= 0 ? days : tw("daysAgo", { count: -days })}
           label={tw("statDays")}
           sub={<span className="font-accent text-[14px] italic">{tp(wedding.phase)}</span>}
         />
@@ -83,7 +83,7 @@ export default async function WeddingFloor({ params }: { params: Promise<{ local
           <SectionTitle title={tprop("waiting")} accent={tprop("waitingLoop")} className="mt-0" />
           <div className="flex flex-col gap-3">
             {waiting.length === 0 ? (
-              <p className="rounded-2xl bg-paper p-6 text-center font-accent text-[16px] text-muted shadow-card">{tprop("empty")}</p>
+              <p className="rounded-[var(--radius)] bg-bone p-6 text-center font-accent text-[16px] text-muted">{tprop("empty")}</p>
             ) : (
               waiting.map((v) => <ProposalCard key={v.id} weddingId={id} p={v} />)
             )}
@@ -160,10 +160,10 @@ async function CoupleLens({
   return (
     <WeddingShell wedding={wedding} events={events} role="member" active="overview">
       <StatRow>
-        <Stat value={wedding.guest_target ?? "—"} label={tw("statGuests")} />
+        <Stat value={wedding.guest_target ?? "·"} label={tw("statGuests")} />
         <Stat value={events.length} label={tw("facts.events")} />
-        <Stat value={money ?? "—"} label={tw("statBudget")} />
-        <Stat value={days ?? "—"} label={tw("statDays")} sub={location || undefined} />
+        <Stat value={money ?? "·"} label={tw("statBudget")} />
+        <Stat value={days ?? "·"} label={tw("statDays")} sub={location || undefined} />
       </StatRow>
 
       <div className="mt-[18px]">
@@ -181,7 +181,7 @@ async function CoupleLens({
                 const hero = p.photos?.[0]?.path ? photoUrls.get(p.photos[0].path) : null;
                 return (
                   <li key={p.engagement_id} className="flex items-center gap-3 py-3 not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)]">
-                    <span className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-sand-soft">
+                    <span className="h-12 w-12 shrink-0 overflow-hidden rounded-[var(--radius)] bg-bone">
                       {hero ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={hero} alt={p.vendor_name} className="h-12 w-12 object-cover" />

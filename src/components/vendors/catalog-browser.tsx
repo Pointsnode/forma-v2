@@ -9,7 +9,7 @@ import { VendorBento } from "./vendor-bento";
 
 const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-const INPUT = "w-full rounded-xl bg-bone px-3.5 py-2.5 pr-9 text-[14px] text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-sand";
+const INPUT = "w-full rounded-[var(--radius)] bg-bone px-3.5 py-2.5 pr-9 text-[14px] text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-champagne";
 
 function ToggleChip({ label, count, active, onClick }: { label: string; count?: number; active: boolean; onClick: () => void }) {
   return (
@@ -18,7 +18,7 @@ function ToggleChip({ label, count, active, onClick }: { label: string; count?: 
       aria-pressed={active}
       onClick={onClick}
       className={cx(
-        "rounded-full px-3 py-1 text-[12.5px] transition",
+        "rounded-[var(--radius)] px-3 py-1 text-[12.5px] transition",
         active ? "bg-ink text-bone" : "border border-hairline text-muted hover:border-ink hover:text-ink",
       )}
     >
@@ -57,7 +57,7 @@ export function CatalogBrowser({ vendors, mode }: { vendors: VendorCard[]; mode:
 
   return (
     <div>
-      <div className="mb-5 flex flex-col gap-3 rounded-2xl bg-paper p-4 shadow-card">
+      <div className="mb-5 flex flex-col gap-3 rounded-[var(--radius)] bg-bone p-4">
         <div className="relative">
           <input className={INPUT} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("searchPlaceholder")} aria-label={t("searchPlaceholder")} />
           {q ? (
@@ -99,7 +99,7 @@ export function CatalogBrowser({ vendors, mode }: { vendors: VendorCard[]; mode:
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-2xl bg-paper p-10 text-center shadow-card">
+        <div className="rounded-[var(--radius)] bg-bone p-10 text-center">
           <p className="font-accent text-[17px] text-muted">{mode === "venues" ? t("filteredEmptyVenues") : t("filteredEmptyVendors")}</p>
           <button type="button" onClick={clearAll} className="mt-3 text-[13px] font-medium text-wine hover:underline hover:underline-offset-2">{t("clearAll")}</button>
         </div>

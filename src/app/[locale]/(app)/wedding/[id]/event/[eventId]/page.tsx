@@ -79,7 +79,7 @@ export default async function EventPage({
     .order("invited", { ascending: false });
   const eventGuests = (egData ?? []).map((r) => {
     const g = r as unknown as { guest_id: string; invited: boolean; rsvp_status: string; guests: { full_name: string } | null };
-    return { guest_id: g.guest_id, full_name: g.guests?.full_name ?? "—", invited: g.invited, rsvp_status: g.rsvp_status };
+    return { guest_id: g.guest_id, full_name: g.guests?.full_name ?? "·", invited: g.invited, rsvp_status: g.rsvp_status };
   });
 
   return (
@@ -99,9 +99,9 @@ export default async function EventPage({
       <StatRow>
         <Stat value={te(`kinds.${event.kind}`)} label={te("kind")} />
         <Stat value={event.event_date ?? te("undated")} label={te("date")} />
-        <Stat value={times || "—"} label={`${te("startTime")} – ${te("endTime")}`} />
-        <Stat value={n != null ? te("dayN", { n }) : "—"} label={te("day")} />
-        <Stat value={event.guest_target ?? "—"} label={te("guestTarget")} />
+        <Stat value={times || "·"} label={`${te("startTime")} – ${te("endTime")}`} />
+        <Stat value={n != null ? te("dayN", { n }) : "·"} label={te("day")} />
+        <Stat value={event.guest_target ?? "·"} label={te("guestTarget")} />
         {slice ? <Stat value={slice} label={te("slice")} /> : null}
       </StatRow>
 
@@ -144,9 +144,9 @@ export default async function EventPage({
               <Heading className="mb-2 text-[18px]">{te("slice")}</Heading>
               {budgetLines.map((l) => (
                 <div key={l.id} className="flex items-center gap-3 py-2 not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)]">
-                  <div className="min-w-0 flex-1"><p className="text-[13.5px] text-ink">{l.title}</p>{l.vendor ? <span className="mr-1 mt-[3px] inline-block rounded-full bg-sand-soft px-[9px] py-[2px] text-[10.5px] text-taupe">{l.vendor}</span> : null}</div>
+                  <div className="min-w-0 flex-1"><p className="text-[13.5px] text-ink">{l.title}</p>{l.vendor ? <span className="mr-1 mt-[3px] inline-block rounded-[var(--radius)] bg-bone px-[9px] py-[2px] text-[10.5px] text-taupe">{l.vendor}</span> : null}</div>
                   <span className="font-medium text-[13.5px] text-ink">{formatMoney(l.amount, lang)}</span>
-                  <span className="rounded-full bg-sand-soft px-2.5 py-[3px] text-[11px] text-taupe">{tm(`status_${l.status}`)}</span>
+                  <span className="rounded-[var(--radius)] bg-bone px-2.5 py-[3px] text-[11px] text-taupe">{tm(`status_${l.status}`)}</span>
                 </div>
               ))}
             </Card>

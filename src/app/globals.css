@@ -1,74 +1,51 @@
 @import "tailwindcss";
 
-/* Forma v2 tokens — extracted from the canonical prototype + Brand Kit.
-   Neutral #121212 ink on bone/paper. Status accents: sand/taupe/wine/maroon/
-   sage. Borderless surfaces on soft shadow. No gradients anywhere. */
+/* Forma — Edition One tokens (phase 2 foundation). Charcoal #111111 on bone #F5F2EB.
+   Four domain colors (money teal, time champagne, people taupe, places = photography,
+   never tinted), used only in domain stars + at most one working element per row.
+   Status color lives ONLY in chips. No gradients, no shadows, one radius. */
 @theme {
-  --color-ink: #0F0F0E;
-  --color-ink-soft: #2a2a2a;
-  --color-char: #1C1C1B;      /* raised surfaces on ink (cards, sheets) */
-  --color-graphite: #3A3A38;  /* body copy on bone */
-  --color-ash: #8A8880;       /* labels, captions, hairline text */
-  --color-bone: #F3EFE7;
-  --color-paper: #FAF8F3;
-  --color-muted: var(--color-ash); /* muted is now an alias of ash (back-compat) */
-  --color-hairline: #eae6dc;
-  --color-hairline-dark: #2c2c2c;
-  --color-sand: #d8c7b0;
-  --color-sand-soft: #efe7d9;
-  --color-taupe: #7a6a50;
-  --color-wine: #7e3b41;
-  --color-wine-soft: #f1e4e4;
-  --color-maroon: #3a1a20;
-  --color-sage: #8fa487;
-  --color-sage-soft: #e7ece2;
-  --color-sage-ink: #4e6147;
+  --color-ink: #111111;        /* charcoal (name kept for back-compat) */
+  --color-ink-soft: #1C1C1B;   /* raised charcoal (rarely used) */
+  --color-char: #1C1C1B;
+  --color-bone: #F5F2EB;
+  --color-hairline: #E4DFD3;
+  --color-hairline-dark: rgba(245, 242, 235, 0.16); /* bone-alpha hairline on charcoal */
+  --color-graphite: #3B3833;   /* body copy on bone */
+  --color-ash: #6B655B;        /* meta / labels / captions */
+  --color-muted: var(--color-ash);
+
+  /* Edition One accents */
+  --color-champagne: #D7C3A5;  /* the time domain */
+  --color-taupe: #8A7557;      /* the people domain (was #7a6a50) */
+  --color-wine: #6E353B;       /* primary action + attention chips */
+  --color-oxblood: #44161F;    /* one dose per screen (the concierge card) */
+  --color-teal: #2F5552;       /* the money domain + settled chips */
+
+  /* Retired identities (sand/sand-soft, sage/sage-soft/sage-ink, wine-soft, maroon) were
+     aliased here during the foundation, then every call site was migrated to its Edition
+     One value (sand→champagne, -softs→bone, sage/sage-ink→teal, maroon→oxblood) and the
+     aliases deleted. Grep for these names across src/ now comes back clean. */
 
   --font-display: var(--font-playfair), Georgia, serif;
   --font-sans: var(--font-inter), system-ui, sans-serif;
   --font-accent: var(--font-cormorant), Georgia, serif;
 
-  --shadow-card: 0 1px 2px rgba(18, 18, 18, 0.04), 0 12px 32px rgba(18, 18, 18, 0.05);
-  --shadow-lift: 0 2px 6px rgba(18, 18, 18, 0.08), 0 16px 38px rgba(18, 18, 18, 0.09);
-  --shadow-hero: 0 14px 44px rgba(21, 18, 16, 0.22);
+  /* The Soft corner system: exactly one radius on every drawn control/container.
+     Full-bleed bands have no corners; thin progress bars may round their ends at 2px. */
+  --radius: 4px;
+
+  /* No shadows anywhere after Edition One. Tokens kept as `none` so any lingering
+     shadow-* utility resolves to nothing rather than breaking the build. */
+  --shadow-card: none;
+  --shadow-lift: none;
+  --shadow-hero: none;
 }
 
 html, body { height: 100%; }
 body {
-  /* Bone page, paper surfaces — matching the prototype: cards sit a shade
-     lighter than the ground, which is what gives them their float. */
   background: var(--color-bone);
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
-
-/* ── Brand scope (landing only) ────────────────────────────────────────────────
-   Applied to the landing root. Remaps the font tokens onto the brand faces so the
-   Tailwind font-display/-accent/-sans utilities render Hosgura + Instrument Sans —
-   while every studio/app surface keeps the global tokens untouched (resolution 2).
-   Colour corrections are global (token level); only the FONTS are scoped here. */
-.brand {
-  --font-display: var(--font-hosgura), Georgia, serif;
-  --font-accent:  var(--font-hosgura), Georgia, serif;
-  --font-sans:    var(--font-instrument), system-ui, sans-serif;
-  font-family: var(--font-sans);
-}
-
-/* The Forma mark: uppercase Hosgura, tracking never below 0.24em (brand guide). */
-.brand .wordmark {
-  font-family: var(--font-display);
-  text-transform: uppercase;
-  letter-spacing: 0.24em;
-}
-
-/* Brand type scale (Typography slide) — reference utilities for the brand context,
-   not applied to existing components (a full app type-role pass is a separate spec).
-   Display roles are Hosgura; text roles are Instrument Sans. */
-.brand .t-display { font-family: var(--font-display); font-size: 132px; line-height: 1.02; letter-spacing: 0.01em; }
-.brand .t-h1      { font-family: var(--font-display); font-size: 64px;  line-height: 1.0;  letter-spacing: 0.01em; }
-.brand .t-h2      { font-family: var(--font-display); font-size: 40px;  line-height: 1.15; letter-spacing: 0.02em; }
-.brand .t-lead    { font-family: var(--font-sans);    font-size: 20px;  line-height: 1.55; letter-spacing: -0.01em; }
-.brand .t-body    { font-family: var(--font-sans);    font-size: 16px;  line-height: 1.70; }
-.brand .t-caption { font-family: var(--font-sans);    font-size: 13px;  line-height: 1.60; }
-.brand .t-label   { font-family: var(--font-sans);    font-size: 11px;  line-height: 1.0;  letter-spacing: 0.20em; text-transform: uppercase; }

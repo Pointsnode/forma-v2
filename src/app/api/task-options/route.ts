@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     weddingId ? supabase.from("wedding_events").select("id, label").eq("wedding_id", weddingId).order("order_index") : Promise.resolve({ data: [] }),
   ]);
   return NextResponse.json({
-    members: ((members ?? []) as unknown as { user_id: string; profiles: { display_name: string | null } | null }[]).map((m) => ({ id: m.user_id, name: m.profiles?.display_name ?? "—" })),
+    members: ((members ?? []) as unknown as { user_id: string; profiles: { display_name: string | null } | null }[]).map((m) => ({ id: m.user_id, name: m.profiles?.display_name ?? "·" })),
     vendors: ((vendors ?? []) as { id: string; name: string }[]).map((v) => ({ id: v.id, name: v.name })),
     events: ((events.data ?? []) as { id: string; label: string }[]).map((e) => ({ id: e.id, label: e.label })),
   });

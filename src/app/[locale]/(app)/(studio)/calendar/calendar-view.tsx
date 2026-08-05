@@ -12,11 +12,11 @@ type Species = "meeting" | "wedding" | "task";
 const SPECIES: Species[] = ["meeting", "wedding", "task"];
 
 // species chip colours — meeting=ink, wedding=sand, task=sage (mirrors the badge family)
-const DOT: Record<Species, string> = { meeting: "bg-ink", wedding: "bg-sand", task: "bg-sage" };
+const DOT: Record<Species, string> = { meeting: "bg-ink", wedding: "bg-champagne", task: "bg-teal" };
 const CHIP: Record<Species, string> = {
   meeting: "bg-ink text-bone",
-  wedding: "bg-sand-soft text-taupe",
-  task: "bg-sage-soft text-sage-ink",
+  wedding: "bg-bone text-taupe",
+  task: "bg-bone text-teal",
 };
 
 export function CalendarView({
@@ -93,7 +93,7 @@ export function CalendarView({
     return (
       <button
         onClick={() => openEntry(e)}
-        className={cx("flex w-full items-center gap-1 truncate rounded-[6px] px-1.5 py-[3px] text-left text-[11px] leading-tight", CHIP[e.species], canceled && "opacity-60")}
+        className={cx("flex w-full items-center gap-1 truncate rounded-[var(--radius)] px-1.5 py-[3px] text-left text-[11px] leading-tight", CHIP[e.species], canceled && "opacity-60")}
         title={e.title}
       >
         {e.species === "meeting" && e.startAt ? <span className={cx("shrink-0 tabular-nums", canceled && "line-through")}>{fmtTime(e.startAt)}</span> : null}
@@ -108,7 +108,7 @@ export function CalendarView({
   return (
     <div>
       {banner ? (
-        <div className={cx("mb-4 rounded-xl px-4 py-2.5 text-[13px]", banner === "connected" ? "bg-sage-soft text-sage-ink" : "bg-wine-soft text-wine")}>
+        <div className={cx("mb-4 rounded-[var(--radius)] px-4 py-2.5 text-[13px]", banner === "connected" ? "bg-bone text-teal" : "bg-bone text-wine")}>
           {banner === "connected" ? t("bannerConnected") : t("bannerError")}
         </div>
       ) : null}
@@ -119,16 +119,16 @@ export function CalendarView({
       {/* Controls */}
       <div className="mb-3 mt-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <button onClick={() => step(-1)} className="rounded-full px-2.5 py-1 text-[15px] text-muted hover:bg-bone hover:text-ink" aria-label={t("prev")}>‹</button>
+          <button onClick={() => step(-1)} className="rounded-[var(--radius)] px-2.5 py-1 text-[15px] text-muted hover:bg-bone hover:text-ink" aria-label={t("prev")}>‹</button>
           {/* No CSS `capitalize`: Intl already capitalises EN months ("July 2026"); in ES it
               yields the correct lowercase "julio de 2026" — capitalize wrongly made it "Julio De 2026". */}
           <span className="min-w-[9rem] text-center font-display text-[20px] text-ink">{view === "month" ? monthLabel : cursor.year}</span>
-          <button onClick={() => step(1)} className="rounded-full px-2.5 py-1 text-[15px] text-muted hover:bg-bone hover:text-ink" aria-label={t("next")}>›</button>
-          <button onClick={goToday} className="ml-1 rounded-full bg-bone px-3 py-1 text-[12px] text-ink hover:bg-sand-soft">{t("today")}</button>
+          <button onClick={() => step(1)} className="rounded-[var(--radius)] px-2.5 py-1 text-[15px] text-muted hover:bg-bone hover:text-ink" aria-label={t("next")}>›</button>
+          <button onClick={goToday} className="ml-1 rounded-[var(--radius)] bg-bone px-3 py-1 text-[12px] text-ink hover:bg-bone">{t("today")}</button>
         </div>
-        <div className="flex items-center gap-1 rounded-full bg-bone p-0.5">
+        <div className="flex items-center gap-1 rounded-[var(--radius)] bg-bone p-0.5">
           {(["month", "year"] as const).map((v) => (
-            <button key={v} onClick={() => setView(v)} className={cx("rounded-full px-3 py-1 text-[12.5px]", view === v ? "bg-ink text-bone" : "text-muted hover:text-ink")}>{t(v)}</button>
+            <button key={v} onClick={() => setView(v)} className={cx("rounded-[var(--radius)] px-3 py-1 text-[12.5px]", view === v ? "bg-ink text-bone" : "text-muted hover:text-ink")}>{t(v)}</button>
           ))}
         </div>
       </div>
@@ -138,15 +138,15 @@ export function CalendarView({
         {SPECIES.map((s) => {
           const on = species.size === 0 || species.has(s);
           return (
-            <button key={s} onClick={() => toggleSpecies(s)} className={cx("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] transition-colors", species.has(s) ? "bg-ink text-bone" : "bg-bone text-muted hover:text-ink")}>
-              <span className={cx("h-2 w-2 rounded-full", DOT[s], !on && "opacity-40")} />
+            <button key={s} onClick={() => toggleSpecies(s)} className={cx("inline-flex items-center gap-1.5 rounded-[var(--radius)] px-3 py-1 text-[12px] transition-colors", species.has(s) ? "bg-ink text-bone" : "bg-bone text-muted hover:text-ink")}>
+              <span className={cx("h-2 w-2 rounded-[var(--radius)]", DOT[s], !on && "opacity-40")} />
               {t(`species_${s}`)}
             </button>
           );
         })}
         {weddings.length > 0 ? <span className="mx-1 h-4 w-px bg-hairline" /> : null}
         {weddings.map((w) => (
-          <button key={w.id} onClick={() => toggleWedding(w.id)} className={cx("inline-flex h-7 w-7 items-center justify-center rounded-full font-accent text-[12px] italic transition-colors", weddingIds.has(w.id) ? "bg-ink text-bone" : "bg-bone text-taupe ring-1 ring-hairline hover:text-ink")} title={t("filterWedding")}>
+          <button key={w.id} onClick={() => toggleWedding(w.id)} className={cx("inline-flex h-7 w-7 items-center justify-center rounded-[var(--radius)] font-accent text-[12px] italic transition-colors", weddingIds.has(w.id) ? "bg-ink text-bone" : "bg-bone text-taupe ring-1 ring-hairline hover:text-ink")} title={t("filterWedding")}>
             {w.tag}
           </button>
         ))}
@@ -165,12 +165,12 @@ export function CalendarView({
                 const isToday = cell.key === todayKey;
                 return (
                   <div key={i} className={cx("min-h-[104px] border-b border-r border-hairline p-1.5 last:border-r-0 [&:nth-child(7n)]:border-r-0", !cell.inMonth && "bg-bone/40")}>
-                    <div className={cx("mb-1 inline-flex h-5 w-5 items-center justify-center rounded-full text-[11.5px]", isToday ? "bg-ink text-bone" : cell.inMonth ? "text-ink" : "text-muted")}>
+                    <div className={cx("mb-1 inline-flex h-5 w-5 items-center justify-center rounded-[var(--radius)] text-[11.5px]", isToday ? "bg-ink text-bone" : cell.inMonth ? "text-ink" : "text-muted")}>
                       {Number(cell.key.slice(8, 10))}
                     </div>
                     <div className="space-y-0.5">
                       {items.slice(0, 3).map((e) => <EntryChip key={e.id} e={e} />)}
-                      {items.length > 3 ? <button onClick={() => setDaySheet(cell.key)} className="w-full rounded-[6px] px-1.5 py-[2px] text-left text-[11px] text-muted hover:bg-bone">{t("more", { n: items.length - 3 })}</button> : null}
+                      {items.length > 3 ? <button onClick={() => setDaySheet(cell.key)} className="w-full rounded-[var(--radius)] px-1.5 py-[2px] text-left text-[11px] text-muted hover:bg-bone">{t("more", { n: items.length - 3 })}</button> : null}
                     </div>
                   </div>
                 );
@@ -200,13 +200,13 @@ export function CalendarView({
             const d = density[m0];
             const total = d.meeting + d.wedding + d.task;
             return (
-              <button key={m0} onClick={() => { setCursor({ year: cursor.year, month0: m0 }); setView("month"); }} className="rounded-2xl bg-paper p-4 text-left shadow-card transition-shadow hover:shadow-lift">
+              <button key={m0} onClick={() => { setCursor({ year: cursor.year, month0: m0 }); setView("month"); }} className="rounded-[var(--radius)] bg-bone p-4 text-left transition-shadow">
                 <p className="font-display text-[16px] text-ink">{new Intl.DateTimeFormat(locale, { month: "long", timeZone: "UTC" }).format(new Date(Date.UTC(cursor.year, m0, 1)))}</p>
                 {total === 0 ? (
                   <p className="mt-2 text-[12px] text-muted">{t("quiet")}</p>
                 ) : (
                   <div className="mt-2.5 flex flex-wrap gap-1">
-                    {SPECIES.flatMap((s) => Array.from({ length: Math.min(d[s], 8) }, (_, i) => <span key={`${s}-${i}`} className={cx("h-2 w-2 rounded-full", DOT[s])} />))}
+                    {SPECIES.flatMap((s) => Array.from({ length: Math.min(d[s], 8) }, (_, i) => <span key={`${s}-${i}`} className={cx("h-2 w-2 rounded-[var(--radius)]", DOT[s])} />))}
                     {total > 24 ? <span className="text-[11px] text-muted">+{total}</span> : null}
                   </div>
                 )}
@@ -229,14 +229,14 @@ export function CalendarView({
         <Overlay onClose={() => setMeetingSheet(null)}>
           <div className="mb-1 flex items-center gap-2">
             <h3 className="font-display text-[22px] text-ink">{meetingSheet.invitee ?? t("meeting")}</h3>
-            {meetingSheet.status === "canceled" ? <span className="rounded-full bg-wine-soft px-2.5 py-[3px] text-[11px] font-medium text-wine">{t("canceled")}</span> : null}
+            {meetingSheet.status === "canceled" ? <span className="rounded-[var(--radius)] bg-bone px-2.5 py-[3px] text-[11px] font-medium text-wine">{t("canceled")}</span> : null}
           </div>
           {meetingSheet.eventType ? <p className="font-accent text-[16px] italic text-taupe">{meetingSheet.eventType}</p> : null}
           <p className={cx("mt-2 text-[14px] text-ink-soft", meetingSheet.status === "canceled" && "line-through")}>{fmtFull(meetingSheet.startAt)}</p>
           {meetingSheet.email ? <p className="mt-1 text-[13px] text-muted">{meetingSheet.email}</p> : null}
           <div className="mt-4 flex flex-wrap gap-2.5">
-            {meetingSheet.status !== "canceled" && meetingSheet.joinUrl ? <a href={meetingSheet.joinUrl} target="_blank" rel="noreferrer" className="rounded-full bg-ink px-4 py-2 text-[13px] font-medium text-bone hover:opacity-90">{t("join")}</a> : null}
-            {meetingSheet.status !== "canceled" && meetingSheet.rescheduleUrl ? <a href={meetingSheet.rescheduleUrl} target="_blank" rel="noreferrer" className="rounded-full border border-ink px-4 py-2 text-[13px] text-ink hover:bg-bone">{t("reschedule")}</a> : null}
+            {meetingSheet.status !== "canceled" && meetingSheet.joinUrl ? <a href={meetingSheet.joinUrl} target="_blank" rel="noreferrer" className="rounded-[var(--radius)] bg-ink px-4 py-2 text-[13px] font-medium text-bone hover:opacity-90">{t("join")}</a> : null}
+            {meetingSheet.status !== "canceled" && meetingSheet.rescheduleUrl ? <a href={meetingSheet.rescheduleUrl} target="_blank" rel="noreferrer" className="rounded-[var(--radius)] border border-ink px-4 py-2 text-[13px] text-ink hover:bg-bone">{t("reschedule")}</a> : null}
             {meetingSheet.cancelUrl && meetingSheet.status !== "canceled" ? <a href={meetingSheet.cancelUrl} target="_blank" rel="noreferrer" className="ml-auto self-center text-[12.5px] text-muted hover:text-wine">{t("cancelMeeting")}</a> : null}
           </div>
         </Overlay>
@@ -252,7 +252,7 @@ function ConnectCard({ connected, configured, pending, onDisconnect }: { connect
       <div>
         <div className="flex items-center gap-2.5">
           <Heading className="text-[17px]">{t("calendlyTitle")}</Heading>
-          <span className={cx("rounded-full px-2.5 py-[3px] text-[11px] font-medium", connected ? "bg-sage-soft text-sage-ink" : "bg-sand-soft text-taupe")}>{connected ? t("connected") : t("notConnected")}</span>
+          <span className={cx("rounded-[var(--radius)] px-2.5 py-[3px] text-[11px] font-medium", connected ? "bg-bone text-teal" : "bg-bone text-taupe")}>{connected ? t("connected") : t("notConnected")}</span>
         </div>
         <p className="mt-1 text-[12.5px] text-muted">
           {/* The connection row stores no Calendly name/email (only the user URI, which ends in a
@@ -267,7 +267,7 @@ function ConnectCard({ connected, configured, pending, onDisconnect }: { connect
           // A full-document navigation into the OAuth API route — deliberately not a
           // next/link (Link would soft-navigate/prefetch and break the redirect flow).
           // eslint-disable-next-line @next/next/no-html-link-for-pages
-          <a href="/api/calendly/connect" className="inline-flex items-center justify-center rounded-full bg-ink px-5 py-2.5 text-[14px] font-medium text-bone hover:opacity-90">{t("connect")}</a>
+          <a href="/api/calendly/connect" className="inline-flex items-center justify-center rounded-[var(--radius)] bg-ink px-5 py-2.5 text-[14px] font-medium text-bone hover:opacity-90">{t("connect")}</a>
         )
       ) : null}
     </Card>
@@ -277,7 +277,7 @@ function ConnectCard({ connected, configured, pending, onDisconnect }: { connect
 function Overlay({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/30 p-0 sm:items-center sm:p-6" onClick={onClose}>
-      <div className="max-h-[80vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-paper p-6 shadow-lift sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
+      <div className="max-h-[80vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-bone p-6 sm:rounded-[var(--radius)]" onClick={(e) => e.stopPropagation()}>
         {children}
       </div>
     </div>

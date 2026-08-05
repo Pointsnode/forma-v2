@@ -38,14 +38,14 @@ function parts(value: Date | string, tz: string, locale: string) {
 // it is reordered verbatim WITHOUT a timezone shift — applying a zone would wrongly move
 // "2027-01-15" to the day before in a negative-offset zone.
 export function formatDate(value: Date | string | null | undefined, prefs: DatePrefs): string {
-  if (value == null || value === "") return "—";
+  if (value == null || value === "") return "·";
   const order = prefs.format === "auto" ? AUTO[prefs.locale] ?? "MDY" : prefs.format;
   if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
     const [y, m, d] = value.split("-");
     return order === "DMY" ? `${d}/${m}/${y}` : order === "YMD" ? `${y}-${m}-${d}` : `${m}/${d}/${y}`;
   }
   const { y, m, d } = parts(value, prefs.tz, prefs.locale);
-  if (!y) return "—";
+  if (!y) return "·";
   return order === "DMY" ? `${d}/${m}/${y}` : order === "YMD" ? `${y}-${m}-${d}` : `${m}/${d}/${y}`;
 }
 
@@ -54,7 +54,7 @@ export function formatDate(value: Date | string | null | undefined, prefs: DateP
 // month, so this honours zone + locale only (month names stay locale-native, lowercase
 // in es exactly as Intl yields them — never CSS-capitalised).
 export function formatLongDate(value: Date | string | null | undefined, prefs: DatePrefs): string {
-  if (value == null || value === "") return "—";
+  if (value == null || value === "") return "·";
   const d = value instanceof Date ? value : new Date(value);
   return dtf(prefs.locale, prefs.tz, { weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(d);
 }

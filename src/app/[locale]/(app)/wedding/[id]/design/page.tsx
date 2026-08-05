@@ -43,7 +43,7 @@ export default async function DesignTab({ params }: { params: Promise<{ locale: 
                 {b.design_items.map((it, ii) => {
                   const url = urls.get(it.id);
                   return (
-                    <div key={it.id} className="overflow-hidden rounded-xl bg-paper shadow-card">
+                    <div key={it.id} className="overflow-hidden rounded-[var(--radius)] bg-bone">
                       <div className="relative flex h-24 items-end p-2 text-[rgba(255,253,249,0.95)]" style={{ background: heroToneAt(bi + ii) }}>
                         {url ? (
                           // eslint-disable-next-line @next/next/no-img-element

@@ -54,13 +54,13 @@ export function MembersInvites({
         <div className="flex flex-col gap-2">
           <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted">{t("pending")}</p>
           {invites.map((i) => (
-            <div key={i.id} className="flex items-center gap-2 rounded-xl bg-bone px-3 py-2">
+            <div key={i.id} className="flex items-center gap-2 rounded-[var(--radius)] bg-bone px-3 py-2">
               <span className="text-[13px] text-ink">{roleLabel(i.role)}</span>
               <span className="font-accent text-[12.5px] text-muted">{t("expires", { date: fmtDate(i.expiresAt) })}</span>
-              <button onClick={() => copy(i.token)} className={cx("ml-auto rounded-full px-3 py-1 text-[12.5px]", copied === i.token ? "bg-sage-soft text-sage-ink" : "bg-ink text-bone")}>
+              <button onClick={() => copy(i.token)} className={cx("ml-auto rounded-[var(--radius)] px-3 py-1 text-[12.5px]", copied === i.token ? "bg-bone text-teal" : "bg-ink text-bone")}>
                 {copied === i.token ? t("copied") : t("copy")}
               </button>
-              <button onClick={() => start(async () => { await revokeInvite(weddingId, i.id); })} disabled={pending} className="rounded-full px-2 py-1 text-[12.5px] text-muted hover:text-wine">
+              <button onClick={() => start(async () => { await revokeInvite(weddingId, i.id); })} disabled={pending} className="rounded-[var(--radius)] px-2 py-1 text-[12.5px] text-muted hover:text-wine">
                 {t("revoke")}
               </button>
             </div>
@@ -69,7 +69,7 @@ export function MembersInvites({
       ) : null}
 
       <div className="flex items-center gap-2">
-        <select value={role} onChange={(e) => setRole(e.target.value as Role)} className="rounded-xl bg-bone px-3 py-2 text-[13.5px] text-ink shadow-card outline-none">
+        <select value={role} onChange={(e) => setRole(e.target.value as Role)} className="rounded-[var(--radius)] bg-bone px-3 py-2 text-[13.5px] text-ink outline-none">
           <option value="partner">{t("rolePartner")}</option>
           <option value="family">{t("roleFamily")}</option>
           <option value="day_of">{t("roleDayOf")}</option>

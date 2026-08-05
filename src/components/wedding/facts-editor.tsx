@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button, cx } from "@/components/ui";
 import { updateWeddingFacts } from "@/app/[locale]/(app)/wedding/[id]/facts-actions";
 
-const input = "w-full rounded-xl bg-bone px-3.5 py-2.5 text-[14px] text-ink shadow-card outline-none focus:shadow-lift";
+const input = "w-full rounded-[var(--radius)] border border-hairline bg-bone px-3.5 py-2.5 text-[14px] text-ink outline-none focus:border-ink";
 const mlbl = "mt-4 block text-[10.5px] uppercase tracking-[0.14em] text-muted";
 
 export type FactsInitial = {
@@ -42,14 +42,14 @@ export function FactsEditor({ weddingId, initial }: { weddingId: string; initial
       {open ? (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
           <button aria-hidden className="absolute inset-0 cursor-default bg-[rgba(21,18,16,0.55)]" onClick={() => setOpen(false)} />
-          <form action={onSubmit} className="relative w-full max-w-[480px] rounded-[18px] bg-paper p-7 shadow-hero">
+          <form action={onSubmit} className="relative w-full max-w-[480px] rounded-[var(--radius)] bg-bone p-7">
             <h3 className="font-display text-[22px] text-ink">{t("factsTitle")}</h3>
             <p className="mb-1 mt-0.5 font-accent text-[15px] italic text-taupe">{t("factsHint")}</p>
 
             <div className="grid grid-cols-2 gap-x-3">
               <div>
                 <label className={mlbl}>{t("statBudget")}</label>
-                <input name="budget_total" defaultValue={initial.budget} inputMode="numeric" className={cx(input, "mt-1.5")} placeholder="$ —" />
+                <input name="budget_total" defaultValue={initial.budget} inputMode="numeric" className={cx(input, "mt-1.5")} placeholder="$ ·" />
               </div>
               <div>
                 <label className={mlbl}>{t("statGuests")}</label>
@@ -67,7 +67,7 @@ export function FactsEditor({ weddingId, initial }: { weddingId: string; initial
 
             <label className={mlbl}>{t("factsKind")}</label>
             <select name="kind" defaultValue={initial.kind} className={cx(input, "mt-1.5")}>
-              <option value="">—</option>
+              <option value="">·</option>
               <option value="city">{t("create.kindCity")}</option>
               <option value="destination">{t("create.kindDestination")}</option>
             </select>

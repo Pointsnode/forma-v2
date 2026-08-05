@@ -40,7 +40,7 @@ export default async function SeatingPage({
   // Direct find-or-create (staff RLS) — no revalidate during render.
   if (floorRole === "staff") {
     const { data: existing } = await supabase.from("floor_plans").select("id").eq("event_id", event.id).limit(1).maybeSingle();
-    if (!existing) await supabase.from("floor_plans").insert({ event_id: event.id, wedding_id: id, name: `${event.label} — seating` });
+    if (!existing) await supabase.from("floor_plans").insert({ event_id: event.id, wedding_id: id, name: `${event.label} · seating` });
   }
 
   const floor = await loadFloorPlan(supabase, event.id);
@@ -54,7 +54,7 @@ export default async function SeatingPage({
               key={e.id}
               href={{ pathname: `/wedding/${id}/seating`, query: { event: e.id } }}
               className={cx(
-                "rounded-full px-3 py-1 text-[12.5px] transition",
+                "rounded-[var(--radius)] px-3 py-1 text-[12.5px] transition",
                 e.id === event.id ? "bg-ink text-bone" : "border border-hairline text-muted hover:border-ink hover:text-ink",
               )}
             >

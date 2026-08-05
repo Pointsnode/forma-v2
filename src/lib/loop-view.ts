@@ -31,16 +31,16 @@ export type InviteVM = { id: string; role: string; token: string; expiresAt: str
 // Status → pill tone (maps onto the design tokens; badges only, no borders).
 export function statusClass(s: ProposalStatus): string {
   switch (s) {
-    case "approved": return "bg-sage-soft text-sage-ink";
-    case "change_requested": return "bg-maroon text-bone";
-    case "declined": return "bg-wine-soft text-wine";
+    case "approved": return "bg-bone text-teal";
+    case "change_requested": return "bg-oxblood text-bone";
+    case "declined": return "bg-bone text-wine";
     case "withdrawn": return "bg-hairline text-muted";
-    case "draft": return "bg-sand-soft text-taupe";
-    default: return "bg-wine-soft text-wine"; // sent / seen — awaiting couple
+    case "draft": return "bg-bone text-taupe";
+    default: return "bg-bone text-wine"; // sent / seen — awaiting couple
   }
 }
 
 // Court → who-b bubble tone. planner = sand (yours), couple = wine.
 export function courtClass(c: Court): string {
-  return c === "planner" ? "bg-sand text-ink" : c === "couple" ? "bg-wine text-bone" : "bg-hairline text-muted";
+  return c === "planner" ? "bg-champagne text-ink" : c === "couple" ? "bg-wine text-bone" : "bg-hairline text-muted";
 }

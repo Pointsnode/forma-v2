@@ -65,8 +65,8 @@ async function hydrate(supabase: SupabaseClient, rows: Row[]): Promise<TaskCard[
 
   return rows.map((r) => {
     const wName = r.wedding_id ? weddingName.get(r.wedding_id) ?? null : null;
-    const assigneeMember = r.assignee_member ? memberName.get(r.assignee_member) ?? "—" : null;
-    const assigneeVendor = r.assignee_vendor ? vendorName.get(r.assignee_vendor) ?? "—" : null;
+    const assigneeMember = r.assignee_member ? memberName.get(r.assignee_member) ?? "·" : null;
+    const assigneeVendor = r.assignee_vendor ? vendorName.get(r.assignee_vendor) ?? "·" : null;
     const assigneeLabel = r.assignee_kind === "couple" ? (wName ?? "Couple") : r.assignee_kind === "team" ? assigneeMember : r.assignee_kind === "vendor" ? assigneeVendor : null;
     return {
       id: r.id, title: r.title, note: r.note, status: r.status, flagged: r.flagged, due_date: r.due_date,

@@ -6,7 +6,7 @@ import { Button, Heading, Icon, Row, RowMain } from "@/components/ui";
 import { TEMPLATE_KINDS, type TemplateKind } from "@/lib/contract-enums";
 import { createTemplate, updateTemplate, deleteTemplate } from "@/app/[locale]/(app)/(studio)/contracts/actions";
 
-const inputCls = "w-full rounded-xl bg-bone px-3.5 py-2.5 text-[14px] text-ink shadow-card outline-none focus:shadow-lift";
+const inputCls = "w-full rounded-[var(--radius)] bg-bone px-3.5 py-2.5 text-[14px] text-ink outline-none";
 
 export type TemplateVM = { id: string; name: string; kind: string; body: string; updatedAt: string; usage: number };
 
@@ -35,7 +35,7 @@ function TemplateForm({ initial, onClose }: { initial?: TemplateVM; onClose: () 
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl bg-bone p-4">
+    <div className="flex flex-col gap-3 rounded-[var(--radius)] bg-bone p-4">
       <p className="font-display text-[15px] text-ink">{initial ? t("editTemplate") : t("newTemplate")}</p>
       <div className="grid grid-cols-[1.4fr_1fr] gap-3">
         <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("tName")}</span>
@@ -66,7 +66,7 @@ function TemplateRow({ tpl, lang }: { tpl: TemplateVM; lang: string }) {
 
   const updated = t("updated", { date: new Date(tpl.updatedAt).toLocaleDateString(lang === "es" ? "es-ES" : "en-US") });
   return (
-    <Row className="-mx-2 rounded-xl px-2">
+    <Row className="-mx-2 rounded-[var(--radius)] px-2">
       <Icon>{tpl.name.trim()[0]?.toUpperCase() ?? "T"}</Icon>
       <RowMain title={tpl.name} detail={`${t(`templateKind_${tpl.kind}`)} · ${usageLine(t, tpl.usage)} · ${updated}`} />
       <div className="flex items-center gap-2">

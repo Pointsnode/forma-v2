@@ -22,16 +22,16 @@ export async function loadLedger(supabase: SupabaseClient, weddingId: string): P
     supabase.from("contracts").select("id, title").eq("wedding_id", weddingId),
     supabase.from("wedding_events").select("id, label").eq("wedding_id", weddingId),
   ]);
-  const vendorName = new Map((engRows ?? []).map((e) => [e.id, (e as unknown as { vendors: { name: string } | null }).vendors?.name ?? "—"]));
+  const vendorName = new Map((engRows ?? []).map((e) => [e.id, (e as unknown as { vendors: { name: string } | null }).vendors?.name ?? "·"]));
   const contractTitle = new Map((conRows ?? []).map((c: { id: string; title: string }) => [c.id, c.title]));
   const eventLabel = new Map((evRows ?? []).map((e: { id: string; label: string }) => [e.id, e.label]));
 
   const traceFor = (l: LedgerLine): Trace[] => {
     const t: Trace[] = [];
-    if (l.engagement_id) t.push({ kind: "vendor", label: vendorName.get(l.engagement_id) ?? "—" });
+    if (l.engagement_id) t.push({ kind: "vendor", label: vendorName.get(l.engagement_id) ?? "·" });
     if (l.contract_id) t.push({ kind: "contract", label: contractTitle.get(l.contract_id) ?? "#" });
     if (l.quote_id) t.push({ kind: "quote", label: "quote" });
-    if (l.event_id) t.push({ kind: "event", label: eventLabel.get(l.event_id) ?? "—" });
+    if (l.event_id) t.push({ kind: "event", label: eventLabel.get(l.event_id) ?? "·" });
     return t;
   };
 

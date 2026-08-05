@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button, cx } from "@/components/ui";
 import { addLedgerLine, setLineStatus, payPlannerFee } from "@/app/[locale]/(app)/wedding/[id]/money-actions";
 
-const input = "rounded-lg bg-bone px-2.5 py-1.5 text-[13px] text-ink shadow-card outline-none";
+const input = "rounded-[var(--radius)] border border-hairline bg-bone px-2.5 py-1.5 text-[13px] text-ink outline-none";
 
 // Couple pays a due planner_fee line → hosted Stripe Checkout (redirect).
 export function PayButton({ lineId }: { lineId: string }) {
@@ -21,7 +21,7 @@ export function PayButton({ lineId }: { lineId: string }) {
           if (r.url) window.location.href = r.url;
           else setErr(r.error === "notConfigured" ? t("notConfigured") : t("error"));
         })}
-        className="rounded-full bg-wine px-4 py-1.5 text-[12.5px] font-medium text-bone transition-opacity hover:opacity-90 disabled:opacity-50"
+        className="rounded-[var(--radius)] bg-wine px-4 py-1.5 text-[12.5px] font-medium text-bone transition-opacity hover:opacity-90 disabled:opacity-50"
       >
         {t("pay")}
       </button>

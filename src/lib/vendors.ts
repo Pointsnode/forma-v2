@@ -78,7 +78,7 @@ export async function loadVendorProfile(supabase: SupabaseClient, id: string) {
     files: (files ?? []).map((f) => ({ ...f, url: urls.get(f.storage_path) ?? null })),
     engagements: (engs ?? []).map((e) => {
       const r = e as unknown as { id: string; status: string; weddings: { couple_display: string } | null };
-      return { id: r.id, status: r.status, couple: r.weddings?.couple_display ?? "—" };
+      return { id: r.id, status: r.status, couple: r.weddings?.couple_display ?? "·" };
     }),
   };
 }
@@ -158,7 +158,7 @@ export async function loadEngagementLedger(supabase: SupabaseClient, engagementI
   timeline.push({ kind: "opened", at: e.presented_at ?? new Date(0).toISOString(), presenter: proposals[0]?.created_by ? names.get(proposals[0].created_by) ?? null : null, estimate: num(e.presented_estimate), note: e.presented_note, events });
   for (const q of quotes) timeline.push({ kind: "quote", at: q.createdAt, quote: q });
   for (const p of proposals) timeline.push({ kind: "proposal", at: p.sent_at ?? p.created_at, id: p.id, status: p.status, title: p.title, quoteId: p.quote_id, respondedAt: p.responded_at });
-  for (const m of messages) timeline.push({ kind: "message", at: m.created_at, id: m.id, authorName: names.get(m.author_id ?? "") || "—", isCouple: coupleIds.has(m.author_id ?? ""), body: m.body });
+  for (const m of messages) timeline.push({ kind: "message", at: m.created_at, id: m.id, authorName: names.get(m.author_id ?? "") || "·", isCouple: coupleIds.has(m.author_id ?? ""), body: m.body });
   timeline.sort((a, b) => a.at.localeCompare(b.at));
 
   // price strip: Estimate → each priced quote → (the accepted one is "Final")
@@ -176,7 +176,7 @@ export async function loadEngagementLedger(supabase: SupabaseClient, engagementI
   const { count: budgetCount } = await supabase.from("ledger_lines").select("id", { count: "exact", head: true }).eq("engagement_id", engagementId);
 
   return {
-    id: e.id, weddingId, status: e.status, vendorId: e.vendors?.id ?? "", vendorName: e.vendors?.name ?? "—", vendorKind: e.vendors?.kind ?? "other",
+    id: e.id, weddingId, status: e.status, vendorId: e.vendors?.id ?? "", vendorName: e.vendors?.name ?? "·", vendorKind: e.vendors?.kind ?? "other",
     estimate, currency, quotes, timeline, priceStrip, hasBudgetLine: (budgetCount ?? 0) > 0,
   };
 }
@@ -222,7 +222,7 @@ export async function loadWeddingEngagements(supabase: SupabaseClient, weddingId
     const latest = [...(r.quotes ?? [])].sort((a, b) => b.created_at.localeCompare(a.created_at))[0] ?? null;
     return {
       id: r.id, wedding_id: r.wedding_id, status: r.status, presented_estimate: r.presented_estimate,
-      vendor: { name: r.vendors?.name ?? "—", kind: r.vendors?.kind ?? "other" },
+      vendor: { name: r.vendors?.name ?? "·", kind: r.vendors?.kind ?? "other" },
       couple_display: "",
       quote: latest ? { id: latest.id, status: latest.status, amount: latest.amount, valid_until: latest.valid_until } : null,
       event_ids: (r.event_vendors ?? []).map((e) => e.event_id),

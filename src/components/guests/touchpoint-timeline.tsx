@@ -31,15 +31,15 @@ export function TouchpointTimeline({
           : t("statusScheduled", { date: fmt(tp.scheduled_for) });
         const aud = tp.audience_rule?.scope === "non_responders" ? t("chases", { count: reminderChase }) : t("toAll");
         return (
-          <div key={tp.id} className={cx("flex items-start gap-3 rounded-xl bg-bone px-3 py-2.5", skipped && "opacity-50")}>
-            <span className={cx("mt-1.5 h-2 w-2 shrink-0 rounded-full", tp.status === "sent" ? "bg-sage" : tp.status === "scheduled" ? "bg-sand" : "bg-hairline")} />
+          <div key={tp.id} className={cx("flex items-start gap-3 rounded-[var(--radius)] bg-bone px-3 py-2.5", skipped && "opacity-50")}>
+            <span className={cx("mt-1.5 h-2 w-2 shrink-0 rounded-[var(--radius)]", tp.status === "sent" ? "bg-teal" : tp.status === "scheduled" ? "bg-champagne" : "bg-hairline")} />
             <div className="min-w-0 flex-1">
               <p className="text-[14px] text-ink">{t(KIND_KEY[tp.kind] ?? "kindRsvp_invite")}</p>
               <p className="font-accent text-[13px] text-muted">{sub} · {aud}</p>
             </div>
             {!readOnly && tp.status !== "sent" ? (
               <button disabled={pending} onClick={() => start(async () => { await skipTouchpoint(tp.id, weddingId, !skipped); })}
-                className="shrink-0 rounded-full px-3 py-1 text-[12.5px] text-muted hover:text-ink">
+                className="shrink-0 rounded-[var(--radius)] px-3 py-1 text-[12.5px] text-muted hover:text-ink">
                 {skipped ? t("unskip") : t("skip")}
               </button>
             ) : null}

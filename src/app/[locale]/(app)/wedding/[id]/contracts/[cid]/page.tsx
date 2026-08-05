@@ -81,10 +81,10 @@ export default async function ContractRoom({ params }: { params: Promise<{ local
                   {fields.map((f) => (
                     <span key={f.id} className={cx(
                       "inline-flex items-center gap-1.5 rounded px-2 py-1 text-[12.5px]",
-                      f.merge_source === "manual" ? "bg-sand-soft text-taupe" : "bg-sage-soft text-sage-ink",
+                      f.merge_source === "manual" ? "bg-bone text-taupe" : "bg-bone text-teal",
                     )} title={f.merge_source}>
                       <span className="font-medium">{f.label}:</span>
-                      <span>{f.resolved || (f.merge_source === "manual" ? tc("signerFills") : "—")}</span>
+                      <span>{f.resolved || (f.merge_source === "manual" ? tc("signerFills") : "·")}</span>
                     </span>
                   ))}
                 </div>
@@ -103,7 +103,7 @@ export default async function ContractRoom({ params }: { params: Promise<{ local
               <Heading className="text-[18px]">{tc("whyDraft")}</Heading>
               <Row>
                 <Check ok={false} />
-                <RowMain title={tc("blockedTitle")} detail={tc("heldOn", { title: blockingTitle ?? "—" })} />
+                <RowMain title={tc("blockedTitle")} detail={tc("heldOn", { title: blockingTitle ?? "·" })} />
                 <Badge tone="wine">{tc("waiting")}</Badge>
               </Row>
               <p className="mt-2 text-[12.5px] text-muted">{tc("autoSends")}</p>
@@ -147,7 +147,7 @@ export default async function ContractRoom({ params }: { params: Promise<{ local
                 {((acts ?? []) as { id: string; verb: string; summary: string; created_at: string; actor_kind: "user" | "concierge" }[]).map((a) => (
                   <Row key={a.id}>
                     <RowMain
-                      title={<>{a.actor_kind === "concierge" ? <span aria-hidden className="mr-1 inline-flex h-4 w-4 -translate-y-px items-center justify-center rounded-full bg-ink align-middle text-[10px] leading-none text-bone">c</span> : null}{tc(`verb_${a.verb}`, { name: a.summary })}</>}
+                      title={<>{a.actor_kind === "concierge" ? <span aria-hidden className="mr-1 inline-flex h-4 w-4 -translate-y-px items-center justify-center rounded-[var(--radius)] bg-ink align-middle text-[10px] leading-none text-bone">c</span> : null}{tc(`verb_${a.verb}`, { name: a.summary })}</>}
                       detail={new Date(a.created_at).toLocaleDateString(lang === "es" ? "es-ES" : "en-US")}
                     />
                   </Row>

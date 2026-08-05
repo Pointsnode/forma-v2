@@ -175,3 +175,8 @@
   .ed1 .conv{ height:100vh }
   .ed1 .conv .stage{ position:relative; height:100vh }
 }
+
+/* Edition One corner alignment (foundation §5): drawn controls adopt the Soft 4px radius.
+   Bands, ribbon images and typographic elements are unchanged. */
+.ed1 nav a.cta, .ed1 .close .cta, .ed1 .fab, .ed1 .deskpanel, .ed1 .langmenu,
+.ed1 .chips button, .ed1 .cap .shot, .ed1 .askrow input, .ed1 .askrow button { border-radius: 4px; }

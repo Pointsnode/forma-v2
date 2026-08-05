@@ -50,7 +50,7 @@ export function InquiriesCard({ inquiries }: { inquiries: InquiryItem[] }) {
       <div className="flex items-center justify-between">
         <Heading className="text-[19px]">{t("inquiries")}</Heading>
         {list.some((i) => i.isNew) ? (
-          <span className="rounded-full bg-wine-soft px-2.5 py-[3px] text-[11px] font-medium text-wine">{t("inquiriesNew", { count: list.filter((i) => i.isNew).length })}</span>
+          <span className="rounded-[var(--radius)] bg-bone px-2.5 py-[3px] text-[11px] font-medium text-wine">{t("inquiriesNew", { count: list.filter((i) => i.isNew).length })}</span>
         ) : null}
       </div>
       <p className="mb-3 mt-0.5 text-[12.5px] text-muted">{t("inquiriesHint")}</p>
@@ -59,7 +59,7 @@ export function InquiriesCard({ inquiries }: { inquiries: InquiryItem[] }) {
       ) : (
         list.map((inq) => (
           <button key={inq.id} onClick={() => { setErr(null); setOpen(inq); }} className="block w-full text-left">
-            <div className="-mx-2 flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-bone">
+            <div className="-mx-2 flex items-center gap-3 rounded-[var(--radius)] px-2 py-2 hover:bg-bone">
               <Monogram initials={initials(inq)} size={28} />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[14px] font-medium text-ink">
@@ -70,8 +70,8 @@ export function InquiriesCard({ inquiries }: { inquiries: InquiryItem[] }) {
               </div>
               <span
                 className={cx(
-                  "shrink-0 rounded-full px-2.5 py-[3px] text-[11px] font-medium",
-                  inq.isNew ? "bg-wine-soft text-wine" : "bg-sand-soft text-taupe",
+                  "shrink-0 rounded-[var(--radius)] px-2.5 py-[3px] text-[11px] font-medium",
+                  inq.isNew ? "bg-bone text-wine" : "bg-bone text-taupe",
                 )}
               >
                 {inq.isNew ? t("statusNew") : t("statusReplied")}
@@ -83,7 +83,7 @@ export function InquiriesCard({ inquiries }: { inquiries: InquiryItem[] }) {
 
       {open ? (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/30 p-0 sm:items-center sm:p-6" onClick={() => setOpen(null)}>
-          <div className="w-full max-w-md rounded-t-2xl bg-paper p-6 shadow-lift sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md rounded-t-2xl bg-bone p-6 sm:rounded-[var(--radius)]" onClick={(e) => e.stopPropagation()}>
             <div className="mb-3 flex items-start justify-between gap-3">
               <div>
                 <h3 className="font-display text-[22px] text-ink">
@@ -98,7 +98,7 @@ export function InquiriesCard({ inquiries }: { inquiries: InquiryItem[] }) {
               </div>
               <button onClick={() => setOpen(null)} className="text-[18px] text-muted hover:text-ink" aria-label={t("close")}>×</button>
             </div>
-            <p className="mb-5 whitespace-pre-wrap rounded-xl bg-bone p-4 font-accent text-[16px] leading-relaxed text-ink-soft">{open.message}</p>
+            <p className="mb-5 whitespace-pre-wrap rounded-[var(--radius)] bg-bone p-4 font-accent text-[16px] leading-relaxed text-ink-soft">{open.message}</p>
             {err ? <p className="mb-3 text-[13px] text-wine">{err}</p> : null}
             <div className="flex flex-wrap items-center gap-2.5">
               <Button onClick={() => convert(open)} disabled={pending}>{t("convert")}</Button>

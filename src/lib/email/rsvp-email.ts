@@ -8,16 +8,16 @@ type Args = { to: string; guestName: string; couple: string; rsvpUrl: string; ki
 
 const COPY = {
   en: {
-    rsvp_invite: { subject: (c: string) => `You're invited — ${c}`, lead: (c: string) => `${c} would love to know if you can join them.`, cta: "Respond now" },
-    rsvp_reminder: { subject: (c: string) => `A gentle reminder — ${c}`, lead: (c: string) => `We haven't heard from you yet for ${c}. It only takes a moment.`, cta: "Respond now" },
-    rsvp_close: { subject: (c: string) => `RSVPs are closing — ${c}`, lead: (c: string) => `The guest list for ${c} is about to close. Last chance to let them know.`, cta: "Respond now" },
+    rsvp_invite: { subject: (c: string) => `You're invited, ${c}`, lead: (c: string) => `${c} would love to know if you can join them.`, cta: "Respond now" },
+    rsvp_reminder: { subject: (c: string) => `A gentle reminder, ${c}`, lead: (c: string) => `We haven't heard from you yet for ${c}. It only takes a moment.`, cta: "Respond now" },
+    rsvp_close: { subject: (c: string) => `RSVPs are closing, ${c}`, lead: (c: string) => `The guest list for ${c} is about to close. Last chance to let them know.`, cta: "Respond now" },
     hi: (n: string) => `Dear ${n},`,
     footer: "Sent by Forma on behalf of the couple. One link, no account needed.",
   },
   es: {
-    rsvp_invite: { subject: (c: string) => `Estás invitado — ${c}`, lead: (c: string) => `A ${c} le encantaría saber si puedes acompañarles.`, cta: "Responder ahora" },
-    rsvp_reminder: { subject: (c: string) => `Un recordatorio — ${c}`, lead: (c: string) => `Aún no tenemos tu respuesta para ${c}. Solo toma un momento.`, cta: "Responder ahora" },
-    rsvp_close: { subject: (c: string) => `El RSVP está por cerrar — ${c}`, lead: (c: string) => `La lista de ${c} está por cerrarse. Última oportunidad para avisarles.`, cta: "Responder ahora" },
+    rsvp_invite: { subject: (c: string) => `Estás invitado, ${c}`, lead: (c: string) => `A ${c} le encantaría saber si puedes acompañarles.`, cta: "Responder ahora" },
+    rsvp_reminder: { subject: (c: string) => `Un recordatorio, ${c}`, lead: (c: string) => `Aún no tenemos tu respuesta para ${c}. Solo toma un momento.`, cta: "Responder ahora" },
+    rsvp_close: { subject: (c: string) => `El RSVP está por cerrar, ${c}`, lead: (c: string) => `La lista de ${c} está por cerrarse. Última oportunidad para avisarles.`, cta: "Responder ahora" },
     hi: (n: string) => `Hola ${n},`,
     footer: "Enviado por Forma en nombre de la pareja. Un enlace, sin cuenta.",
   },
@@ -31,7 +31,7 @@ export function rsvpEmail({ to, guestName, couple, rsvpUrl, kind, locale }: Args
   const html = `<!doctype html><html><body style="margin:0;background:#F7F4EE;padding:32px 16px;font-family:Georgia,'Times New Roman',serif;color:#121212">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
   <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background:#FFFDF9;border-radius:16px;padding:36px 32px">
-    <tr><td style="font-size:13px;letter-spacing:0.18em;text-transform:uppercase;color:#8a867e;font-family:Arial,sans-serif">Forma</td></tr>
+    <tr><td style="font-size:22px;letter-spacing:.02em;color:#121212;font-family:Georgia,'Times New Roman',serif"><span style="font-style:italic">f</span>orma</td></tr>
     <tr><td style="font-size:26px;line-height:1.25;padding:14px 0 6px">${escapeHtml(couple)}</td></tr>
     <tr><td style="font-size:16px;color:#2a2a2a;line-height:1.5;padding-bottom:8px">${escapeHtml(t.hi(guestName))}</td></tr>
     <tr><td style="font-size:16px;color:#2a2a2a;line-height:1.5;padding-bottom:24px">${escapeHtml(k.lead(couple))}</td></tr>

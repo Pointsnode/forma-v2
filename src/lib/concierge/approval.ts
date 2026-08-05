@@ -15,7 +15,7 @@ export type ApprovalResult = { ok?: boolean; error?: string; message?: string };
 function humanMsg(error: { code?: string; message?: string }): string {
   return error.code && /^F[A-Z]/.test(error.code)
     ? (error.message ?? "")
-    : "the card's details no longer match the room — ask me again and I'll rebuild it";
+    : "the card's details no longer match the room, so ask me again and I'll rebuild it";
 }
 async function rpc(sb: SupabaseClient, fn: string, args: Record<string, unknown>): Promise<ApprovalResult> {
   const { error } = await sb.rpc(fn, args);

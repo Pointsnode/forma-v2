@@ -23,7 +23,7 @@ export async function fileContractArtifact(admin: SupabaseClient, contractId: st
   const values = Object.fromEntries(fieldRows.map((f) => [f.field_key, f.merge_source === "manual" ? f.manual_value : f.resolved_value]));
   const body = substituteBody(content?.body ?? "", values);
 
-  const fieldTable = fieldRows.map((f) => `<tr><td style="padding:4px 12px 4px 0;color:#7A6A50">${esc(f.label)}</td><td style="padding:4px 0">${esc((f.merge_source === "manual" ? f.manual_value : f.resolved_value) ?? "—")}</td></tr>`).join("");
+  const fieldTable = fieldRows.map((f) => `<tr><td style="padding:4px 12px 4px 0;color:#7A6A50">${esc(f.label)}</td><td style="padding:4px 0">${esc((f.merge_source === "manual" ? f.manual_value : f.resolved_value) ?? "·")}</td></tr>`).join("");
   const signerBlock = ((signers ?? []) as { name: string; role: string; typed_name: string | null; signed_at: string | null }[])
     .map((s) => `<div style="border-top:1px solid #EAE6DC;padding:8px 0"><b>${esc(s.name)}</b> · ${esc(s.role)}<br><span style="font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:20px">${esc(s.typed_name ?? "")}</span><br><span style="font-size:11px;color:#8A867E">${s.signed_at ? new Date(s.signed_at).toISOString() : ""}</span></div>`).join("");
 

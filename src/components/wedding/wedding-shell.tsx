@@ -110,7 +110,7 @@ export async function WeddingShell({
           {eyebrow ? <p className="mb-2.5 text-[10.5px] uppercase tracking-[0.34em] text-[#B8AFA2]">{eyebrow}</p> : null}
           <h1 className="font-display text-[40px] leading-[1.08]">{wedding.couple_display}</h1>
           <p className="mt-2 text-[13.5px] text-[#CFC7B9]">
-            {range ? <span className="font-accent text-[16px] italic text-sand">{range}</span> : null}
+            {range ? <span className="font-accent text-[16px] italic text-champagne">{range}</span> : null}
             {meta && range ? <span> &nbsp;·&nbsp; </span> : null}
             {[
               events.length === 1 ? tw("eventCountOne") : tw("eventCountOther", { count: events.length }),
@@ -154,7 +154,7 @@ export async function WeddingShell({
 
       {/* ── sticky wedding nav ──────────────────────────────────────────────── */}
       {showNav ? (
-        <div className="sticky top-[62px] z-40 bg-paper [box-shadow:inset_0_-1px_0_var(--color-hairline)]">
+        <div className="sticky top-[62px] z-40 bg-bone [box-shadow:inset_0_-1px_0_var(--color-hairline)]">
           <nav className="mx-auto flex max-w-[1240px] gap-7 overflow-x-auto px-8 md:px-10">
             {tabs.map((t) => (
               <Link
@@ -194,8 +194,8 @@ function PhaseStrip({
       <PhaseDots phase={wedding.phase} dark />
       <span className="text-[9.5px] uppercase tracking-[0.3em] text-[#948C7F]">{planningLabel}</span>
       <span className="font-display text-[14.5px] text-bone">{phaseLabel}</span>
-      <span className="text-[12px] text-[#948C7F]">— {statusText}</span>
-      {role === "staff" ? <span className="ml-auto text-[12px] tracking-[0.04em] text-sand group-hover:text-bone">{openLabel} →</span> : null}
+      <span className="text-[12px] text-[#948C7F]">· {statusText}</span>
+      {role === "staff" ? <span className="ml-auto text-[12px] tracking-[0.04em] text-champagne group-hover:text-bone">{openLabel} →</span> : null}
     </>
   );
   const cls = "mx-auto flex max-w-[1240px] flex-wrap items-baseline gap-x-3.5 gap-y-1 px-8 py-[11px] text-[12px] md:px-10";
@@ -218,7 +218,7 @@ function Chip({
     <Link
       href={href}
       className={cx(
-        "flex shrink-0 flex-col rounded-full px-4 py-[7px] text-[12.5px] transition-colors",
+        "flex shrink-0 flex-col rounded-[var(--radius)] px-4 py-[7px] text-[12.5px] transition-colors",
         active ? "bg-bone text-ink" : "bg-[#1E1E1E] text-[#D9D2C6] hover:bg-[#2A2A2A]",
       )}
     >

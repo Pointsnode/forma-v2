@@ -6,7 +6,7 @@
 export const CONCIERGE_MESSAGES = {
   FC010: "That wedding isn't in your studio.",
   FC011: "Which wedding should I look at?",
-  FC012: "I found a few — which one?",
+  FC012: "I found a few, which one?",
   FS050: "Your role doesn't allow that.",
 } as const;
 

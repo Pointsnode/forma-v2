@@ -6,7 +6,7 @@ import { foldHistory } from "./history.mjs";
 {
   const rows = [
     { role: "planner", content: "draft a welcome dinner proposal", draft_ref: null, action_ref: null },
-    { role: "concierge", content: "Done — I drafted it.", draft_ref: null, action_ref: null },
+    { role: "concierge", content: "Done, I drafted it.", draft_ref: null, action_ref: null },
     { role: "concierge", content: "", draft_ref: { kind: "proposal", id: "437296c2-aaaa", title: "Welcome Dinner Mariachi Upgrade" }, action_ref: null },
   ];
   const h = foldHistory(rows);
@@ -14,7 +14,7 @@ import { foldHistory } from "./history.mjs";
   assert.equal(h[0].role, "user");
   assert.equal(h[1].role, "assistant");
   // the merged assistant turn carries the answer AND the created id
-  assert.ok(h[1].content.includes("Done — I drafted it."));
+  assert.ok(h[1].content.includes("Done, I drafted it."));
   assert.ok(h[1].content.includes("437296c2-aaaa"));
   assert.ok(h[1].content.includes("Welcome Dinner Mariachi Upgrade"));
 }

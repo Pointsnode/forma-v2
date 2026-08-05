@@ -22,7 +22,7 @@ export default async function MenuPage({ params, searchParams }: { params: Promi
           <p className="text-[7.5px] uppercase tracking-[0.42em] text-taupe">{t("wordmark")}</p>
         </div>
         {error || !payload ? (
-          <div className="rounded-2xl bg-paper p-8 text-center shadow-card">
+          <div className="rounded-[var(--radius)] bg-bone p-8 text-center">
             <p className="font-display text-[22px] text-ink">{t("badTitle")}</p>
             <p className="mt-1.5 font-accent text-[15px] text-muted">{t("badBody")}</p>
           </div>

@@ -70,10 +70,10 @@ export function EngagementLedgerView({ vm, isStaff }: { vm: LedgerVM; isStaff: b
               {vm.priceStrip.map((s, i) => (
                 <div key={i} className="flex items-center gap-2">
                   {i > 0 ? <span aria-hidden className="text-muted">→</span> : null}
-                  <div className={cx("rounded-xl px-3 py-2", s.label === "final" ? "bg-ink text-bone" : "bg-bone")}>
+                  <div className={cx("rounded-[var(--radius)] px-3 py-2", s.label === "final" ? "bg-ink text-bone" : "bg-bone")}>
                     <div className="text-[10.5px] uppercase tracking-[0.12em] opacity-70">{s.label.startsWith("quote") ? t("quoteN", { n: s.label.replace("quote", "") }) : t(`price_${s.label}`)}</div>
                     <div className="font-display text-[17px] leading-tight">{s.amountFmt}</div>
-                    {s.deltaFmt ? <div className={cx("text-[11px]", s.label === "final" ? "text-bone/70" : s.deltaUp ? "text-wine" : "text-sage-ink")}>{s.deltaFmt}</div> : null}
+                    {s.deltaFmt ? <div className={cx("text-[11px]", s.label === "final" ? "text-bone/70" : s.deltaUp ? "text-wine" : "text-teal")}>{s.deltaFmt}</div> : null}
                   </div>
                 </div>
               ))}
@@ -147,10 +147,10 @@ function TimelineRow({ it, t }: { it: TimelineVM; t: (k: string, v?: Record<stri
   }
   return (
     <div className="flex gap-3">
-      <span className={cx("mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold", it.isCouple ? "bg-wine text-bone" : "bg-sand text-ink")}>{it.authorName.slice(0, 1).toUpperCase()}</span>
+      <span className={cx("mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius)] text-[10px] font-semibold", it.isCouple ? "bg-wine text-bone" : "bg-champagne text-ink")}>{it.authorName.slice(0, 1).toUpperCase()}</span>
       <div className="min-w-0 flex-1">
         <p className="text-[12.5px] text-muted">{it.authorName} · {it.dateFmt}</p>
-        <p className="rounded-xl bg-bone px-3 py-2 text-[14px] text-ink">{it.body}</p>
+        <p className="rounded-[var(--radius)] bg-bone px-3 py-2 text-[14px] text-ink">{it.body}</p>
       </div>
     </div>
   );
@@ -161,8 +161,8 @@ function RailBtn({ label, onClick, disabled, variant = "ghost" }: { label: strin
 }
 
 function Dot({ tone }: { tone: BadgeTone }) {
-  const bg: Record<BadgeTone, string> = { sand: "bg-sand", wine: "bg-wine", sage: "bg-sage", maroon: "bg-maroon", ink: "bg-ink" };
-  return <span className={cx("mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full", bg[tone])} />;
+  const bg: Record<BadgeTone, string> = { sand: "bg-champagne", wine: "bg-wine", sage: "bg-teal", maroon: "bg-oxblood", ink: "bg-ink" };
+  return <span className={cx("mt-1.5 h-2.5 w-2.5 shrink-0 rounded-[var(--radius)]", bg[tone])} />;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -183,7 +183,7 @@ function StaffRail({ vm, t, run, pending, router }: { vm: LedgerVM; t: any; te: 
         {s === "quoted" && r.latestQuoteId && (
           <>
             {!r.latestSent && <RailBtn variant="solid" label={t("sendQuote")} disabled={pending} onClick={() => run(() => sendQuote(r.latestQuoteId!, ""))} />}
-            {r.latestSent && <span className="self-center text-[12.5px] text-sage-ink">{t("sentToCouple")}</span>}
+            {r.latestSent && <span className="self-center text-[12.5px] text-teal">{t("sentToCouple")}</span>}
             <RailBtn label={t("recordRevised")} disabled={pending} onClick={() => run(() => requestQuote(vm.id))} />
             <RailBtn label={t("accept")} disabled={pending} onClick={() => run(() => acceptQuote(r.latestQuoteId!))} />
             <RailBtn label={t("decline")} disabled={pending} onClick={() => run(() => declineQuote(r.latestQuoteId!))} />
@@ -194,12 +194,12 @@ function StaffRail({ vm, t, run, pending, router }: { vm: LedgerVM; t: any; te: 
         {s === "booked" && (
           <>
             {!r.hasBudgetLine && r.acceptedQuoteId && <RailBtn variant="solid" label={t("addToBudget", { amount: r.acceptedAmountFmt ?? "" })} disabled={pending} onClick={() => run(() => addToBudget(r.acceptedQuoteId!))} />}
-            <Link href={`/wedding/${vm.weddingId}/documents`} className="inline-flex items-center rounded-full px-5 py-2.5 text-[14px] text-ink hover:text-taupe">{t("addDocument")}</Link>
+            <Link href={`/wedding/${vm.weddingId}/documents`} className="inline-flex items-center rounded-[var(--radius)] px-5 py-2.5 text-[14px] text-ink hover:text-taupe">{t("addDocument")}</Link>
           </>
         )}
 
         {(s === "declined" || s === "archived") && (
-          <Link href={`/wedding/${vm.weddingId}/vendors?present=${r.vendorId}`} className="inline-flex items-center rounded-full bg-ink px-5 py-2.5 text-[14px] font-medium text-bone hover:opacity-90">{t("rePresent")}</Link>
+          <Link href={`/wedding/${vm.weddingId}/vendors?present=${r.vendorId}`} className="inline-flex items-center rounded-[var(--radius)] bg-ink px-5 py-2.5 text-[14px] font-medium text-bone hover:opacity-90">{t("rePresent")}</Link>
         )}
 
         {s !== "booked" && s !== "declined" && s !== "archived" && <RailBtn label={t("archive")} disabled={pending} onClick={() => run(() => archiveEngagement(vm.id))} />}
@@ -220,7 +220,7 @@ function RecordQuoteForm({ quoteId, weddingId, t, pending, onDone }: { quoteId: 
   const [busy, startForm] = useTransition();
   const [ferr, setFerr] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const F = "w-full rounded-xl bg-bone px-3.5 py-2.5 text-[14px] text-ink focus:outline-none focus:ring-1 focus:ring-sand";
+  const F = "w-full rounded-[var(--radius)] bg-bone px-3.5 py-2.5 text-[14px] text-ink focus:outline-none focus:ring-1 focus:ring-champagne";
 
   function submit() {
     setFerr(null);
@@ -235,10 +235,10 @@ function RecordQuoteForm({ quoteId, weddingId, t, pending, onDone }: { quoteId: 
   }
 
   return (
-    <div className="mt-4 grid gap-3 rounded-xl bg-bone/60 p-4 sm:max-w-md">
+    <div className="mt-4 grid gap-3 rounded-[var(--radius)] bg-bone/60 p-4 sm:max-w-md">
       <input className={F} inputMode="decimal" placeholder={t("amountPlaceholder")} value={amount} onChange={(e) => setAmount(e.target.value)} />
       <label className="text-[12px] text-muted">{t("validUntilLabel")}<input className={cx(F, "mt-1")} type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} /></label>
-      <input ref={fileRef} type="file" accept="application/pdf" className="text-[12.5px] text-ink file:mr-3 file:rounded-full file:border-0 file:bg-ink file:px-3 file:py-1.5 file:text-bone" />
+      <input ref={fileRef} type="file" accept="application/pdf" className="text-[12.5px] text-ink file:mr-3 file:rounded-[var(--radius)] file:border-0 file:bg-ink file:px-3 file:py-1.5 file:text-bone" />
       <p className="-mt-1.5 text-[11.5px] text-muted">{t("pdfHint")}</p>
       <textarea className={cx(F, "min-h-[64px] resize-y")} placeholder={t("notePlaceholder")} value={note} onChange={(e) => setNote(e.target.value)} />
       {ferr ? <p className="text-[13px] text-wine">{ferr}</p> : null}
@@ -266,14 +266,14 @@ function CoupleRail({ vm, t, run, pending }: { vm: LedgerVM; t: any; run: (fn: (
           onClick={() => (declining ? run(() => coupleRespond(pid, "decline", null), () => setDeclining(false)) : setDeclining(true))}
           onBlur={() => setDeclining(false)}
           disabled={pending}
-          className={cx("rounded-full px-4 py-2 text-[13px] disabled:opacity-50", declining ? "font-medium text-wine" : "text-muted hover:text-wine")}
+          className={cx("rounded-[var(--radius)] px-4 py-2 text-[13px] disabled:opacity-50", declining ? "font-medium text-wine" : "text-muted hover:text-wine")}
         >
           {declining ? t("reallyDecline") : t("coupleDecline")}
         </button>
       </div>
       {asking && (
         <div className="mt-3 grid gap-2 sm:max-w-md">
-          <textarea className="min-h-[72px] w-full resize-y rounded-xl bg-bone px-3.5 py-2.5 text-[14px] text-ink focus:outline-none focus:ring-1 focus:ring-sand" placeholder={t("askPlaceholder")} value={msg} onChange={(e) => setMsg(e.target.value)} />
+          <textarea className="min-h-[72px] w-full resize-y rounded-[var(--radius)] bg-bone px-3.5 py-2.5 text-[14px] text-ink focus:outline-none focus:ring-1 focus:ring-champagne" placeholder={t("askPlaceholder")} value={msg} onChange={(e) => setMsg(e.target.value)} />
           <Button variant="solid" onClick={() => run(() => coupleRespond(pid, "request_change", msg), () => { setAsking(false); setMsg(""); })} disabled={pending || !msg.trim()}>{t("sendAsk")}</Button>
         </div>
       )}

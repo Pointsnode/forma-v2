@@ -51,7 +51,7 @@ export default async function PlannersIndex({ params }: { params: Promise<{ loca
               <Link
                 key={r.slug}
                 href={`/planners/${r.slug}`}
-                className="rounded-full bg-paper px-4 py-2 text-[13px] text-ink shadow-card transition-shadow hover:shadow-lift"
+                className="rounded-[var(--radius)] bg-bone px-4 py-2 text-[13px] text-ink transition-shadow"
               >
                 {r.region}
                 <span className="ml-1.5 text-[11px] text-muted">{r.count}</span>

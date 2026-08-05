@@ -45,7 +45,7 @@ export default async function WhatsNextTab({ params }: { params: Promise<{ local
                       {goal.subs.length ? (
                         <div className="mt-1.5 flex flex-wrap gap-1.5">
                           {goal.subs.map((s, i) => (
-                            <span key={i} className={cx("rounded-full px-2.5 py-[2px] text-[10.8px]", s.done ? "bg-sage-soft text-sage-ink" : "bg-wine-soft text-wine")}>{s.label}{s.done ? " ✓" : ""}</span>
+                            <span key={i} className={cx("rounded-[var(--radius)] px-2.5 py-[2px] text-[10.8px]", s.done ? "bg-bone text-teal" : "bg-bone text-wine")}>{s.label}{s.done ? " ✓" : ""}</span>
                           ))}
                         </div>
                       ) : null}

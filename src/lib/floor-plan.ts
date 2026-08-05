@@ -44,7 +44,7 @@ export async function loadFloorPlan(supabase: SupabaseClient, eventId: string): 
     const { data: opts } = await supabase.from("menu_options").select("id, diet_tags").in("id", choiceIds);
     for (const o of (opts ?? []) as { id: string; diet_tags: string[] }[]) dietBy.set(o.id, o.diet_tags ?? []);
   }
-  const nameBy = new Map(egs.map((e) => [e.guest_id, e.guests?.full_name ?? "—"]));
+  const nameBy = new Map(egs.map((e) => [e.guest_id, e.guests?.full_name ?? "·"]));
   const rsvpBy = new Map(egs.map((e) => [e.guest_id, e.rsvp_status]));
   const guestDiet = (gid: string) => { const mc = egs.find((e) => e.guest_id === gid)?.menu_choice_id; return mc ? dietBy.get(mc) ?? [] : []; };
 
@@ -67,10 +67,10 @@ export async function loadFloorPlan(supabase: SupabaseClient, eventId: string): 
       for (const s of (seatRows ?? []) as { table_id: string; seat_no: number; guest_id: string }[]) {
         seatedGuestIds.add(s.guest_id);
         const arr = seatsBy.get(s.table_id) ?? [];
-        arr.push({ seatNo: s.seat_no, guestId: s.guest_id, name: nameBy.get(s.guest_id) ?? "—", diet: guestDiet(s.guest_id) });
+        arr.push({ seatNo: s.seat_no, guestId: s.guest_id, name: nameBy.get(s.guest_id) ?? "·", diet: guestDiet(s.guest_id) });
         seatsBy.set(s.table_id, arr);
         // RSVP-flip drift: seated but no longer attending
-        if (rsvpBy.get(s.guest_id) !== "yes") exceptions.push({ guestId: s.guest_id, name: nameBy.get(s.guest_id) ?? "—", rsvp: rsvpBy.get(s.guest_id) ?? "—", tableId: s.table_id, seatNo: s.seat_no });
+        if (rsvpBy.get(s.guest_id) !== "yes") exceptions.push({ guestId: s.guest_id, name: nameBy.get(s.guest_id) ?? "·", rsvp: rsvpBy.get(s.guest_id) ?? "·", tableId: s.table_id, seatNo: s.seat_no });
       }
     }
     tables = tbls.map((t) => ({
@@ -81,7 +81,7 @@ export async function loadFloorPlan(supabase: SupabaseClient, eventId: string): 
   }
 
   const attending = egs.filter((e) => e.rsvp_status === "yes");
-  const attendees: AttendeeVM[] = attending.map((e) => ({ guestId: e.guest_id, name: e.guests?.full_name ?? "—", diet: guestDiet(e.guest_id), seated: seatedGuestIds.has(e.guest_id) }));
+  const attendees: AttendeeVM[] = attending.map((e) => ({ guestId: e.guest_id, name: e.guests?.full_name ?? "·", diet: guestDiet(e.guest_id), seated: seatedGuestIds.has(e.guest_id) }));
   const seatedCount = attending.filter((e) => seatedGuestIds.has(e.guest_id)).length;
 
   return { plan, tables, elements, attendees, exceptions, seatedCount, attendingCount: attending.length };

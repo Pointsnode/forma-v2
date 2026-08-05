@@ -1,6 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
-import { Card, Heading, Chip, Button } from "@/components/ui";
+import { Card, Heading, Chip, Button, SignedMark } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { CLEARANCE_BOXES } from "@/lib/clearance";
 import { AcceptTeamInvite } from "./accept-team-invite";
@@ -28,6 +28,7 @@ export default async function JoinTeamPage({ params }: { params: Promise<{ local
   if (!user) {
     return (
       <div className="mx-auto max-w-sm px-6 py-12">
+        <div className="mb-8 flex justify-center"><SignedMark /></div>
         <Card>
           <Heading>{t("joinTitle")}</Heading>
           <p className="mb-5 mt-1 font-accent text-[16px] text-muted">{t("joinSignInHint")}</p>
@@ -56,14 +57,15 @@ export default async function JoinTeamPage({ params }: { params: Promise<{ local
 
   return (
     <div className="mx-auto max-w-sm px-6 py-12">
+      <div className="mb-8 flex justify-center"><SignedMark /></div>
       <Card>
         <Heading>{t("joinTitle")}</Heading>
         {preview && preview.status === "ok" ? (
           <>
             <p className="mb-4 mt-1 font-accent text-[16px] text-muted">
               {t.rich("joinInvited", {
-                workspace: preview.workspace_name ?? "—",
-                inviter: preview.inviter ?? "—",
+                workspace: preview.workspace_name ?? "·",
+                inviter: preview.inviter ?? "·",
                 b: (c) => <span className="font-medium text-ink">{c}</span>,
               })}
             </p>

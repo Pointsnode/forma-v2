@@ -33,9 +33,9 @@ export function CoupleTasks({ tasks: tasks0 }: { tasks: CoupleTask[] }) {
         ) : open.map((task) => (
           <Row key={task.id}>
             <button onClick={() => done(task.id)} disabled={pending}
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-hairline text-[11px] text-muted hover:border-sage hover:text-sage-ink"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[var(--radius)] border border-hairline text-[11px] text-muted hover:border-teal hover:text-teal"
               title={t("markDone")}>{""}</button>
-            <RowMain title={<span className="flex items-center gap-1.5">{task.flagged ? <span aria-hidden className="h-2.5 w-2.5 rounded-[2px] bg-wine" title={t("flagged")} /> : null}{task.title}</span>} detail={task.note || (task.due_date ? t("dueOn", { date: task.due_date }) : undefined)} />
+            <RowMain title={<span className="flex items-center gap-1.5">{task.flagged ? <span aria-hidden className="h-2.5 w-2.5 rounded-[var(--radius)] bg-wine" title={t("flagged")} /> : null}{task.title}</span>} detail={task.note || (task.due_date ? t("dueOn", { date: task.due_date }) : undefined)} />
             {task.due_date ? <span className="shrink-0 text-[11.5px] text-muted">{task.due_date.slice(5)}</span> : null}
           </Row>
         ))}

@@ -24,7 +24,7 @@ export async function loadGuestBoard(supabase: SupabaseClient, weddingId: string
     supabase.from("seats").select("guest_id, seat_no, event_id, seating_tables(name)").eq("wedding_id", weddingId),
   ]);
   const seatRows = ((seats.data ?? []) as unknown as { guest_id: string; seat_no: number; event_id: string; seating_tables: { name: string } | null }[])
-    .map((s) => ({ guest_id: s.guest_id, seat_no: s.seat_no, event_id: s.event_id, table: s.seating_tables?.name ?? "—" }));
+    .map((s) => ({ guest_id: s.guest_id, seat_no: s.seat_no, event_id: s.event_id, table: s.seating_tables?.name ?? "·" }));
   return {
     rollup: (rollup.data as Rollup | null) ?? { invited: 0, answered: 0, yes: 0, no: 0, maybe: 0, pending: 0 },
     counts: (counts.data ?? []) as EventCount[],

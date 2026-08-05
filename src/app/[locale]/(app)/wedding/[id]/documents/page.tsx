@@ -50,7 +50,7 @@ export default async function DocumentsTab({ params }: { params: Promise<{ local
               </>
             );
             return (
-              <Row key={d.id} className="-mx-2 rounded-xl px-2 hover:bg-bone">
+              <Row key={d.id} className="-mx-2 rounded-[var(--radius)] px-2 hover:bg-bone">
                 {url ? <a href={url} target="_blank" rel="noopener" className="flex min-w-0 flex-1 items-center gap-3">{inner}</a> : <span className="flex min-w-0 flex-1 items-center gap-3">{inner}</span>}
                 {role === "staff" ? <QuickAddTask weddings={[]} workspaceId="" defaultWeddingId={id} prelink={{ kind: "document", id: d.id, label: d.title }} variant="inline" /> : null}
               </Row>

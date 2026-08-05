@@ -2,7 +2,9 @@ import type { ReactNode } from "react";
 import { cx } from "./cn";
 import { Monogram, Chip } from "./primitives";
 
-/** Dark hero shell (#121212). Borderless; soft hero shadow. M1 fills the slots. */
+/** The flat charcoal hero BAND (Edition One): no radius, no shadow. Champagne kicker,
+    Playfair bone heading, stat row on a bone-alpha hairline. Same API. (Full-viewport
+    bleed and the in-band event bar/sub-nav arrive with the page milestones.) */
 export function HeroShell({
   monogram,
   title,
@@ -15,15 +17,15 @@ export function HeroShell({
   facts?: ReactNode;
 }) {
   return (
-    <section className="rounded-3xl bg-ink px-8 py-9 text-bone shadow-hero">
+    <section className="bg-ink px-8 py-9 text-bone">
       <div className="flex items-start gap-5">
         {monogram ? <Monogram initials={monogram} size={56} dark /> : null}
         <div className="min-w-0 flex-1">
-          {eyebrow ? <p className="font-accent text-[16px] text-[rgba(247,244,238,0.7)]">{eyebrow}</p> : null}
-          {title ? <h1 className="mt-1 font-display text-[34px] leading-tight">{title}</h1> : null}
+          {eyebrow ? <p className="font-accent text-[16px] text-champagne">{eyebrow}</p> : null}
+          {title ? <h1 className="mt-1 font-display text-[34px] leading-tight text-bone">{title}</h1> : null}
         </div>
       </div>
-      {facts ? <div className="mt-7 flex flex-wrap gap-x-12 gap-y-4">{facts}</div> : null}
+      {facts ? <div className="mt-7 flex flex-wrap gap-x-12 gap-y-4 border-t border-hairline-dark pt-5">{facts}</div> : null}
     </section>
   );
 }

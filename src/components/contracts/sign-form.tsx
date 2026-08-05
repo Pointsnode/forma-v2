@@ -17,7 +17,7 @@ export type ContractView = {
   signers: Signer[];
 };
 
-const input = "w-full rounded-xl bg-bone px-3.5 py-2.5 text-[15px] text-ink shadow-card outline-none focus:shadow-lift";
+const input = "w-full rounded-[var(--radius)] border border-hairline bg-bone px-3.5 py-2.5 text-[15px] text-ink outline-none focus:border-ink";
 
 const errMsg = (t: ReturnType<typeof useTranslations>, code?: string) =>
   code === "FM025" ? t("errRequired") : code === "FM021" ? t("errTurn") : code === "FM024" ? t("errActed") : t("errGeneric");
@@ -75,13 +75,13 @@ export function SignForm({ token, view }: { token: string; view: ContractView })
   // ── the field walk + signature ───────────────────────────────────────────
   return (
     <div className="flex flex-col gap-5">
-      <div className="rounded-2xl bg-paper p-6 shadow-card">
+      <div className="rounded-[var(--radius)] bg-bone p-6">
         <h2 className="font-display text-[22px] text-ink">{view.contract.title}</h2>
         {view.body ? <p className="mt-3 whitespace-pre-wrap text-[14px] leading-[1.7] text-ink-soft">{substituteBody(view.body, Object.fromEntries(view.fields.map((f) => [f.key, f.value])))}</p> : null}
       </div>
 
       {myFields.length ? (
-        <div className="rounded-2xl bg-paper p-6 shadow-card">
+        <div className="rounded-[var(--radius)] bg-bone p-6">
           <p className="mb-3 text-[11px] uppercase tracking-[0.12em] text-muted">{t("yourFields")}</p>
           <div className="flex flex-col gap-3">
             {myFields.map((f) => (
@@ -94,7 +94,7 @@ export function SignForm({ token, view }: { token: string; view: ContractView })
         </div>
       ) : null}
 
-      <div className="rounded-2xl bg-paper p-6 shadow-card">
+      <div className="rounded-[var(--radius)] bg-bone p-6">
         <p className="mb-2 text-[11px] uppercase tracking-[0.12em] text-muted">{t("signHere")}</p>
         <input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder={view.me.name} className={cx(input, "font-accent text-[20px] italic")} />
         {err ? <p className="mt-2 text-[13px] text-wine">{err}</p> : null}
@@ -114,9 +114,9 @@ export function SignForm({ token, view }: { token: string; view: ContractView })
 }
 
 function Banner({ tone, title, body }: { tone: "sage" | "wine" | "sand"; title: string; body: string }) {
-  const bg = tone === "sage" ? "bg-sage-soft text-sage-ink" : tone === "wine" ? "bg-wine-soft text-wine" : "bg-sand-soft text-taupe";
+  const bg = tone === "sage" ? "bg-bone text-teal" : tone === "wine" ? "bg-bone text-wine" : "bg-bone text-taupe";
   return (
-    <div className={cx("rounded-2xl p-8 text-center shadow-card", bg)}>
+    <div className={cx("rounded-[var(--radius)] p-8 text-center", bg)}>
       <p className="font-display text-[22px]">{title}</p>
       <p className="mt-1.5 font-accent text-[15px]">{body}</p>
     </div>

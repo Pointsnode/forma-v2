@@ -63,7 +63,7 @@ export async function loadProposals(
       .select("id, vendors(name), event_vendors(event_id)")
       .in("id", engIds);
     for (const e of (engs ?? []) as unknown as { id: string; vendors: { name: string } | null; event_vendors: { event_id: string }[] }[]) {
-      engMap.set(e.id, { vendorName: e.vendors?.name ?? "—", eventIds: (e.event_vendors ?? []).map((x) => x.event_id) });
+      engMap.set(e.id, { vendorName: e.vendors?.name ?? "·", eventIds: (e.event_vendors ?? []).map((x) => x.event_id) });
     }
   }
 
@@ -72,11 +72,11 @@ export async function loadProposals(
     const messages = [...(p.proposal_messages ?? [])].sort((a, b) => a.created_at.localeCompare(b.created_at));
     const eng = p.engagement_id ? engMap.get(p.engagement_id) : undefined;
     // The couple can't read the vendors catalogue (workspace-member-only RLS), so the vendors join
-    // is null on their side and vendorName comes back "—". The present-born proposal's TITLE — set
+    // is null on their side and vendorName comes back "·". The present-born proposal's TITLE — set
     // by present_vendor to "{vendor name} — {kind}", and couple-readable — carries the name; fall
     // back to it rather than widening the vendors policy (§3).
     let vendorName = eng?.vendorName ?? null;
-    if (p.engagement_id && (!vendorName || vendorName === "—")) vendorName = p.title.split(" — ")[0] || vendorName;
+    if (p.engagement_id && (!vendorName || vendorName === "·")) vendorName = p.title.split(" — ")[0] || vendorName;
     return {
       ...p, proposal_messages: messages, court: c?.court ?? "none", age_days: c?.age_days ?? 0,
       engVendorName: vendorName, engEventIds: eng?.eventIds ?? [],
@@ -110,7 +110,7 @@ export async function loadMembers(supabase: SupabaseClient, weddingId: string): 
   const { data: profs } = await supabase.from("profiles").select("id, display_name").in("id", rows.map((r) => r.user_id));
   const names = new Map((profs ?? []).map((p: { id: string; display_name: string | null }) => [p.id, p.display_name]));
   return rows.map((r) => {
-    const name = names.get(r.user_id) ?? "—";
+    const name = names.get(r.user_id) ?? "·";
     return { id: r.user_id, name, initials: personInitials(name), role: r.role };
   });
 }
@@ -131,7 +131,7 @@ export async function loadPendingInvites(supabase: SupabaseClient, weddingId: st
 
 export function personName(people: Map<string, Person>, id: string | null): string {
   if (!id) return "Forma";
-  return people.get(id)?.display_name ?? "—";
+  return people.get(id)?.display_name ?? "·";
 }
 
 export function personInitials(name: string): string {
@@ -157,7 +157,7 @@ export function toView(
     estimate: formatMoney(p.estimate_amount, locale),
     eventLabel: p.event_ref ? eventLabels.get(p.event_ref) ?? null : null,
     subject: p.engagement_id
-      ? { vendorName: p.engVendorName ?? "—", eventLabels: p.engEventIds.map((id) => eventLabels.get(id)).filter((x): x is string => !!x) }
+      ? { vendorName: p.engVendorName ?? "·", eventLabels: p.engEventIds.map((id) => eventLabels.get(id)).filter((x): x is string => !!x) }
       : null,
     court: p.court,
     ageDays: p.age_days,
