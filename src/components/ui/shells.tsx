@@ -1,6 +1,32 @@
 import type { ReactNode } from "react";
 import { cx } from "./cn";
-import { Monogram, Chip } from "./primitives";
+import { Monogram, Chip, DomainStar, type Domain } from "./primitives";
+
+// ── DomainHeadCard — the ONE sanctioned domain field (color-roles law): a domain may tint
+// its card HEADER, a single title strip (the money radar wears a teal head), while the body
+// stays bone for the reading. Bone title + bone star + bone-alpha meta on the strip; never
+// tint the body, never two accents. money=teal, time=champagne (ink type), people=taupe. ──
+const STRIP: Record<Domain, { bg: string; on: string; star: string; border: string; meta: string }> = {
+  money: { bg: "bg-teal", on: "text-bone", star: "#F5F2EB", border: "border-teal", meta: "text-bone/75" },
+  time: { bg: "bg-champagne", on: "text-ink", star: "#111111", border: "border-champagne", meta: "text-ink/60" },
+  people: { bg: "bg-taupe", on: "text-bone", star: "#F5F2EB", border: "border-taupe", meta: "text-bone/75" },
+};
+export function DomainHeadCard({ domain, title, meta, children, className, id }: {
+  domain: Domain; title: ReactNode; meta?: ReactNode; children: ReactNode; className?: string; id?: string;
+}) {
+  const s = STRIP[domain];
+  return (
+    <div id={id} className={cx("overflow-hidden rounded-[var(--radius)] border bg-surface-card", s.border, className)}>
+      <div className={cx("flex items-center justify-between gap-3 px-[18px] py-4", s.bg)}>
+        <span className={cx("flex items-center gap-2 font-display text-[18px] leading-none", s.on)}>
+          <DomainStar fill={s.star} size={11} />{title}
+        </span>
+        {meta ? <span className={cx("text-[11px] uppercase tracking-[0.14em]", s.meta)}>{meta}</span> : null}
+      </div>
+      <div className="p-[18px]">{children}</div>
+    </div>
+  );
+}
 
 /** The flat charcoal hero BAND (Edition One): no radius, no shadow. Champagne kicker,
     Playfair bone heading, stat row on a bone-alpha hairline. Same API. (Full-viewport

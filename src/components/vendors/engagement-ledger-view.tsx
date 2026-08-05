@@ -161,7 +161,8 @@ function RailBtn({ label, onClick, disabled, variant = "ghost" }: { label: strin
 }
 
 function Dot({ tone }: { tone: BadgeTone }) {
-  const bg: Record<BadgeTone, string> = { sand: "bg-champagne", wine: "bg-wine", sage: "bg-teal", maroon: "bg-oxblood", ink: "bg-ink" };
+  // maroon (declined/expired) reads as wine here, matching its Badge; oxblood is reserved.
+  const bg: Record<BadgeTone, string> = { sand: "bg-champagne", wine: "bg-wine", sage: "bg-teal", maroon: "bg-wine", ink: "bg-ink" };
   return <span className={cx("mt-1.5 h-2.5 w-2.5 shrink-0 rounded-[var(--radius)]", bg[tone])} />;
 }
 

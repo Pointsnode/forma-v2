@@ -4,7 +4,7 @@ export {
   Badge, Icon, WhoBadge, Tag, DomainStar, Wordmark, SignedMark,
   type PillTone, type ButtonProps, type BadgeTone, type Who, type ChipTone, type Domain,
 } from "./primitives";
-export { HeroShell, WeddingNav, EventBar, EventChips } from "./shells";
+export { HeroShell, WeddingNav, EventBar, EventChips, DomainHeadCard } from "./shells";
 export { PhaseDots } from "./phase-dots";
 export {
   StatRow, Stat, SectionTitle, Bento, BentoCard, BentoBig, BentoFoot,

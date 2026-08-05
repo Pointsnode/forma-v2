@@ -2,13 +2,13 @@ import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link, redirect } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
-  Card, Heading, Monogram, PhaseDots, StatRow, Stat, SectionTitle, Row, RowMain, cx,
+  Card, Heading, Monogram, PhaseDots, StatRow, Stat, SectionTitle, Row, RowMain, Chip, DomainHeadCard, cx,
 } from "@/components/ui";
 import { CreateWorkspaceForm } from "../workspace-forms";
 import { TouchLastSeen } from "./touch-last-seen";
 import { countdownLabel, formatMoney, initials, phaseLabel, PHASE_ORDER, type Phase, type WeddingRow } from "@/lib/wedding";
 import { loadCockpit, loadInquiries } from "@/lib/cockpit";
-import { loadMoneyRadar } from "@/lib/money";
+import { loadMoneyRadar, daysOverdue } from "@/lib/money";
 import { loadNextMeeting } from "@/lib/calendar";
 import { loadDatePrefs } from "@/lib/prefs";
 import { InquiriesCard } from "./inquiries-card";
@@ -179,9 +179,8 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
         {/* right — money radar · urgent · under management */}
         <div className="flex flex-col gap-[18px]">
         {radar.length ? (
-          <Card>
-            <Heading className="text-[19px]">{tmoney("radar")}</Heading>
-            <p className="mb-3 mt-0.5 text-[12.5px] text-muted">{tmoney("radarHint")}</p>
+          <DomainHeadCard domain="money" title={tmoney("radar")}>
+            <p className="mb-3 text-[12.5px] text-muted">{tmoney("radarHint")}</p>
             {radar.slice(0, 6).map((r) => (
               <Row key={r.id}>
                 <span className="w-14 shrink-0 font-accent text-[14px] italic text-taupe">{r.due_date.slice(5)}</span>
@@ -190,21 +189,25 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
               </Row>
             ))}
             <p className="mt-3 text-[11.5px] text-muted">{tmoney("computedNote")}</p>
-          </Card>
+          </DomainHeadCard>
         ) : null}
 
         {urgent.length ? (
           <Card>
             <Heading className="text-[19px]">{tmoney("urgent")}</Heading>
             <p className="mb-3 mt-0.5 text-[12.5px] text-muted">{tmoney("urgentHint")}</p>
-            {urgent.slice(0, 5).map((r) => (
-              <Link key={r.id} href={`/wedding/${r.wedding_id}/budget`} className="block">
-                <Row className="-mx-2 rounded-[var(--radius)] px-2 hover:bg-bone">
-                  <RowMain title={r.title} detail={r.couple_display} />
-                  <span className="shrink-0 rounded-[var(--radius)] bg-bone px-2.5 py-[3px] text-[11px] font-medium text-wine">{fmt(Number(r.amount))}</span>
-                </Row>
-              </Link>
-            ))}
+            {urgent.slice(0, 5).map((r) => {
+              const od = daysOverdue(r.due_date, r.status);
+              return (
+                <Link key={r.id} href={`/wedding/${r.wedding_id}/budget`} className="block">
+                  <Row className="-mx-2 rounded-[var(--radius)] px-2 hover:bg-bone">
+                    <RowMain title={r.title} detail={r.couple_display} />
+                    <span className="shrink-0 text-[13px] font-medium text-ink">{fmt(Number(r.amount))}</span>
+                    {od > 0 ? <Chip tone="urgent">{tmoney("overdue", { n: od })}</Chip> : <Chip tone="attention">{tmoney("dueChip")}</Chip>}
+                  </Row>
+                </Link>
+              );
+            })}
           </Card>
         ) : null}
 

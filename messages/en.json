@@ -414,7 +414,17 @@
     "statusApproved": "Approved, done",
     "statusDismissed": "Dismissed",
     "actionFailed": "Couldn't complete",
-    "newThread": "New"
+    "newThread": "New",
+    "kicker": "The concierge",
+    "ledger": "The ledger",
+    "askWedding": "Ask about this wedding",
+    "askStudio": "Ask about the studio",
+    "ask": "Ask",
+    "thinking": "thinking",
+    "copyAria": "Copy",
+    "copied": "Copied",
+    "today": "Today",
+    "yesterday": "Yesterday"
   },
   "tasks": {
     "tab": "Tasks",
@@ -797,7 +807,9 @@
     "radarHint": "every deadline in the next 60 days, theirs and yours",
     "urgent": "Urgent",
     "urgentHint": "due now or blocking a gate",
-    "yours": "yours"
+    "yours": "yours",
+    "overdue": "Overdue {n, plural, one {# day} other {# days}}",
+    "dueChip": "Due"
   },
   "contract": {
     "tab": "Contracts",

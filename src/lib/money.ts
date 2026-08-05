@@ -54,3 +54,12 @@ export async function loadMoneyRadar(supabase: SupabaseClient): Promise<{ radar:
   const urgent = radar.filter((r) => r.due_date <= today || r.status === "due");
   return { radar, urgent };
 }
+
+// The ONE written rule the `urgent` chip is allowed to key off (§ urgency is earned): a
+// payment strictly past its due date that isn't already settled. Returns whole days
+// overdue (0 = not overdue). No judgment, no soft meaning — the same rule everywhere.
+const SETTLED = new Set(["paid", "settled", "void"]);
+export function daysOverdue(dueDate: string | null, status: string, today: string = new Date().toISOString().slice(0, 10)): number {
+  if (!dueDate || dueDate >= today || SETTLED.has(status)) return 0;
+  return Math.max(0, Math.round((Date.parse(today) - Date.parse(dueDate)) / 86_400_000));
+}
