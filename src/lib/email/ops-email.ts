@@ -32,6 +32,6 @@ export function dayOfScheduleEmail(opts: { to: string; guestName: string; couple
   return {
     from: FROM, to: [opts.to], subject: es ? `Tu itinerario — ${opts.couple}` : `Your schedule — ${opts.couple}`,
     html: shell(`<p style="font-family:Inter,Arial,sans-serif;font-size:15px;margin-top:16px">${es ? `Hola ${opts.guestName}, aquí están tus días.` : `Hi ${opts.guestName}, here are your days.`}</p><table style="margin-top:10px">${rows}</table>${seatLine}`),
-    text: `${opts.couple}\n${opts.events.map((e) => `${[e.date, e.time].filter(Boolean).join(" ")} — ${e.label}`).join("\n")}${opts.seat ? `\nSeat: ${opts.seat}` : ""}`,
+    text: `${opts.couple}\n${opts.events.map((e) => `${[e.date, e.time].filter(Boolean).join(" ")} · ${e.label}`).join("\n")}${opts.seat ? `\nSeat: ${opts.seat}` : ""}`,
   };
 }

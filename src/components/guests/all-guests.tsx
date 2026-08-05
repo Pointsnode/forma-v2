@@ -14,7 +14,7 @@ const inputCls = "rounded-lg bg-bone px-2.5 py-1.5 text-[13px] text-ink shadow-c
 // "Seat…" deep-link that lands in the plan with them already picked up; a non-attendee is a dash.
 function SeatedAt({ weddingId, guestId, cell }: { weddingId: string; guestId: string; cell: SeatCell | undefined }) {
   const t = useTranslations("guests");
-  if (!cell || cell.kind === "none") return <span className="shrink-0 text-[12.5px] text-muted">—</span>;
+  if (!cell || cell.kind === "none") return <span className="shrink-0 text-[12.5px] text-muted">·</span>;
   if (cell.kind === "seated") {
     return <span className="shrink-0 text-[12.5px] text-taupe">{t("seatedAt", { table: cell.table, seat: seatLabel(cell.seatNo) })}</span>;
   }
@@ -51,7 +51,7 @@ function Row({ weddingId, g, canDelete, seat }: { weddingId: string; g: GuestRow
     <div className="flex items-center gap-3 py-2 [box-shadow:inset_0_-1px_0_var(--color-hairline)] last:shadow-none">
       <div className="min-w-0 flex-1">
         <p className="text-[14px] text-ink">{g.full_name}{g.plus_one_allowed ? <span className="ml-1.5 text-muted">+1</span> : null}</p>
-        <p className="font-accent text-[13px] text-muted">{g.email ?? "—"}{g.group_label ? ` · ${g.group_label}` : ""}</p>
+        <p className="font-accent text-[13px] text-muted">{g.email ?? "·"}{g.group_label ? ` · ${g.group_label}` : ""}</p>
       </div>
       <SeatedAt weddingId={weddingId} guestId={g.id} cell={seat} />
       {g.side !== "none" ? <Pill tone="sand">{g.side === "both" ? t("sideBoth") : g.side === "a" ? t("sideA") : t("sideB")}</Pill> : null}

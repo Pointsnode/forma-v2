@@ -62,8 +62,8 @@ export default async function JoinTeamPage({ params }: { params: Promise<{ local
           <>
             <p className="mb-4 mt-1 font-accent text-[16px] text-muted">
               {t.rich("joinInvited", {
-                workspace: preview.workspace_name ?? "—",
-                inviter: preview.inviter ?? "—",
+                workspace: preview.workspace_name ?? "·",
+                inviter: preview.inviter ?? "·",
                 b: (c) => <span className="font-medium text-ink">{c}</span>,
               })}
             </p>

@@ -111,7 +111,7 @@ export function PresentForm({ vendorKind, weddingId, events, onDone, doPresent }
       ) : null}
 
       <label className={mlbl}>{t("estimate")}</label>
-      <input value={estimate} onChange={(e) => setEstimate(e.target.value)} inputMode="numeric" className={cx(input, "mt-1.5")} placeholder="$ —" />
+      <input value={estimate} onChange={(e) => setEstimate(e.target.value)} inputMode="numeric" className={cx(input, "mt-1.5")} placeholder="$ ·" />
       <label className={mlbl}>{t("note")}</label>
       <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className={cx(input, "mt-1.5 min-h-16 resize-y")} />
 

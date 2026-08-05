@@ -19,10 +19,10 @@ export function additionalCount(accounts) {
 // The desired line set for a roster, prices injected. Each line: {amountCents, quantity, name}.
 export function planLines(accounts, conciergeSeats, prices) {
   const { priceAdmin, priceAdditional, priceConcierge } = prices;
-  const lines = [{ amountCents: priceAdmin * 100, quantity: 1, name: "Forma — Admin account" }];
+  const lines = [{ amountCents: priceAdmin * 100, quantity: 1, name: "Forma · Admin account" }];
   const additional = additionalCount(accounts);
-  if (additional > 0) lines.push({ amountCents: priceAdditional * 100, quantity: additional, name: "Forma — Additional account" });
-  if (conciergeSeats > 0) lines.push({ amountCents: priceConcierge * 100, quantity: conciergeSeats, name: "Forma — Concierge seat" });
+  if (additional > 0) lines.push({ amountCents: priceAdditional * 100, quantity: additional, name: "Forma · Additional account" });
+  if (conciergeSeats > 0) lines.push({ amountCents: priceConcierge * 100, quantity: conciergeSeats, name: "Forma · Concierge seat" });
   return lines;
 }
 

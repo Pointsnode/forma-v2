@@ -200,7 +200,7 @@ export function FloorEditor(props: FloorEditorProps) {
     whisper(assignSeatAt(props.eventId, guestId, c.tableId, c.seatNo).then((r) => {
       if (!r.error) {
         const a = props.attendees.find((x) => x.guestId === guestId);
-        setTables((ts) => ts.map((tb) => (tb.id === c.tableId ? { ...tb, seats: [...tb.seats.filter((s) => s.seatNo !== c.seatNo && s.guestId !== guestId), { seatNo: c.seatNo, guestId, name: a?.name ?? "—", diet: a?.diet ?? [] }] } : { ...tb, seats: tb.seats.filter((s) => s.guestId !== guestId) })));
+        setTables((ts) => ts.map((tb) => (tb.id === c.tableId ? { ...tb, seats: [...tb.seats.filter((s) => s.seatNo !== c.seatNo && s.guestId !== guestId), { seatNo: c.seatNo, guestId, name: a?.name ?? "·", diet: a?.diet ?? [] }] } : { ...tb, seats: tb.seats.filter((s) => s.guestId !== guestId) })));
         setChair(null); setPickGuest(null);
       }
       return r;
@@ -450,7 +450,7 @@ function TableInspector({
         <input defaultValue={table.name} onBlur={(e) => e.target.value !== table.name && onName(e.target.value)} className="w-24 rounded bg-bone px-2 py-0.5 text-[12px] text-ink outline-none" />
         <label className="flex items-center gap-1 text-[11.5px] text-muted">{t("groupWith")}
           <select value={table.groupedWith ?? ""} onChange={(e) => onGroup(e.target.value || null)} className="rounded bg-bone px-1.5 py-0.5 text-[12px] text-ink outline-none">
-            <option value="">—</option>
+            <option value="">·</option>
             {tables.map((tb) => <option key={tb.id} value={tb.id}>{tb.name}</option>)}
           </select>
         </label>

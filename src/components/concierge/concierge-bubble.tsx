@@ -169,7 +169,7 @@ export function ConciergeBubble({ weddings, usage: usage0, initialPending = 0 }:
               {convo.threads.map((th) => (
                 <button key={th.id} onClick={() => loadHistory(th.id)}
                   className={`shrink-0 rounded-full px-2.5 py-1 text-[11.5px] ${th.id === convo.threadId ? "bg-ink text-bone" : "bg-bone text-muted hover:text-ink"}`}>
-                  {th.title || "—"}
+                  {th.title || "·"}
                 </button>
               ))}
             </div>

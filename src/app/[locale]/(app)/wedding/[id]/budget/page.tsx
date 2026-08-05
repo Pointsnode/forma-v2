@@ -26,7 +26,7 @@ export default async function BudgetTab({ params }: { params: Promise<{ locale: 
 
   const { lines, rollup, traceFor, slices } = await loadLedger(supabase, id);
   const eventLabel = new Map(events.map((e) => [e.id, e.label]));
-  const fmt = (n: string | number | null) => formatMoney(n, lang) ?? "—";
+  const fmt = (n: string | number | null) => formatMoney(n, lang) ?? "·";
   // §B4 — ledger due dates honour the account's date-format preference (a DATE-typed
   // value, reordered without a timezone shift).
   const prefs = await loadDatePrefs(supabase, lang);

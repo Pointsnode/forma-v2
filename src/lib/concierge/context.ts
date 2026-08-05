@@ -55,10 +55,10 @@ async function weddingBlock(supabase: SupabaseClient, id: string): Promise<{ tex
   const lines = [
     `WEDDING: ${wedding.couple_display} (id ${wedding.id})`,
     `Phase: ${wedding.phase}${days != null ? ` · day one ${days >= 0 ? `in ${days} days` : `${-days} days ago`}` : " · undated"}`,
-    `Location: ${[wedding.location_city, wedding.location_country].filter(Boolean).join(", ") || "—"} · kind ${wedding.kind ?? "—"}`,
+    `Location: ${[wedding.location_city, wedding.location_country].filter(Boolean).join(", ") || "·"} · kind ${wedding.kind ?? "·"}`,
     `Events (${events.length}, ${datedEvents} dated): ${events.map((e) => `${e.label}${e.event_date ? ` ${e.event_date}` : ""}`).join("; ") || "none"}`,
-    `Budget ${formatMoney(money.budget_total ?? wedding.budget_total ?? 0, "en") ?? "—"} · paid ${formatMoney(money.paid ?? 0, "en") ?? "$0"} · committed ${formatMoney(money.committed ?? 0, "en") ?? "$0"} · open ${formatMoney(money.open ?? 0, "en") ?? "—"}`,
-    `Guests: target ${wedding.guest_target ?? "—"} · invited ${g.invited} · answered ${g.answered} · yes ${g.yes} · pending RSVP ${g.pending}`,
+    `Budget ${formatMoney(money.budget_total ?? wedding.budget_total ?? 0, "en") ?? "·"} · paid ${formatMoney(money.paid ?? 0, "en") ?? "$0"} · committed ${formatMoney(money.committed ?? 0, "en") ?? "$0"} · open ${formatMoney(money.open ?? 0, "en") ?? "·"}`,
+    `Guests: target ${wedding.guest_target ?? "·"} · invited ${g.invited} · answered ${g.answered} · yes ${g.yes} · pending RSVP ${g.pending}`,
     `Vendors: ${mesh.bookedCount} booked of ${mesh.engCount} in play${mesh.bookedKinds.size ? ` (${[...mesh.bookedKinds].join(", ")})` : ""}`,
     `Contracts: ${mesh.contractsSigned} signed of ${mesh.contractsTotal}`,
     `Run-of-show: ${roomSchedule} of ${events.length} events have a schedule`,

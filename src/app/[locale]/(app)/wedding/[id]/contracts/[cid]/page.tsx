@@ -84,7 +84,7 @@ export default async function ContractRoom({ params }: { params: Promise<{ local
                       f.merge_source === "manual" ? "bg-sand-soft text-taupe" : "bg-sage-soft text-sage-ink",
                     )} title={f.merge_source}>
                       <span className="font-medium">{f.label}:</span>
-                      <span>{f.resolved || (f.merge_source === "manual" ? tc("signerFills") : "—")}</span>
+                      <span>{f.resolved || (f.merge_source === "manual" ? tc("signerFills") : "·")}</span>
                     </span>
                   ))}
                 </div>
@@ -103,7 +103,7 @@ export default async function ContractRoom({ params }: { params: Promise<{ local
               <Heading className="text-[18px]">{tc("whyDraft")}</Heading>
               <Row>
                 <Check ok={false} />
-                <RowMain title={tc("blockedTitle")} detail={tc("heldOn", { title: blockingTitle ?? "—" })} />
+                <RowMain title={tc("blockedTitle")} detail={tc("heldOn", { title: blockingTitle ?? "·" })} />
                 <Badge tone="wine">{tc("waiting")}</Badge>
               </Row>
               <p className="mt-2 text-[12.5px] text-muted">{tc("autoSends")}</p>

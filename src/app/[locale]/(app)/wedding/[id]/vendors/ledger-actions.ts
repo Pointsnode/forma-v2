@@ -76,7 +76,7 @@ export async function recordQuote(quoteId: string, weddingId: string, amount: st
       // strip uses in SQL, so a document and its strip rung never disagree.
       const { count } = await supabase.from("quotes").select("id", { count: "exact", head: true }).eq("engagement_id", engagementId).lte("created_at", q!.created_at as string);
       const vname = ((eng?.vendors as unknown as { name: string } | null)?.name) ?? "Vendor";
-      title = `${vname} — Quote ${count ?? 1}`;
+      title = `${vname} · Quote ${count ?? 1}`;
     }
     await supabase.from("documents").insert({ wedding_id: weddingId, title, source: "vendor_file", storage_path: storagePath, engagement_id: engagementId });
   }

@@ -79,7 +79,7 @@ export async function loadCockpit(
     id: a.id,
     verb: a.verb,
     summary: a.summary,
-    actorName: a.actor_id ? actorNames.get(a.actor_id) ?? "—" : null,
+    actorName: a.actor_id ? actorNames.get(a.actor_id) ?? "·" : null,
     tag: tag(a.wedding_id),
     actorKind: a.actor_kind,
   }));
@@ -95,7 +95,7 @@ export async function loadCockpit(
   if (courtRows.length) {
     const { data: props } = await supabase.from("proposals").select("id, title").in("id", courtRows.map((c) => c.proposal_id));
     const titles = new Map((props ?? []).map((p: { id: string; title: string }) => [p.id, p.title]));
-    for (const c of courtRows) chase.push({ id: c.proposal_id, title: titles.get(c.proposal_id) ?? "—", weddingId: c.wedding_id, tag: tag(c.wedding_id), ageDays: c.age_days, href: `/wedding/${c.wedding_id}/proposals`, kind: "proposal" });
+    for (const c of courtRows) chase.push({ id: c.proposal_id, title: titles.get(c.proposal_id) ?? "·", weddingId: c.wedding_id, tag: tag(c.wedding_id), ageDays: c.age_days, href: `/wedding/${c.wedding_id}/proposals`, kind: "proposal" });
   }
 
   const { data: waitingTasks } = await supabase

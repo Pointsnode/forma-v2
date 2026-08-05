@@ -80,7 +80,7 @@ export function validateAction(fn, args) {
   // typed non-id args
   if (fn === "assign_seat") {
     const n = Number(a.seat_no);
-    if (!Number.isInteger(n) || n < 0) return { ok: false, error: "seat_no must be the 0-based chair number (A=0, B=1, …), an integer — not a letter" };
+    if (!Number.isInteger(n) || n < 0) return { ok: false, error: "seat_no must be the 0-based chair number (A=0, B=1, …), an integer, not a letter" };
   }
   if (fn === "check_schedule_item" && typeof a.done !== "boolean") return { ok: false, error: "done must be true or false" };
   if (fn === "set_couple_can_edit" && typeof a.on !== "boolean") return { ok: false, error: "on must be true or false" };
@@ -89,7 +89,7 @@ export function validateAction(fn, args) {
     if (!(amt > 0)) return { ok: false, error: "amount must be a positive number" };
     if (!String(a.title ?? "").trim()) return { ok: false, error: "title must not be empty" };
   }
-  if (fn === "post_proposal_message" && !String(a.body ?? "").trim()) return { ok: false, error: "body must not be empty — write the message" };
+  if (fn === "post_proposal_message" && !String(a.body ?? "").trim()) return { ok: false, error: "body must not be empty, write the message" };
   if (fn === "create_workspace_invite") {
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(a.email))) return { ok: false, error: "email must be a valid address" };
     if (!Array.isArray(a.grants) || !a.grants.every((x) => CLEARANCE_KEYS.includes(String(x)))) {
@@ -98,7 +98,7 @@ export function validateAction(fn, args) {
   }
   if (fn === "present_vendor" && a.event_ids !== undefined && a.event_ids !== null) {
     if (!Array.isArray(a.event_ids) || !a.event_ids.every((x) => UUID.test(String(x)))) {
-      return { ok: false, error: "event_ids must be an array of real event UUIDs from the events tool — call it first" };
+      return { ok: false, error: "event_ids must be an array of real event UUIDs from the events tool, call it first" };
     }
   }
   return { ok: true };

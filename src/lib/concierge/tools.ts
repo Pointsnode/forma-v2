@@ -237,18 +237,18 @@ export async function execTool(ctx: ToolCtx, name: string, input: Record<string,
       const eventLabel = new Map(((evs ?? []) as { id: string; label: string }[]).map((e) => [e.id, e.label]));
       const tables = (tbls ?? []) as { id: string; name: string; capacity: number; floor_plan_id: string }[];
       const egsAll = (egs ?? []) as unknown as { event_id: string; guest_id: string; rsvp_status: string; guests: { full_name: string } | null }[];
-      const nameBy = new Map(egsAll.map((e) => [e.guest_id, e.guests?.full_name ?? "—"]));
+      const nameBy = new Map(egsAll.map((e) => [e.guest_id, e.guests?.full_name ?? "·"]));
       const { data: seatRows } = tables.length ? await supabase.from("seats").select("table_id, seat_no, guest_id").in("table_id", tables.map((t) => t.id)) : { data: [] };
       const seats = (seatRows ?? []) as { table_id: string; seat_no: number; guest_id: string }[];
       const out = plans.map((p) => {
         const evTables = tables.filter((t) => t.floor_plan_id === p.id);
         const seatedIds = new Set(seats.filter((s) => evTables.some((t) => t.id === s.table_id)).map((s) => s.guest_id));
-        const lines = [`Event ${eventLabel.get(p.event_id) ?? "—"} (event_id=${p.event_id}, plan_id=${p.id}):`];
+        const lines = [`Event ${eventLabel.get(p.event_id) ?? "·"} (event_id=${p.event_id}, plan_id=${p.id}):`];
         for (const tb of evTables) {
-          const occ = seats.filter((s) => s.table_id === tb.id).sort((a, b) => a.seat_no - b.seat_no).map((s) => `${seatLabel(s.seat_no)}[seat_no=${s.seat_no}]=${nameBy.get(s.guest_id) ?? "—"}[guest_id=${s.guest_id}]`);
+          const occ = seats.filter((s) => s.table_id === tb.id).sort((a, b) => a.seat_no - b.seat_no).map((s) => `${seatLabel(s.seat_no)}[seat_no=${s.seat_no}]=${nameBy.get(s.guest_id) ?? "·"}[guest_id=${s.guest_id}]`);
           lines.push(`  ${tb.name} (table_id=${tb.id}, cap ${tb.capacity}): ${occ.join(", ") || "empty"}`);
         }
-        const unseated = egsAll.filter((e) => e.event_id === p.event_id && e.rsvp_status === "yes" && !seatedIds.has(e.guest_id)).map((e) => `${e.guests?.full_name ?? "—"}[guest_id=${e.guest_id}]`);
+        const unseated = egsAll.filter((e) => e.event_id === p.event_id && e.rsvp_status === "yes" && !seatedIds.has(e.guest_id)).map((e) => `${e.guests?.full_name ?? "·"}[guest_id=${e.guest_id}]`);
         lines.push(`  Unseated attending: ${unseated.join(", ") || "none"}`);
         return lines.join("\n");
       });
@@ -269,8 +269,8 @@ export async function execTool(ctx: ToolCtx, name: string, input: Record<string,
       const venueBy = new Map<string, string>();
       if (engIds.length) {
         const { data: wv } = await supabase.from("wedding_vendors").select("id, vendors(name)").in("id", engIds);
-        const nameByEng = new Map(((wv ?? []) as unknown as { id: string; vendors: { name: string } | null }[]).map((r) => [r.id, r.vendors?.name ?? "—"]));
-        for (const b of bookedRows) venueBy.set(b.event_id, nameByEng.get(b.engagement_id) ?? "—");
+        const nameByEng = new Map(((wv ?? []) as unknown as { id: string; vendors: { name: string } | null }[]).map((r) => [r.id, r.vendors?.name ?? "·"]));
+        for (const b of bookedRows) venueBy.set(b.event_id, nameByEng.get(b.engagement_id) ?? "·");
       }
       return {
         content: events.length
@@ -291,8 +291,8 @@ export async function execTool(ctx: ToolCtx, name: string, input: Record<string,
       for (const q of (quotes ?? []) as { id: string; engagement_id: string; amount: number | null; status: string }[]) { const a = qBy.get(q.engagement_id) ?? []; a.push(q); qBy.set(q.engagement_id, a); }
       return { content: rows.map((r) => {
         const qs = qBy.get(r.id) ?? [];
-        const qstr = qs.length ? ` — quotes: ${qs.map((q) => `quote_id=${q.id} ${q.amount ?? "—"} ${q.status}`).join("; ")}` : "";
-        return `engagement_id=${r.id} · ${r.vendors?.name ?? "—"} (${r.vendors?.kind ?? "—"}) · ${r.status}${qstr}`;
+        const qstr = qs.length ? ` — quotes: ${qs.map((q) => `quote_id=${q.id} ${q.amount ?? "·"} ${q.status}`).join("; ")}` : "";
+        return `engagement_id=${r.id} · ${r.vendors?.name ?? "·"} (${r.vendors?.kind ?? "·"}) · ${r.status}${qstr}`;
       }).join("\n") };
     }
     case "schedule": {

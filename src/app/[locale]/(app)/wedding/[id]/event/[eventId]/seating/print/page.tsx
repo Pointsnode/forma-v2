@@ -23,8 +23,8 @@ export default async function SeatingPrint({ params }: { params: Promise<{ local
   const floor = await loadFloorPlan(supabase, eventId);
   const { data: venueRows } = await supabase.from("event_vendors").select("venue_booked, wedding_vendors(vendors(name, kind))").eq("event_id", eventId);
   const venue = ((venueRows ?? []) as unknown as { venue_booked: boolean; wedding_vendors: { vendors: { name: string; kind: string } | null } | null }[])
-    .find((r) => r.venue_booked && r.wedding_vendors?.vendors?.kind === "venue")?.wedding_vendors?.vendors?.name ?? floor.plan?.name ?? "—";
-  const date = formatDateRange(event.event_date ?? wedding.date_start, null, lang) ?? "—";
+    .find((r) => r.venue_booked && r.wedding_vendors?.vendors?.kind === "venue")?.wedding_vendors?.vendors?.name ?? floor.plan?.name ?? "·";
+  const date = formatDateRange(event.event_date ?? wedding.date_start, null, lang) ?? "·";
   const escort = floor.tables.flatMap((tb) => tb.seats.map((s) => ({ ...s, tableName: tb.name }))).sort((a, b) => a.name.localeCompare(b.name));
 
   return (

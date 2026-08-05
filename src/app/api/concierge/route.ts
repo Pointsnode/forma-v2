@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
         if (!conciergeConfigured()) {
           const tid = destThreadId ?? await createStudioThread(supabase, workspaceId, user.id, message);
           await savePlannerTo(tid);
-          const notice = "The concierge isn't configured yet — the studio needs to add its model key. Your message is saved.";
+          const notice = "The concierge isn't configured yet, the studio needs to add its model key. Your message is saved.";
           await saveMessage(supabase, tid, "concierge", notice);
           emit({ type: "token", text: notice });
           emit({ type: "done", used: budget.used, cap: budget.cap, notConfigured: true });

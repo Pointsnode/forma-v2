@@ -79,7 +79,7 @@ export default async function EventPage({
     .order("invited", { ascending: false });
   const eventGuests = (egData ?? []).map((r) => {
     const g = r as unknown as { guest_id: string; invited: boolean; rsvp_status: string; guests: { full_name: string } | null };
-    return { guest_id: g.guest_id, full_name: g.guests?.full_name ?? "—", invited: g.invited, rsvp_status: g.rsvp_status };
+    return { guest_id: g.guest_id, full_name: g.guests?.full_name ?? "·", invited: g.invited, rsvp_status: g.rsvp_status };
   });
 
   return (
@@ -99,9 +99,9 @@ export default async function EventPage({
       <StatRow>
         <Stat value={te(`kinds.${event.kind}`)} label={te("kind")} />
         <Stat value={event.event_date ?? te("undated")} label={te("date")} />
-        <Stat value={times || "—"} label={`${te("startTime")} – ${te("endTime")}`} />
-        <Stat value={n != null ? te("dayN", { n }) : "—"} label={te("day")} />
-        <Stat value={event.guest_target ?? "—"} label={te("guestTarget")} />
+        <Stat value={times || "·"} label={`${te("startTime")} – ${te("endTime")}`} />
+        <Stat value={n != null ? te("dayN", { n }) : "·"} label={te("day")} />
+        <Stat value={event.guest_target ?? "·"} label={te("guestTarget")} />
         {slice ? <Stat value={slice} label={te("slice")} /> : null}
       </StatRow>
 

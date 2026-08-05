@@ -67,12 +67,12 @@ export default async function WeddingFloor({ params }: { params: Promise<{ local
       </div>
       <StatRow>
         <Stat value={wedding.guest_target ?? guestRollup.invited} label={tw("statGuests")} sub={guestRollup.answered ? tw("statGuestsSub", { count: guestRollup.answered }) : undefined} />
-        <Stat value={money ?? "—"} label={tw("statBudget")} />
+        <Stat value={money ?? "·"} label={tw("statBudget")} />
         {engagements.length ? (
           <Stat value={<>{booked}<span className="text-[16px] text-muted">/{engagements.length}</span></>} label={tw("statBookings")} />
         ) : null}
         <Stat
-          value={wedding.phase === "closed" ? tw("settled") : days == null ? "—" : days >= 0 ? days : tw("daysAgo", { count: -days })}
+          value={wedding.phase === "closed" ? tw("settled") : days == null ? "·" : days >= 0 ? days : tw("daysAgo", { count: -days })}
           label={tw("statDays")}
           sub={<span className="font-accent text-[14px] italic">{tp(wedding.phase)}</span>}
         />
@@ -160,10 +160,10 @@ async function CoupleLens({
   return (
     <WeddingShell wedding={wedding} events={events} role="member" active="overview">
       <StatRow>
-        <Stat value={wedding.guest_target ?? "—"} label={tw("statGuests")} />
+        <Stat value={wedding.guest_target ?? "·"} label={tw("statGuests")} />
         <Stat value={events.length} label={tw("facts.events")} />
-        <Stat value={money ?? "—"} label={tw("statBudget")} />
-        <Stat value={days ?? "—"} label={tw("statDays")} sub={location || undefined} />
+        <Stat value={money ?? "·"} label={tw("statBudget")} />
+        <Stat value={days ?? "·"} label={tw("statDays")} sub={location || undefined} />
       </StatRow>
 
       <div className="mt-[18px]">

@@ -21,7 +21,7 @@ export default async function WeddingTasksTab({ params }: { params: Promise<{ lo
     supabase.from("workspace_members").select("user_id, profiles(display_name)").eq("workspace_id", wedding.workspace_id ?? ""),
     supabase.from("vendors").select("id, name").eq("workspace_id", wedding.workspace_id ?? "").order("name"),
   ]);
-  const memberOpts = ((members ?? []) as unknown as { user_id: string; profiles: { display_name: string | null } | null }[]).map((m) => ({ id: m.user_id, name: m.profiles?.display_name ?? "—" }));
+  const memberOpts = ((members ?? []) as unknown as { user_id: string; profiles: { display_name: string | null } | null }[]).map((m) => ({ id: m.user_id, name: m.profiles?.display_name ?? "·" }));
   const vendorOpts = ((vendors ?? []) as { id: string; name: string }[]).map((v) => ({ id: v.id, name: v.name }));
   const eventOpts = events.map((e) => ({ id: e.id, label: e.label }));
 

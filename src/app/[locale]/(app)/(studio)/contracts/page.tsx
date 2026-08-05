@@ -7,7 +7,7 @@ import { TemplatesPanel } from "@/components/contracts/templates-panel";
 
 function exceptionDetail(tc: Awaited<ReturnType<typeof getTranslations>>, r: ExceptionRow): string {
   switch (r.state) {
-    case "held": return tc("exHeld", { title: r.detailVal ?? "—" });
+    case "held": return tc("exHeld", { title: r.detailVal ?? "·" });
     case "awaiting": return r.detailVal ? tc("exAwaiting", { name: r.detailVal }) : tc("exAwaitingUnknown");
     case "declined": return r.detailVal ? tc("exDeclined", { reason: r.detailVal }) : tc("exDeclinedNoReason");
     case "ready": return tc("exReady");

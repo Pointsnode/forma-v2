@@ -26,7 +26,7 @@ function EngagementCard({ e, weddingId }: { e: EngagementVM; weddingId: string }
           <div className="min-w-0 flex-1">
             <p className="font-display text-[16px] text-ink">{e.vendorName}</p>
             <p className="font-accent text-[13px] text-muted">{tv(kindKey(e.vendorKind))}{e.eventLabels.length ? ` · ${e.eventLabels.join(", ")}` : ""}{e.estimate ? ` · ${e.estimate}` : ""}</p>
-            {e.quote ? <p className="mt-0.5 text-[12.5px] text-taupe">{t("latestQuote")}: {e.quote.amount ?? "—"}{e.quote.validUntil ? ` · ${e.quote.validUntil}` : ""}{e.quote.expired ? ` · ${t("validPast")}` : ""}</p> : null}
+            {e.quote ? <p className="mt-0.5 text-[12.5px] text-taupe">{t("latestQuote")}: {e.quote.amount ?? "·"}{e.quote.validUntil ? ` · ${e.quote.validUntil}` : ""}{e.quote.expired ? ` · ${t("validPast")}` : ""}</p> : null}
           </div>
           <Pill tone={e.status === "booked" ? "sage" : e.status === "declined" ? "wine" : "sand"}>{t(statusKey(e.status))}</Pill>
         </div>

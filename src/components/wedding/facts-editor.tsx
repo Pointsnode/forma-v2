@@ -49,7 +49,7 @@ export function FactsEditor({ weddingId, initial }: { weddingId: string; initial
             <div className="grid grid-cols-2 gap-x-3">
               <div>
                 <label className={mlbl}>{t("statBudget")}</label>
-                <input name="budget_total" defaultValue={initial.budget} inputMode="numeric" className={cx(input, "mt-1.5")} placeholder="$ —" />
+                <input name="budget_total" defaultValue={initial.budget} inputMode="numeric" className={cx(input, "mt-1.5")} placeholder="$ ·" />
               </div>
               <div>
                 <label className={mlbl}>{t("statGuests")}</label>
@@ -67,7 +67,7 @@ export function FactsEditor({ weddingId, initial }: { weddingId: string; initial
 
             <label className={mlbl}>{t("factsKind")}</label>
             <select name="kind" defaultValue={initial.kind} className={cx(input, "mt-1.5")}>
-              <option value="">—</option>
+              <option value="">·</option>
               <option value="city">{t("create.kindCity")}</option>
               <option value="destination">{t("create.kindDestination")}</option>
             </select>

@@ -37,7 +37,7 @@ export default async function TasksPage({ params }: { params: Promise<{ locale: 
     supabase.from("workspace_members").select("user_id, profiles(display_name)").eq("workspace_id", workspaceId),
     supabase.from("vendors").select("id, name").eq("workspace_id", workspaceId).order("name"),
   ]);
-  const memberOpts = ((members ?? []) as unknown as { user_id: string; profiles: { display_name: string | null } | null }[]).map((m) => ({ id: m.user_id, name: m.profiles?.display_name ?? "—" }));
+  const memberOpts = ((members ?? []) as unknown as { user_id: string; profiles: { display_name: string | null } | null }[]).map((m) => ({ id: m.user_id, name: m.profiles?.display_name ?? "·" }));
   const vendorOpts = ((vendors ?? []) as { id: string; name: string }[]).map((v) => ({ id: v.id, name: v.name }));
 
   return (

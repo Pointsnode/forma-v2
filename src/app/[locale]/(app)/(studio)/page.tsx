@@ -80,7 +80,7 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
   const tmoney = await getTranslations("money");
   const { radar, urgent } = await loadMoneyRadar(supabase);
   const due60 = radar.reduce((s, r) => s + Number(r.amount), 0);
-  const fmt = (n: number) => formatMoney(n, lang) ?? "—";
+  const fmt = (n: number) => formatMoney(n, lang) ?? "·";
 
   // The calendar's whisper — the soonest meeting in the next 7 days (exceptions-first).
   const soon = await loadNextMeeting(supabase);
@@ -146,7 +146,7 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
                         ) : (
                           <span className="font-medium">{f.actorName ?? "Forma"}</span>
                         )} {tc(`verb.${f.verb}`)}
-                        {f.summary ? <span className="font-normal text-muted"> — {f.summary}</span> : null}
+                        {f.summary ? <span className="font-normal text-muted"> · {f.summary}</span> : null}
                       </>
                     }
                   />

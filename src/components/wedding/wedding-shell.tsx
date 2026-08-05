@@ -194,7 +194,7 @@ function PhaseStrip({
       <PhaseDots phase={wedding.phase} dark />
       <span className="text-[9.5px] uppercase tracking-[0.3em] text-[#948C7F]">{planningLabel}</span>
       <span className="font-display text-[14.5px] text-bone">{phaseLabel}</span>
-      <span className="text-[12px] text-[#948C7F]">— {statusText}</span>
+      <span className="text-[12px] text-[#948C7F]">· {statusText}</span>
       {role === "staff" ? <span className="ml-auto text-[12px] tracking-[0.04em] text-sand group-hover:text-bone">{openLabel} →</span> : null}
     </>
   );

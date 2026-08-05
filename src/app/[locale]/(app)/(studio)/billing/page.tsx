@@ -38,8 +38,8 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
         ) : (
           fees.map((f) => (
             <Row key={f.id}>
-              <RowMain title={f.title} detail={f.weddings?.couple_display ?? "—"} />
-              <span className="font-medium text-[13.5px] text-ink">{formatMoney(f.amount, lang) ?? "—"}</span>
+              <RowMain title={f.title} detail={f.weddings?.couple_display ?? "·"} />
+              <span className="font-medium text-[13.5px] text-ink">{formatMoney(f.amount, lang) ?? "·"}</span>
               <Badge tone={["paid", "settled"].includes(f.status) ? "sage" : "wine"}>{tb(`status_${f.status}`)}</Badge>
             </Row>
           ))
