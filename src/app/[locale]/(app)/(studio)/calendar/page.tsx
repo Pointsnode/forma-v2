@@ -1,4 +1,5 @@
 import { getLocale, setRequestLocale } from "next-intl/server";
+import { weekStartsMonday } from "@/lib/intl";
 import { createClient } from "@/lib/supabase/server";
 import { loadCalendar } from "@/lib/calendar";
 import { loadDatePrefs } from "@/lib/prefs";
@@ -38,7 +39,7 @@ export default async function CalendarPage({
       connected={data.connected}
       userUri={data.userUri}
       todayKey={todayKey}
-      weekStart={lang === "es" ? 1 : 0}
+      weekStart={weekStartsMonday(lang) ? 1 : 0}
       configured={calendlyConfigured()}
       locale={lang}
       banner={banner}

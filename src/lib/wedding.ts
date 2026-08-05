@@ -2,6 +2,7 @@
 // predicates here MIRROR private.advance_wedding_phase (§9); the DB stays the
 // source of truth (it's the only writer of phase), this only renders the same
 // truth for the phase line and Planning room.
+import { intlTag } from "./intl";
 
 export type Phase = "hiring" | "foundations" | "details" | "wedding_days" | "closed";
 export type WeddingKind = "city" | "destination";
@@ -21,6 +22,7 @@ export type WeddingRow = {
   budget_total: string | number | null;
   rsvp_deadline?: string | null;
   rsvp_open?: boolean | null;
+  locale?: string | null; // the wedding's own language (§3); null = fall back
 };
 
 export type EventRow = {
@@ -137,7 +139,7 @@ export function formatDateRange(
   locale: string,
 ): string | null {
   if (!start) return null;
-  const l = locale === "es" ? "es-ES" : "en-US";
+  const l = intlTag(locale);
   const fmt = (d: string, withYear: boolean) =>
     new Intl.DateTimeFormat(l, { month: "long", day: "numeric", ...(withYear ? { year: "numeric" } : {}), timeZone: "UTC" }).format(parseDay(d));
   if (!end || end === start) return fmt(start, true);
@@ -147,14 +149,14 @@ export function formatDateRange(
 
 export function formatMoney(amount: string | number | null, locale: string): string | null {
   if (amount == null || Number(amount) === 0) return null;
-  const l = locale === "es" ? "es-MX" : "en-US";
+  const l = intlTag(locale);
   return new Intl.NumberFormat(l, { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Number(amount));
 }
 
 export function formatTime(t: string | null, locale: string): string | null {
   if (!t) return null;
   const [h, m] = t.split(":").map(Number);
-  const l = locale === "es" ? "es-ES" : "en-US";
+  const l = intlTag(locale);
   return new Intl.DateTimeFormat(l, { hour: "numeric", minute: "2-digit", timeZone: "UTC" }).format(new Date(Date.UTC(2000, 0, 1, h, m)));
 }
 

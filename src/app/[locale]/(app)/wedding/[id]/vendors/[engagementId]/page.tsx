@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { intlTag } from "@/lib/intl";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -21,7 +22,7 @@ export default async function EngagementRoom({ params }: { params: Promise<{ loc
   if (!led) notFound(); // gone, or not this wedding, or the caller can't see it (RLS)
 
   const fmt = (n: number | null | undefined) => formatMoney(n ?? null, lang) ?? "·";
-  const dateFmt = (iso: string) => (iso ? new Intl.DateTimeFormat(lang === "es" ? "es-ES" : "en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(iso)) : "");
+  const dateFmt = (iso: string) => (iso ? new Intl.DateTimeFormat(intlTag(lang), { month: "short", day: "numeric", year: "numeric" }).format(new Date(iso)) : "");
 
   const latest = led.quotes[led.quotes.length - 1] ?? null;
   const acceptedQuote = led.quotes.find((q) => q.status === "accepted") ?? null;

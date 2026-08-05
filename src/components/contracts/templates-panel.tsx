@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { intlTag } from "@/lib/intl";
 import { useTranslations } from "next-intl";
 import { Button, Heading, Icon, Row, RowMain } from "@/components/ui";
 import { TEMPLATE_KINDS, type TemplateKind } from "@/lib/contract-enums";
@@ -64,7 +65,7 @@ function TemplateRow({ tpl, lang }: { tpl: TemplateVM; lang: string }) {
 
   if (editing) return <TemplateForm initial={tpl} onClose={() => setEditing(false)} />;
 
-  const updated = t("updated", { date: new Date(tpl.updatedAt).toLocaleDateString(lang === "es" ? "es-ES" : "en-US") });
+  const updated = t("updated", { date: new Date(tpl.updatedAt).toLocaleDateString(intlTag(lang)) });
   return (
     <Row className="-mx-2 rounded-[var(--radius)] px-2">
       <Icon>{tpl.name.trim()[0]?.toUpperCase() ?? "T"}</Icon>

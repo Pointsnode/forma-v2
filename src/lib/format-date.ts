@@ -3,6 +3,7 @@
 // profiles.date_format) is honoured in ONE place instead of scattered
 // toLocaleDateString calls. Render-time only: it never mutates a stored UTC value —
 // the input is a UTC instant, the output is that instant read in the chosen zone.
+import { intlTag } from "./intl";
 
 export type DateFormat = "auto" | "DMY" | "MDY" | "YMD";
 
@@ -12,13 +13,13 @@ export type DatePrefs = {
   format: DateFormat;
 };
 
-const AUTO: Record<string, DateFormat> = { es: "DMY", en: "MDY" };
+const AUTO: Record<string, DateFormat> = { es: "DMY", en: "MDY", fr: "DMY", it: "DMY" };
 
 // Defensive: an invalid stored tz would throw in DateTimeFormat and take down every date
 // render for that account. Fall back to UTC rather than crash (saveRegion guards the
 // write, so this only catches pre-existing bad data).
 function dtf(locale: string, tz: string, opts: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
-  const lc = locale === "es" ? "es-MX" : "en-US";
+  const lc = intlTag(locale);
   try {
     return new Intl.DateTimeFormat(lc, { timeZone: tz, ...opts });
   } catch {

@@ -6,7 +6,7 @@ import type { Locale } from "@/i18n/routing";
 // dragging the service-role admin client into the browser bundle. The service-role
 // READS live in directory.ts (server-only), which re-exports everything here.
 
-export type Localized = { en?: string; es?: string };
+export type Localized = { en?: string; es?: string; fr?: string; it?: string };
 export type Service = { name: string; from_price?: number };
 export type ProfileContent = {
   tagline?: Localized;

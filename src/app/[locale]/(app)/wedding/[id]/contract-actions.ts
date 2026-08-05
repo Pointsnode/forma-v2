@@ -40,6 +40,10 @@ export async function sendContractAction(contractId: string): Promise<ContractAc
   const locale = await getLocale();
   const { data: c } = await supabase.from("contracts").select("id, wedding_id, title, engagement_id").eq("id", contractId).maybeSingle();
   if (!c) return { error: "generic" };
+  // §3/§5 — the signer email is a couple/guest surface: it follows the WEDDING's language,
+  // falling back to the planner's locale (then en) when null. FR/IT bodies fall back to EN.
+  const { data: wl } = await supabase.from("weddings").select("locale").eq("id", c.wedding_id).maybeSingle();
+  const emailLocale = (wl?.locale as string | null) ?? locale;
   const { data: fieldRows } = await supabase.from("contract_fields").select("field_key, merge_source").eq("contract_id", contractId);
   const resolved = await resolveMergeFields(supabase, c, (fieldRows ?? []) as { field_key: string; merge_source: string }[], locale);
 
@@ -50,7 +54,7 @@ export async function sendContractAction(contractId: string): Promise<ContractAc
   const base = APP_URL;
   const emails = ((signers ?? []) as { name: string; email: string | null; token: string; sign_order: number }[])
     .filter((s) => s.email)
-    .map((s) => signerEmail({ to: s.email!, signerName: s.name, title: c.title, signUrl: `${base}/sign/${s.token.trim()}`, locale }));
+    .map((s) => signerEmail({ to: s.email!, signerName: s.name, title: c.title, signUrl: `${base}/sign/${s.token.trim()}`, locale: emailLocale }));
   if (emails.length) { try { await sendBatch(emails); } catch (e) { console.error("signer email send failed", e); } }
 
   revalidatePath("/[locale]/wedding/[id]", "layout");

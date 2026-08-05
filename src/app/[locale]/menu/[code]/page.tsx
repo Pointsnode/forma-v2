@@ -1,5 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "@/i18n/navigation";
+import { routing } from "@/i18n/routing";
 import { MenuForm } from "@/components/guests/menu-form";
 
 // Public tokenized menu collection — the RSVP pattern. 16-hex rsvp_code; the
@@ -7,12 +9,19 @@ import { MenuForm } from "@/components/guests/menu-form";
 export default async function MenuPage({ params, searchParams }: { params: Promise<{ locale: string; code: string }>; searchParams: Promise<{ s?: string }> }) {
   const { locale, code } = await params;
   const { s } = await searchParams;
-  setRequestLocale(locale);
-  const t = await getTranslations("menu");
   const supabase = await createClient();
   if (s) await supabase.rpc("touchpoint_open", { token: s });
   const { data, error } = await supabase.rpc("menu_lookup", { code });
-  const payload = data as { guest: { full_name: string }; events: { event_id: string; label: string; locked: boolean; choice_id: string | null; options: { id: string; label: string; diet_tags: string[] }[] }[] } | null;
+  const payload = data as { guest: { full_name: string }; locale: string; events: { event_id: string; label: string; locked: boolean; choice_id: string | null; options: { id: string; label: string; diet_tags: string[] }[] }[] } | null;
+  // Menus speak the WEDDING's language: redirect to it if the URL locale differs.
+  if (payload) {
+    const wl = payload.locale;
+    if (wl && wl !== locale && (routing.locales as readonly string[]).includes(wl)) {
+      redirect({ href: s ? `/menu/${code}?s=${s}` : `/menu/${code}`, locale: wl });
+    }
+  }
+  setRequestLocale(locale);
+  const t = await getTranslations("menu");
 
   return (
     <div className="min-h-screen bg-bone px-5 py-12">

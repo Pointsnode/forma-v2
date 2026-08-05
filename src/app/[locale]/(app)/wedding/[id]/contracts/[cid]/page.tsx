@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { intlTag } from "@/lib/intl";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -148,7 +149,7 @@ export default async function ContractRoom({ params }: { params: Promise<{ local
                   <Row key={a.id}>
                     <RowMain
                       title={<>{a.actor_kind === "concierge" ? <span aria-hidden className="mr-1 inline-flex h-4 w-4 -translate-y-px items-center justify-center rounded-[var(--radius)] bg-ink align-middle text-[10px] leading-none text-bone">c</span> : null}{tc(`verb_${a.verb}`, { name: a.summary })}</>}
-                      detail={new Date(a.created_at).toLocaleDateString(lang === "es" ? "es-ES" : "en-US")}
+                      detail={new Date(a.created_at).toLocaleDateString(intlTag(lang))}
                     />
                   </Row>
                 ))}

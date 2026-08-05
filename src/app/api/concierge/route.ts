@@ -10,6 +10,7 @@ import {
   threadHistory, threadWeddingId, canonicalWeddingThread, createStudioThread,
 } from "@/lib/concierge/session";
 import { subjectWedding } from "@/lib/concierge/resolve.mjs";
+import { routing } from "@/i18n/routing";
 
 // Planner-facing text shouldn't show raw markup or the internal id-note format —
 // strip emphasis/headings/code ticks and any [created draft …]/[proposed action …]
@@ -62,7 +63,9 @@ export async function POST(req: NextRequest) {
   const message = (body.message ?? "").trim();
   if (!message) return NextResponse.json({ error: "empty" }, { status: 400 });
   const scope: Scope = body.scope?.weddingId ? { kind: "wedding", weddingId: body.scope.weddingId } : { kind: "orchestrator" };
-  const locale = body.locale === "es" ? "es" : "en";
+  // The concierge answers in the language the planner writes in — pass any of the four
+  // through to the system prompt (context.ts's langLine tells the model to reply in it).
+  const locale = (routing.locales as readonly string[]).includes(body.locale ?? "") ? (body.locale as string) : "en";
 
   const workspaceId = await firstWorkspace(supabase);
   if (!workspaceId) return NextResponse.json({ error: "no_workspace" }, { status: 403 });

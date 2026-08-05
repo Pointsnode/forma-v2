@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { intlTag, localePrefix } from "@/lib/intl";
 import { useLocale, useTranslations } from "next-intl";
 import { Button, Monogram, cx } from "@/components/ui";
 import { createInvite, revokeInvite } from "@/app/[locale]/(app)/wedding/[id]/loop-actions";
@@ -18,9 +19,9 @@ export function MembersInvites({
   const [pending, start] = useTransition();
 
   const linkFor = (token: string) =>
-    `${window.location.origin}${locale === "es" ? "/es" : ""}/join/${token}`;
+    `${window.location.origin}${localePrefix(locale)}/join/${token}`;
   const fmtDate = (iso: string) =>
-    new Intl.DateTimeFormat(locale === "es" ? "es-ES" : "en-US", { month: "short", day: "numeric" }).format(new Date(iso));
+    new Intl.DateTimeFormat(intlTag(locale), { month: "short", day: "numeric" }).format(new Date(iso));
   const roleLabel = (r: string) => t(r === "partner" ? "rolePartner" : r === "family" ? "roleFamily" : "roleDayOf");
 
   async function copy(token: string) {

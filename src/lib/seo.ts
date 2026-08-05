@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/env";
-import type { Locale } from "@/i18n/routing";
+import { routing, type Locale } from "@/i18n/routing";
 import type { DirectoryCard, PlannerProfile, ProfileContent, Area } from "@/lib/directory-shared";
 import { pick, publicImageUrl, slugifyRegion } from "@/lib/directory-shared";
 
@@ -14,16 +14,11 @@ export function localeUrl(locale: Locale, path: string): string {
   return locale === "en" ? `${SITE_URL}${path}` : `${SITE_URL}/${locale}${path}`;
 }
 
-/** canonical (current locale) + hreflang alternates for both locales + x-default. */
+/** canonical (current locale) + hreflang alternates for all four locales + x-default. */
 export function alternates(locale: Locale, path: string): Metadata["alternates"] {
-  return {
-    canonical: localeUrl(locale, path),
-    languages: {
-      en: localeUrl("en", path),
-      es: localeUrl("es", path),
-      "x-default": localeUrl("en", path),
-    },
-  };
+  const languages: Record<string, string> = { "x-default": localeUrl("en", path) };
+  for (const l of routing.locales) languages[l] = localeUrl(l, path);
+  return { canonical: localeUrl(locale, path), languages };
 }
 
 /** ProfessionalService JSON-LD for a planner profile page. */

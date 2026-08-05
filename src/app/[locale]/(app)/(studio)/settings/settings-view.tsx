@@ -1,8 +1,14 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { intlTag } from "@/lib/intl";
+import { routing, type Locale } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+
+// Language endonyms — each language named in its own tongue, locale-invariant (a language
+// picker always reads the same regardless of the active UI language). No catalog key.
+const LANG_LABEL: Record<Locale, string> = { en: "English", es: "Español", fr: "Français", it: "Italiano" };
 import { Card, Heading, Badge, DomainHeadCard, cx } from "@/components/ui";
 import { seatBill, PRICE_ADMIN, PRICE_ADDITIONAL, PRICE_CONCIERGE } from "@/lib/pricing";
 import type { DateFormat } from "@/lib/format-date";
@@ -111,7 +117,7 @@ function LanguageSection({ data, router, pathname }: { data: SettingsData; route
   const [fmt, setFmt] = useState<DateFormat>(data.dateFormat);
   const [saved, setSaved] = useState(false);
 
-  function pickLocale(locale: "en" | "es") {
+  function pickLocale(locale: Locale) {
     if (locale === data.locale) return;
     start(async () => {
       await setLocalePref(locale);
@@ -133,8 +139,8 @@ function LanguageSection({ data, router, pathname }: { data: SettingsData; route
       <Heading className="text-[19px]">{t("langTitle")}</Heading>
       <p className="mb-4 mt-0.5 text-[12.5px] text-muted">{t("langHint")}</p>
 
-      <div className="mb-6 flex gap-2">
-        {(["en", "es"] as const).map((l) => (
+      <div className="mb-6 flex flex-wrap gap-2">
+        {routing.locales.map((l) => (
           <button
             key={l}
             onClick={() => pickLocale(l)}
@@ -144,7 +150,7 @@ function LanguageSection({ data, router, pathname }: { data: SettingsData; route
               data.locale === l ? "bg-ink text-bone" : "bg-bone text-ink hover:bg-champagne",
             )}
           >
-            {t(`lang_${l}`)}
+            {LANG_LABEL[l]}
           </button>
         ))}
       </div>
@@ -219,7 +225,7 @@ function PlanSection({ data }: { data: SettingsData }) {
             ) : isLive ? (
               <p className="mt-0.5 text-[12.5px] text-muted">
                 {t(`status_${status}`)}
-                {data.subscription?.currentPeriodEnd ? ` · ${t("renewsOn", { date: new Date(data.subscription.currentPeriodEnd).toLocaleDateString(data.locale === "es" ? "es-MX" : "en-US") })}` : ""}
+                {data.subscription?.currentPeriodEnd ? ` · ${t("renewsOn", { date: new Date(data.subscription.currentPeriodEnd).toLocaleDateString(intlTag(data.locale)) })}` : ""}
               </p>
             ) : (
               <p className="mt-0.5 text-[12.5px] text-muted">{status === "canceled" ? t("status_canceled") : t("subStartHint")}</p>

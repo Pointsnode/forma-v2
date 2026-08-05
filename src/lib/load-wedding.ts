@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { EventRow, WeddingRow } from "@/lib/wedding";
 
 const WEDDING_COLS =
-  "id, workspace_id, couple_display, partner_a, partner_b, phase, kind, location_city, location_country, date_start, date_end, guest_target, budget_total, rsvp_deadline, rsvp_open";
+  "id, workspace_id, couple_display, partner_a, partner_b, phase, kind, location_city, location_country, date_start, date_end, guest_target, budget_total, rsvp_deadline, rsvp_open, locale";
 const EVENT_COLS = "id, label, kind, event_date, start_time, end_time, order_index, guest_target";
 
 export type WeddingRole = "staff" | "member" | "none";

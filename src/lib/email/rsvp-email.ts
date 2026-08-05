@@ -4,7 +4,9 @@ import "server-only";
 // images). Plain-text alternative included. From `Forma <rsvp@forma.events>`.
 
 type Kind = "rsvp_invite" | "rsvp_reminder" | "rsvp_close";
-type Args = { to: string; guestName: string; couple: string; rsvpUrl: string; kind: Kind; locale: "en" | "es" };
+// locale is any of the four; fr/it gracefully fall back to the EN copy (ES ships today).
+// The email catalog namespace that would carry FR/IT bodies is a documented follow-up.
+type Args = { to: string; guestName: string; couple: string; rsvpUrl: string; kind: Kind; locale: string };
 
 const COPY = {
   en: {
@@ -24,7 +26,7 @@ const COPY = {
 };
 
 export function rsvpEmail({ to, guestName, couple, rsvpUrl, kind, locale }: Args) {
-  const t = COPY[locale] ?? COPY.en;
+  const t = COPY[locale as keyof typeof COPY] ?? COPY.en;
   const k = t[kind];
   const subject = k.subject(couple);
   const text = `${t.hi(guestName)}\n\n${k.lead(couple)}\n\n${k.cta}: ${rsvpUrl}\n\n${t.footer}`;
