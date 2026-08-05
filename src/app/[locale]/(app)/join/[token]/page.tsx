@@ -1,5 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Card, Heading } from "@/components/ui";
+import { Card, Heading, SignedMark } from "@/components/ui";
 import { AcceptInvite } from "./accept-invite";
 
 export default async function JoinPage({ params }: { params: Promise<{ locale: string; token: string }> }) {
@@ -9,6 +9,7 @@ export default async function JoinPage({ params }: { params: Promise<{ locale: s
 
   return (
     <div className="mx-auto max-w-sm px-6 py-12">
+      <div className="mb-8 flex justify-center"><SignedMark /></div>
       <Card>
         <Heading>{t("acceptTitle")}</Heading>
         <p className="mb-5 mt-1 font-accent text-[16px] text-muted">{t("membersHint")}</p>

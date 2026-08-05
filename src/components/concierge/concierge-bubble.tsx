@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname, Link } from "@/i18n/navigation";
+import { DomainStar } from "@/components/ui";
 
 type DraftCard = { kind: string; id: string; title: string };
 type ActionCard = { messageId: string; fn: string; summary: string; heading?: string; status: "pending" | "approved" | "dismissed" | "failed"; error?: string };
@@ -259,6 +260,13 @@ function setAction(c: Convo, messageId: string, fn: (a: ActionCard) => ActionCar
   return { ...c, messages: c.messages.map((m) => (m.action?.messageId === messageId ? { ...m, action: fn(m.action) } : m)) };
 }
 
+// The concierge floater IS the star, everywhere (matches the landing ConciergeFloater):
+// bone 8-point DomainStar on the charcoal tile. Never rotated — a busy state pulses
+// opacity, never spins.
 function Glyph() {
-  return <span aria-hidden className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius)] bg-[rgba(247,244,238,0.14)] font-display text-[13px] leading-none text-bone">c</span>;
+  return (
+    <span aria-hidden className="flex shrink-0 items-center justify-center">
+      <DomainStar fill="#F5F2EB" size={22} />
+    </span>
+  );
 }

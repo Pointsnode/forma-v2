@@ -4,7 +4,7 @@ type Email = { from: string; to: string[]; subject: string; html: string; text: 
 const FROM = "Forma <rsvp@forma.events>";
 
 function shell(body: string): string {
-  return `<div style="font-family:Georgia,serif;color:#121212;background:#F7F4EE;padding:28px"><div style="font-size:22px;letter-spacing:.04em">forma</div>${body}</div>`;
+  return `<div style="font-family:Georgia,serif;color:#121212;background:#F7F4EE;padding:28px"><div style="font-size:22px;letter-spacing:.04em"><span style="font-style:italic">f</span>orma</div>${body}</div>`;
 }
 function button(href: string, label: string): string {
   return `<a href="${href}" style="display:inline-block;margin-top:14px;background:#121212;color:#F7F4EE;text-decoration:none;padding:11px 22px;border-radius:99px;font-family:Inter,Arial,sans-serif;font-size:14px">${label}</a>`;

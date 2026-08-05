@@ -1,7 +1,7 @@
 export { cx } from "./cn";
 export {
   Card, Heading, Accent, SectionLabel, Pill, Chip, Button, Monogram, Fact,
-  Badge, Icon, WhoBadge, Tag, DomainStar,
+  Badge, Icon, WhoBadge, Tag, DomainStar, Wordmark, SignedMark,
   type PillTone, type ButtonProps, type BadgeTone, type Who, type ChipTone, type Domain,
 } from "./primitives";
 export { HeroShell, WeddingNav, EventBar, EventChips } from "./shells";

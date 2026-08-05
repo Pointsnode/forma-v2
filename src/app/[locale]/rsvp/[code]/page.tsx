@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { RsvpForm } from "./rsvp-form";
 import { formatDateRange } from "@/lib/wedding";
+import { Wordmark } from "@/components/ui";
 
 type LookupPayload = {
   guest: { full_name: string; plus_one_allowed: boolean; plus_one_name: string | null; dietary: string | null };
@@ -48,7 +49,7 @@ export default async function RsvpPage({
   return (
     <Shell>
       <div className="mb-6">
-        <p className="mb-1 text-[12px] font-medium uppercase tracking-[0.18em] text-muted">Forma</p>
+        <Wordmark size={15} className="mb-1 block" />
         <h1 className="font-display text-[30px] leading-tight text-ink">{payload.wedding.couple_display}</h1>
         <p className="mt-1 font-accent text-[16px] text-taupe">
           {[range, payload.wedding.location_city].filter(Boolean).join(" · ")}

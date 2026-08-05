@@ -172,3 +172,25 @@ export function DomainStar({ domain, fill, size = 12 }: { domain?: Domain; fill?
     </svg>
   );
 }
+
+// ── The wordmark. ALWAYS lowercase with the italic f, Playfair. Never capitalized, never
+// roman — it is the mark, not prose. Colour comes from className (charcoal on bone,
+// bone on charcoal). ──
+export function Wordmark({ size = 20, className }: { size?: number; className?: string }) {
+  return (
+    <span className={cx("font-display leading-none text-ink", className)} style={{ fontSize: size }} aria-label="forma">
+      <i>f</i>orma
+    </span>
+  );
+}
+
+/** The signed lockup: the forma star centred ABOVE the wordmark (never beside it), as the
+    landing footer draws it. For focused entry surfaces — auth and invites. */
+export function SignedMark({ size = 26, starSize = 18, className }: { size?: number; starSize?: number; className?: string }) {
+  return (
+    <span className={cx("inline-flex flex-col items-center gap-2.5", className)}>
+      <DomainStar fill="#111111" size={starSize} />
+      <Wordmark size={size} />
+    </span>
+  );
+}
