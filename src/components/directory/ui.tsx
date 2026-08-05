@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { cx } from "@/components/ui/cn";
 import { publicImageUrl, pick, type DirectoryCard } from "@/lib/directory-shared";
@@ -12,13 +13,14 @@ export function JsonLd({ data }: { data: object }) {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }
 
-export function PublicHeader() {
+export async function PublicHeader() {
+  const t = await getTranslations("directory");
   return (
     <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-7">
       <Link href="/planners" className="leading-none">
         <span className="font-display text-[24px] tracking-[0.04em] text-ink">forma</span>
       </Link>
-      <span className="text-[10px] uppercase tracking-[0.34em] text-taupe">The wedding planner directory</span>
+      <span className="text-[10px] uppercase tracking-[0.34em] text-taupe">{t("heroKicker")}</span>
     </header>
   );
 }

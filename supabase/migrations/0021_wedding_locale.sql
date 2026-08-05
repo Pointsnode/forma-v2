@@ -76,3 +76,33 @@ begin
         and exists (select 1 from public.menu_options o2 where o2.menu_id = m.id)
     ), '[]'::jsonb));
 end $$;
+
+-- (d) The signature page reads its payload from load_contract_as (jsonb), which calls
+-- signer_from_token. signer_from_token RETURNS a contract_signers ROW — it cannot carry a
+-- locale without a signature change, so it is left untouched; load_contract_as is the
+-- payload carrier and gains the same single locale scalar the other two lookups return,
+-- resolving coalesce(wedding.locale, creator-locale, 'en'). Identical signature, SECURITY
+-- DEFINER shape and grants; the public invoker wrapper is untouched; the count stays 10.
+create or replace function private.load_contract_as(p_token text)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare s public.contract_signers; c public.contracts; cur int; wloc text; cloc text;
+begin
+  s := private.signer_from_token(p_token);
+  select * into c from public.contracts where id = s.contract_id;
+  select min(sign_order) into cur from public.contract_signers where contract_id = c.id and signed_at is null and declined_at is null;
+  -- the wedding's language, else the workspace creator's, else 'en' (today's behaviour for null)
+  select w.locale, p.locale::text into wloc, cloc
+    from public.weddings w
+    join public.workspaces ws on ws.id = w.workspace_id
+    join public.profiles p on p.id = ws.created_by
+    where w.id = c.wedding_id;
+  return jsonb_build_object(
+    'contract', jsonb_build_object('id', c.id, 'title', c.title, 'kind', c.kind, 'status', c.status),
+    'locale', coalesce(wloc, cloc, 'en'),   -- ← NEW scalar: the wedding's language
+    'body', coalesce((select body from public.contract_draft_content where contract_id = c.id), ''),
+    'me', jsonb_build_object('id', s.id, 'name', s.name, 'role', s.role, 'sign_order', s.sign_order, 'signed_at', s.signed_at, 'declined_at', s.declined_at),
+    'my_turn', (cur is not null and cur = s.sign_order and c.status in ('sent','partially_signed')),
+    'fields', coalesce((select jsonb_agg(jsonb_build_object('id', f.id, 'key', f.field_key, 'label', f.label, 'merge_source', f.merge_source, 'signer_order', f.signer_order, 'required', f.required, 'value', coalesce(f.manual_value, f.resolved_value)) order by f.sort, f.created_at) from public.contract_fields f where f.contract_id = c.id), '[]'::jsonb),
+    'signers', coalesce((select jsonb_agg(jsonb_build_object('name', z.name, 'role', z.role, 'sign_order', z.sign_order, 'signed', z.signed_at is not null, 'declined', z.declined_at is not null) order by z.sign_order) from public.contract_signers z where z.contract_id = c.id), '[]'::jsonb)
+  );
+end $$;
