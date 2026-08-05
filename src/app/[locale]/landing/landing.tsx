@@ -1,226 +1,526 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import { useTranslations } from "next-intl";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { Link } from "@/i18n/navigation";
-import { cx } from "@/components/ui";
-import { PlannerCard, SectionKicker } from "@/components/directory/ui";
-import { PRICE_ADMIN, PRICE_ADDITIONAL, PRICE_CONCIERGE } from "@/lib/pricing";
-import type { DirectoryCard } from "@/lib/directory-shared";
 import type { Locale } from "@/i18n/routing";
+import { conciergeAnswer, type ConciergeLang } from "./concierge";
+import en from "./messages/en.json";
+import es from "./messages/es.json";
+import fr from "./messages/fr.json";
+import it from "./messages/it.json";
+import "./landing.ed1.css";
 
-const SIDES = ["planner", "couple", "vendors", "guests"] as const;
-type Side = (typeof SIDES)[number];
-const IMG: Record<Side, string> = {
-  planner: "/landing/planner.webp",
-  couple: "/landing/couple.webp",
-  vendors: "/landing/vendors.webp",
-  guests: "/landing/guests.webp",
-};
-type Panel = "pricing" | "about" | "features";
-const ROMAN = ["i", "ii", "iii"];
+type Dict = Record<string, string | string[]>;
+const DICTS: Record<string, Dict> = { en, es, fr, it };
+const LANGS: { code: ConciergeLang; label: string }[] = [
+  { code: "en", label: "English" },
+  { code: "es", label: "Español" },
+  { code: "fr", label: "Français" },
+  { code: "it", label: "Italiano" },
+];
 
-export function Landing({ locale, cards, regions }: { locale: Locale; cards: DirectoryCard[]; regions: { slug: string; region: string; country: string; count: number }[] }) {
-  const t = useTranslations("landing");
-  const [side, setSide] = useState<Side | null>(null);
-  const [panel, setPanel] = useState<Panel | null>(null);
-
+// The 16-point forma star (never rotated, never beside the wordmark on one line).
+const STAR =
+  "M0.000,-100.000 L29.289,-70.711 L70.711,-70.711 L70.711,-29.289 L100.000,0.000 L70.711,29.289 L70.711,70.711 L29.289,70.711 L0.000,100.000 L-29.289,70.711 L-70.711,70.711 L-70.711,29.289 L-100.000,0.000 L-70.711,-29.289 L-70.711,-70.711 L-29.289,-70.711 Z";
+function Star({ size, fill }: { size: number; fill: string }) {
   return (
-    <div className="brand bg-bone text-ink">
-      {/* Nav */}
-      <nav className="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-5 py-4 sm:px-8">
-        <Link href="/" className="wordmark font-display text-[20px] text-bone mix-blend-difference">Forma</Link>
-        <div className="flex items-center gap-3 text-[12px] text-bone mix-blend-difference sm:gap-5">
-          <button onClick={() => setPanel("pricing")} className="hidden uppercase tracking-[0.14em] hover:opacity-70 sm:inline">{t("navPricing")}</button>
-          <button onClick={() => setPanel("about")} className="hidden uppercase tracking-[0.14em] hover:opacity-70 sm:inline">{t("navAbout")}</button>
-          <button onClick={() => setPanel("features")} className="hidden uppercase tracking-[0.14em] hover:opacity-70 sm:inline">{t("navFeatures")}</button>
-          <span className="flex items-center gap-1 uppercase tracking-[0.1em]">
-            <Link href="/" locale="en" className={cx(locale === "en" ? "font-semibold" : "opacity-60")}>EN</Link>
-            <span className="opacity-40">/</span>
-            <Link href="/" locale="es" className={cx(locale === "es" ? "font-semibold" : "opacity-60")}>ES</Link>
-          </span>
-          <Link href="/sign-in" className="uppercase tracking-[0.14em] hover:opacity-70">{t("logIn")}</Link>
-          <Link href="/sign-up" className="rounded-full bg-bone px-3.5 py-1.5 uppercase tracking-[0.1em] text-ink hover:opacity-90">{t("signUp")}</Link>
-        </div>
-      </nav>
+    <svg width={size} height={size} viewBox="-105 -105 210 210" aria-hidden="true">
+      <path d={STAR} fill={fill} />
+    </svg>
+  );
+}
+const CH = "#D7C3A5"; // champagne, the carousel icon stroke + dot fill
 
-      {/* Four-panel hero */}
-      <section className="relative">
-        <div className="grid grid-cols-1 md:grid-cols-4">
-          {SIDES.map((s, i) => (
-            <div key={s} className="group relative flex min-h-[62vh] flex-col justify-end overflow-hidden md:min-h-screen">
-              {/* eslint-disable-next-line @next/next/no-img-element -- local webp hero, treated to the v2 palette */}
-              <img src={IMG[s]} alt="" className="absolute inset-0 h-full w-full object-cover grayscale transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-ink/55" />
-              <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/10 to-ink/45" />
-              {/* md:pb-16 clears the fixed bottom marquee line so EXPLORE never collides with it */}
-              <div className="relative p-6 text-bone md:pb-16">
-                <div className="font-accent text-[15px] italic text-bone/70">0{i + 1}</div>
-                <h2 className="mt-1 font-display text-[26px] leading-tight">{t(`side_${s}_name`)}</h2>
-                <p className="mt-2 font-accent text-[17px] leading-snug text-bone/85">{t(`side_${s}_tag1`)}<br />{t(`side_${s}_tag2`)}</p>
-                <button onClick={() => setSide(s)} className="mt-4 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.22em] text-bone hover:gap-2.5">
-                  {t("explore")} <span aria-hidden>→</span>
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-        {/* centered wordmark overlay */}
-        <div className="pointer-events-none absolute inset-0 hidden items-center justify-center md:flex">
-          <div className="text-center text-bone mix-blend-difference">
-            <div className="wordmark font-display text-[clamp(48px,7vw,104px)] leading-none">Forma</div>
-            <div className="mt-3 text-[12px] uppercase tracking-[0.42em] text-bone/90">{t("wordmarkTag")}</div>
-          </div>
-        </div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-5 text-center text-[11px] uppercase tracking-[0.34em] text-bone/85 mix-blend-difference">{t("heroBottom")}</div>
-      </section>
+// Wordmark: lowercase, italic f. Never all caps.
+const Wordmark = ({ className }: { className: string }) => (
+  <span className={className}>
+    <i>f</i>orma
+  </span>
+);
 
-      {/* Mission band */}
-      <section className="mx-auto max-w-3xl px-6 py-24 text-center">
-        <h2 className="font-display text-[clamp(30px,5vw,52px)] font-medium leading-[1.08]">{t("missionTitle")}</h2>
-        <p className="mx-auto mt-6 max-w-xl font-accent text-[19px] italic leading-relaxed text-taupe">{t("missionBody")}</p>
-        <Link href="/sign-up" className="mt-8 inline-flex rounded-full bg-ink px-6 py-3 text-[14px] font-medium text-bone hover:opacity-90">{t("signUp")}</Link>
-      </section>
-
-      {/* The directory */}
-      <section className="mx-auto max-w-6xl px-6 pb-24">
-        <div className="mb-8 text-center">
-          <SectionKicker>{t("dirKicker")}</SectionKicker>
-          <h2 className="font-display text-[clamp(28px,4vw,44px)] font-medium leading-tight">{t("dirTitle")}</h2>
-          <p className="mx-auto mt-3 max-w-lg font-accent text-[17px] italic text-taupe">{t("dirLede")}</p>
-        </div>
-        {cards.length === 0 ? (
-          <div className="rounded-2xl bg-paper px-6 py-16 text-center shadow-card">
-            <p className="mx-auto max-w-md font-display text-[24px] leading-snug text-ink">{t("dirEmptyTitle")}</p>
-            <p className="mx-auto mt-3 max-w-md font-accent text-[17px] italic text-taupe">{t("dirEmptyBody")}</p>
-            <Link href="/planners" className="mt-6 inline-flex rounded-full border border-ink px-5 py-2.5 text-[13px] font-medium text-ink hover:bg-ink hover:text-bone">{t("browseAll")}</Link>
-          </div>
-        ) : (
-          <>
-            {regions.length > 0 && (
-              <div className="mb-8 flex flex-wrap justify-center gap-2.5">
-                {regions.map((r) => (
-                  <Link key={r.slug} href={`/planners/${r.slug}`} className="rounded-full bg-paper px-4 py-2 text-[13px] text-ink shadow-card hover:shadow-lift">
-                    {r.region}<span className="ml-1.5 text-[11px] text-muted">{r.count}</span>
-                  </Link>
-                ))}
-              </div>
-            )}
-            <div className="grid grid-cols-1 gap-x-7 gap-y-11 sm:grid-cols-2 lg:grid-cols-3">
-              {cards.slice(0, 6).map((c) => <PlannerCard key={c.slug} card={c} locale={locale} />)}
-            </div>
-            <div className="mt-12 text-center">
-              <Link href="/planners" className="inline-flex rounded-full border border-ink px-5 py-2.5 text-[13px] font-medium text-ink hover:bg-ink hover:text-bone">{t("browseAll")}</Link>
-            </div>
-          </>
-        )}
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-hairline bg-paper">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-6 py-12 text-center sm:flex-row sm:justify-between sm:text-left">
-          <div>
-            <div className="wordmark font-display text-[20px]">Forma</div>
-            <div className="mt-1 text-[10px] uppercase tracking-[0.34em] text-taupe">{t("wordmarkTag")}</div>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-4 text-[12px] uppercase tracking-[0.14em] text-muted">
-            <button onClick={() => setPanel("pricing")} className="hover:text-ink">{t("navPricing")}</button>
-            <button onClick={() => setPanel("about")} className="hover:text-ink">{t("navAbout")}</button>
-            <button onClick={() => setPanel("features")} className="hover:text-ink">{t("navFeatures")}</button>
-            <Link href="/planners" className="hover:text-ink">{t("navDirectory")}</Link>
-            <Link href="/sign-up" className="hover:text-ink">{t("signUp")}</Link>
-          </div>
-          <div className="text-[11px] text-muted">{t("copyright")}</div>
-        </div>
-      </footer>
-
-      {/* Explore overlay */}
-      {side ? (
-        <Overlay onClose={() => setSide(null)}>
-          <p className="text-[11px] uppercase tracking-[0.28em] text-taupe">{t("oneOfFour")}</p>
-          <h3 className="mt-1 font-display text-[clamp(30px,5vw,48px)] leading-tight">{t(`side_${side}_name`)}</h3>
-          <p className="mt-4 max-w-lg font-accent text-[20px] italic leading-relaxed text-ink-soft">{t(`explore_${side}_line`)}</p>
-          <ol className="mt-8 space-y-4">
-            {["1", "2", "3"].map((n, i) => (
-              <li key={n} className="flex gap-4">
-                <span className="mt-0.5 font-accent text-[16px] italic text-taupe">{ROMAN[i]}</span>
-                <span className="text-[16px] leading-snug text-ink">{t(`explore_${side}_${n}`)}</span>
-              </li>
-            ))}
-          </ol>
-          <div className="mt-9 flex flex-wrap items-center gap-3">
-            <Link href="/sign-up" className="rounded-full bg-ink px-6 py-3 text-[14px] font-medium text-bone hover:opacity-90">{t("signUp")}</Link>
-            <button onClick={() => { setSide(null); setPanel("features"); }} className="rounded-full border border-ink px-6 py-3 text-[14px] text-ink hover:bg-bone">{t("allFeatures")}</button>
-          </div>
-        </Overlay>
-      ) : null}
-
-      {/* Panels */}
-      {panel === "pricing" ? (
-        <Overlay onClose={() => setPanel(null)}>
-          <SectionKicker>{t("navPricing")}</SectionKicker>
-          <h3 className="font-display text-[clamp(28px,5vw,44px)] font-medium">{t("pricingTitle")}</h3>
-          <div className="mt-7 divide-y divide-hairline border-y border-hairline">
-            {[
-              // Prices come from the shared pricing module so the storefront and the /team
-              // seat panel can never drift (M15: additional was a stale $59, now $49).
-              { name: t("pricingStartName"), price: `$${PRICE_ADMIN}`, suffix: t("perMonth"), desc: t("pricingStartDesc") },
-              { name: t("pricingAddName"), price: `$${PRICE_ADDITIONAL}`, suffix: t("perMonthEach"), desc: t("pricingAddDesc") },
-              { name: t("pricingAiName"), price: `+$${PRICE_CONCIERGE}`, suffix: t("perMonthAccount"), desc: t("pricingAiDesc") },
-            ].map((row) => (
-              <div key={row.name} className="flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
-                <div>
-                  <div className="font-display text-[20px] text-ink">{row.name}</div>
-                  <div className="mt-0.5 font-accent text-[15px] italic text-taupe">{row.desc}</div>
-                </div>
-                <div className="shrink-0 whitespace-nowrap">
-                  <span className="font-display text-[24px] text-ink">{row.price}</span>
-                  <span className="ml-1 text-[13px] text-muted">{row.suffix}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <p className="mt-4 text-[12.5px] text-muted">{t("pricingFootnote")}</p>
-          <Link href="/sign-up" className="mt-6 inline-flex rounded-full bg-ink px-6 py-3 text-[14px] font-medium text-bone hover:opacity-90">{t("signUp")}</Link>
-        </Overlay>
-      ) : null}
-
-      {panel === "about" ? (
-        <Overlay onClose={() => setPanel(null)}>
-          <SectionKicker>{t("navAbout")}</SectionKicker>
-          <h3 className="font-display text-[clamp(28px,5vw,44px)] font-medium">{t("aboutTitle")}</h3>
-          <div className="mt-5 max-w-xl space-y-4 font-accent text-[19px] leading-relaxed text-ink-soft">
-            {t("aboutBody").split("\n\n").map((p, i) => <p key={i}>{p}</p>)}
-          </div>
-          <Link href="/sign-up" className="mt-7 inline-flex rounded-full bg-ink px-6 py-3 text-[14px] font-medium text-bone hover:opacity-90">{t("signUp")}</Link>
-        </Overlay>
-      ) : null}
-
-      {panel === "features" ? (
-        <Overlay onClose={() => setPanel(null)}>
-          <SectionKicker>{t("navFeatures")}</SectionKicker>
-          <h3 className="font-display text-[clamp(28px,5vw,44px)] font-medium">{t("featuresTitle")}</h3>
-          <ol className="mt-6 grid gap-4 sm:grid-cols-2">
-            {["1", "2", "3", "4", "5", "6"].map((n) => (
-              <li key={n} className="flex gap-3">
-                <span className="font-accent text-[16px] italic text-taupe">0{n}</span>
-                <span className="text-[16px] leading-snug text-ink">{t(`feat_${n}`)}</span>
-              </li>
-            ))}
-          </ol>
-          <Link href="/sign-up" className="mt-8 inline-flex rounded-full bg-ink px-6 py-3 text-[14px] font-medium text-bone hover:opacity-90">{t("signUp")}</Link>
-        </Overlay>
-      ) : null}
-    </div>
+// The six service-card icons (hairline champagne), verbatim from the reference.
+const ICONS: React.ReactNode[] = [
+  <><path d="M10 5h14l6 6v24H10z" /><path d="M24 5v6h6" /><path d="M15 26c2-3 4-3 5-1s3 1 5-2" /><path d="M15 15h10M15 19h10" /></>,
+  <><rect x="7" y="9" width="26" height="24" /><path d="M7 16h26M14 6v6M26 6v6" /><circle cx="20" cy="24" r="1" fill={CH} /><circle cx="26" cy="24" r="1" fill={CH} /><circle cx="14" cy="24" r="1" fill={CH} /><circle cx="14" cy="28.5" r="1" fill={CH} /><circle cx="20" cy="28.5" r="1" fill={CH} /></>,
+  <><rect x="6" y="11" width="28" height="19" /><path d="M6 17h28" /><path d="M11 25h7" /><path d="M27 25h2" /></>,
+  <><rect x="8" y="15" width="24" height="18" /><path d="M20 15v18M8 21h24" /><path d="M20 15c-6 0-8-3-7-6 1-2 5-2 7 6zM20 15c6 0 8-3 7-6-1-2-5-2-7 6z" /></>,
+  <><rect x="6" y="8" width="28" height="24" /><path d="M6 14h28" /><circle cx="10" cy="11" r=".8" fill={CH} /><circle cx="14" cy="11" r=".8" fill={CH} /><path d="M13 24l4-5 4 4 3-3 3 4" /><path d="M13 28h14" /></>,
+  <><path d="M10 28a10 10 0 0 1 20 0" /><path d="M7 28h26" /><path d="M7 31h26" /><path d="M20 18v-3" /><circle cx="20" cy="13" r="1.6" /></>,
+];
+function CardIcon({ i }: { i: number }) {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke={CH} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {ICONS[i]}
+    </svg>
   );
 }
 
-function Overlay({ children, onClose }: { children: ReactNode; onClose: () => void }) {
+const RIBBON = [
+  { img: "glow-beauty", cap: "cap1" },
+  { img: "henna-house", cap: "cap2" },
+  { img: "maison-louer", cap: "cap3" },
+  { img: "tavola-rentals", cap: "cap4" },
+  { img: "jardin-etereo", cap: "cap5" },
+];
+// Six services (the endless carousel is this track duplicated once).
+const SERVICES = [0, 1, 2, 3, 4, 5];
+const DIRECTORY = [
+  { img: "hacienda-san-gabriel", name: "Verena & Co.", meta: "San Miguel de Allende", label: "card1l", c: "c1" },
+  { img: "playa-escondida", name: "Marea Bodas", meta: "Tulum · Riviera Maya", label: "card2l", c: "c2" },
+  { img: "palazzo-lumia", name: "Lumia Weddings", meta: "Amalfi · Positano", label: "card3l", c: "c3" },
+];
+
+const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+
+type Msg = { cls: string; text: string };
+
+export function Landing({ locale }: { locale: Locale }) {
+  const [lang, setLang] = useState<ConciergeLang>(locale === "es" ? "es" : "en");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const [deskOpen, setDeskOpen] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [msgs, setMsgs] = useState<Msg[]>([]);
+  // Time-of-day greeting: default to "afternoon" for a deterministic SSR render, then
+  // correct to the visitor's local hour on mount (avoids a hydration mismatch).
+  const [hourIdx, setHourIdx] = useState(1);
+  const d = DICTS[lang];
+  const s = (k: string) => (d[k] as string) ?? "";
+  const H = (k: string) => ({ dangerouslySetInnerHTML: { __html: s(k) } });
+  const greets = (d.greets as string[]) ?? [""];
+  const greeting = `${greets[hourIdx] ?? greets[0]} ${s("greetHow")}`;
+
+  // ---- scroll choreography (imperative, rAF-throttled) ----
+  const conv = useRef<HTMLElement>(null);
+  const center = useRef<HTMLDivElement>(null);
+  const cstar = useRef<HTMLDivElement>(null);
+  const cw = useRef<HTMLDivElement>(null);
+  const resolve = useRef<HTMLDivElement>(null);
+  const hero = useRef<HTMLElement>(null);
+  const heroInner = useRef<HTMLDivElement>(null);
+  const ribbon = useRef<HTMLElement>(null);
+  const track = useRef<HTMLDivElement>(null);
+  const tophead = useRef<HTMLElement>(null);
+  const fab = useRef<HTMLButtonElement>(null);
+  const caro = useRef<HTMLDivElement>(null);
+  const ctrack = useRef<HTMLDivElement>(null);
+  const dockedRef = useRef(false);
+
+  // Hero load-in stagger + local-hour greeting, a tick after mount.
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setLoaded(true);
+      const h = new Date().getHours();
+      setHourIdx(h < 12 ? 0 : h < 18 ? 1 : 2);
+    }, 60);
+    return () => clearTimeout(id);
+  }, []);
+
+  useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const starts: Record<string, [number, number]> = { planner: [-0.82, -0.62], couple: [0.82, -0.62], vendors: [-0.82, 0.62], guests: [0.82, 0.62] };
+    const ends: Record<string, [number, number]> = { planner: [0, -0.34], couple: [0, 0.34], vendors: [-0.5, 0], guests: [0.5, 0] };
+    // Query the words from the DOM once (matches the reference), rather than a ref-callback
+    // array — no staleness, and a missing node just no-ops.
+    const wordEls = conv.current ? Array.from(conv.current.querySelectorAll<HTMLElement>(".word")) : [];
+
+    const paint = (t1: number, t2: number, t3: number, t4: number) => {
+      const vw = innerWidth / 2, vh = innerHeight / 2;
+      for (const w of wordEls) {
+        const side = w.dataset.side;
+        if (!side || !starts[side]) continue;
+        const st = starts[side], e = ends[side];
+        const x = (st[0] + (e[0] - st[0]) * t1) * vw;
+        const y = (st[1] + (e[1] - st[1]) * t1) * vh;
+        w.style.transform = `translate(-50%,-50%) translate(${x}px,${y}px) scale(${1 - 0.34 * t2})`;
+        w.style.opacity = String((1 - 0.45 * t2) * (1 - t4));
+        w.style.color = t2 > 0.5 ? "#8A7557" : "#111111";
+      }
+      if (resolve.current) resolve.current.style.opacity = String(t3 * (1 - t4));
+      const c = center.current, cwEl = cw.current;
+      if (c && cwEl) {
+        const centerH = c.offsetHeight;
+        const originY = cwEl.offsetTop + cwEl.offsetHeight / 2;
+        const baseY = vh - centerH / 2 + originY;
+        // MEASURED dock target: the header wordmark's own center (not a hardcoded 27/30).
+        // Queried off the fixed header (opacity:0 but laid out), so the docked stage
+        // wordmark lands exactly on it.
+        const hRect = tophead.current?.querySelector(".cwm")?.getBoundingClientRect();
+        const targetY = hRect ? hRect.top + hRect.height / 2 : 30;
+        const ty = (targetY - baseY) * t4;
+        const scale = 1 - (1 - 23 / 44) * t4;
+        c.style.opacity = String(t2);
+        c.style.transformOrigin = `50% ${originY}px`;
+        c.style.transform = `translate(-50%,-50%) translateY(${ty}px) scale(${t4 > 0 ? scale : 0.9 + 0.1 * t2})`;
+        if (cstar.current) cstar.current.style.opacity = String(1 - clamp(t4 * 2.2, 0, 1));
+        c.style.visibility = t4 >= 1 ? "hidden" : "visible";
+      }
+    };
+
+    const setChrome = (docked: boolean) => {
+      tophead.current?.classList.toggle("on", docked);
+      fab.current?.classList.toggle("on", docked);
+      if (dockedRef.current && !docked) setDeskOpen(false);
+      dockedRef.current = docked;
+    };
+
+    if (reduce) {
+      // Static settled composition: words in the cross, lockup + resolution shown, chrome on.
+      paint(1, 1, 1, 0);
+      setChrome(true);
+      return;
+    }
+
+    let raf = 0;
+    const frame = () => {
+      const el = conv.current;
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        const total = el.offsetHeight - innerHeight;
+        if (total <= 0) { setChrome(true); }
+        else {
+          const p = clamp(-rect.top / total, 0, 1);
+          const t1 = ease(clamp(p / 0.5, 0, 1));
+          const t2 = clamp((p - 0.5) / 0.18, 0, 1);
+          const t3 = clamp((p - 0.64) / 0.16, 0, 1);
+          const t4 = ease(clamp((p - 0.84) / 0.16, 0, 1));
+          paint(t1, t2, t3, t4);
+          setChrome(t4 >= 1);
+        }
+      }
+      // hero parallax + ribbon drift
+      const h = hero.current, hi = heroInner.current;
+      if (h && hi) {
+        const y = scrollY, hh = h.offsetHeight;
+        if (y < hh) { const t = y / hh; hi.style.transform = `translateY(${y * 0.32}px)`; hi.style.opacity = String(1 - t * 1.15); }
+      }
+      const rb = ribbon.current, tr = track.current;
+      if (rb && tr) {
+        const r = rb.getBoundingClientRect();
+        const span = innerHeight + r.height;
+        const pr = clamp((innerHeight - r.top) / span, 0, 1);
+        const over = tr.scrollWidth - innerWidth;
+        tr.style.transform = `translateX(${-over * pr + innerWidth * 0.06 * (1 - pr) - innerWidth * 0.03}px)`;
+      }
+    };
+    // Reset the throttle flag BEFORE the work and catch any throw (dev-logged, not
+    // swallowed): a single mid-frame exception must never brick the whole scene.
+    const tick = () => {
+      raf = 0;
+      try { frame(); } catch (e) { if (process.env.NODE_ENV !== "production") console.error("[landing scroll frame]", e); }
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(tick); };
+    addEventListener("scroll", onScroll, { passive: true });
+    addEventListener("resize", onScroll);
+    frame();
+    return () => { removeEventListener("scroll", onScroll); removeEventListener("resize", onScroll); if (raf) cancelAnimationFrame(raf); };
+  }, []);
+
+  // ---- services carousel: user-driven, endless, flick momentum + soft settle ----
+  // Faithful to the rev-3 reference: no autoplay, no CSS scroll-snap. Native scroll for
+  // touch/trackpad (with a quiet-period settle on top); mouse drag with pointer capture,
+  // 1:1 tracking, sampled velocity, and a fling that decays 5%/frame then eases the
+  // nearest card to dead center. The tripled track repositions invisibly for endlessness.
+  useEffect(() => {
+    const caroEl = caro.current, ctrackEl = ctrack.current;
+    if (!caroEl || !ctrackEl) return;
+    const caps = () => [...ctrackEl.children] as HTMLElement[];
+    let oneSet = 0, animRAF: number | null = null, driving = false;
+    let dragX: number | null = null, dragSL = 0, lastX = 0, vel = 0;
+    let settleTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const caroLayout = () => {
+      // Center on the true viewport center (innerWidth/2), derived via the container's own
+      // rect so a window scrollbar can't offset it. Card centers stay offsetLeft-based
+      // (scale-independent); only the unscaled container uses getBoundingClientRect.
+      const mid = caroEl.scrollLeft + innerWidth / 2 - caroEl.getBoundingClientRect().left;
+      for (const c of caps()) {
+        const cc = c.offsetLeft + c.offsetWidth / 2;
+        const t = Math.min(1, Math.abs(cc - mid) / (c.offsetWidth * 1.2));
+        c.style.transform = `scale(${(1 - 0.231 * t).toFixed(3)})`; // center 1.0, neighbors ~0.77 (30% larger center)
+        c.style.opacity = String(1 - 0.28 * t);
+      }
+      if (oneSet > 0) {
+        if (caroEl.scrollLeft < oneSet * 0.5) caroEl.scrollLeft += oneSet;
+        else if (caroEl.scrollLeft > oneSet * 1.5) caroEl.scrollLeft -= oneSet;
+      }
+    };
+    const caroInit = () => {
+      oneSet = ctrackEl.scrollWidth / 3;
+      caroEl.scrollLeft = oneSet + oneSet / 6 / 2 - caroEl.clientWidth / 2 + (oneSet / 6) * 1.5;
+      caroLayout();
+    };
+    const cancelAnim = () => { if (animRAF) cancelAnimationFrame(animRAF); animRAF = null; driving = false; };
+    const nearestDelta = () => {
+      // Center on the true viewport center (innerWidth/2), derived via the container's own
+      // rect so a window scrollbar can't offset it. Card centers stay offsetLeft-based
+      // (scale-independent); only the unscaled container uses getBoundingClientRect.
+      const mid = caroEl.scrollLeft + innerWidth / 2 - caroEl.getBoundingClientRect().left;
+      let best = 1e9, delta = 0;
+      for (const c of caps()) { const dd = c.offsetLeft + c.offsetWidth / 2 - mid; if (Math.abs(dd) < Math.abs(best)) { best = dd; delta = dd; } }
+      return delta;
+    };
+    const settle = () => {
+      cancelAnim();
+      const step = () => {
+        const dd = nearestDelta();
+        if (Math.abs(dd) < 0.75) { cancelAnim(); caroLayout(); return; }
+        driving = true;
+        caroEl.scrollLeft += dd > 0 ? Math.max(0.6, dd * 0.06) : Math.min(-0.6, dd * 0.06);
+        caroLayout();
+        animRAF = requestAnimationFrame(step);
+      };
+      animRAF = requestAnimationFrame(step);
+    };
+    const fling = () => {
+      cancelAnim();
+      const step = () => {
+        if (Math.abs(vel) < 1.1) { settle(); return; }
+        driving = true;
+        caroEl.scrollLeft -= vel;
+        vel *= 0.95;
+        caroLayout();
+        animRAF = requestAnimationFrame(step);
+      };
+      animRAF = requestAnimationFrame(step);
+    };
+    const onScroll = () => {
+      requestAnimationFrame(caroLayout);
+      if (driving || dragX !== null) return;
+      if (settleTimer) clearTimeout(settleTimer);
+      settleTimer = setTimeout(() => { if (!driving && dragX === null) settle(); }, 160);
+    };
+    const onDown = (e: PointerEvent) => {
+      cancelAnim();
+      if (e.pointerType !== "mouse") return;
+      dragX = e.clientX; lastX = e.clientX; dragSL = caroEl.scrollLeft; vel = 0;
+      caroEl.classList.add("dragging"); caroEl.setPointerCapture(e.pointerId);
+    };
+    const onMove = (e: PointerEvent) => {
+      if (dragX === null) return;
+      caroEl.scrollLeft = dragSL - (e.clientX - dragX);
+      vel = (e.clientX - lastX) * 0.8 + vel * 0.2;
+      lastX = e.clientX;
+    };
+    const onUp = () => { if (dragX === null) return; dragX = null; caroEl.classList.remove("dragging"); fling(); };
+
+    const initTimer = setTimeout(caroInit, 120);
+    addEventListener("resize", caroInit);
+    caroEl.addEventListener("scroll", onScroll, { passive: true });
+    caroEl.addEventListener("pointerdown", onDown);
+    caroEl.addEventListener("pointermove", onMove);
+    caroEl.addEventListener("pointerup", onUp);
+    caroEl.addEventListener("pointercancel", onUp);
+    return () => {
+      clearTimeout(initTimer); if (settleTimer) clearTimeout(settleTimer); cancelAnim();
+      removeEventListener("resize", caroInit);
+      caroEl.removeEventListener("scroll", onScroll);
+      caroEl.removeEventListener("pointerdown", onDown);
+      caroEl.removeEventListener("pointermove", onMove);
+      caroEl.removeEventListener("pointerup", onUp);
+      caroEl.removeEventListener("pointercancel", onUp);
+    };
+  }, []);
+
+  // ---- concierge ----
+  function ask(q: string) {
+    setMsgs((m) => [...m, { cls: "me", text: q }, { cls: "them wait", text: "· · ·" }]);
+    const reply = conciergeAnswer(q, lang);
+    setTimeout(() => setMsgs((m) => { const n = [...m]; n[n.length - 1] = { cls: "them", text: reply }; return n; }), 850);
+  }
+  const chatEnd = useRef<HTMLDivElement>(null);
+  useEffect(() => { chatEnd.current?.scrollIntoView({ block: "nearest" }); }, [msgs]);
+
+  const chips = [
+    { q: "What does forma cost?", k: "chip1" },
+    { q: "What can the concierge do?", k: "chip2" },
+    { q: "Can forma handle a three city wedding?", k: "chip3" },
+    { q: "What languages does forma speak?", k: "chip4" },
+  ];
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-0 sm:items-center sm:p-6" onClick={onClose}>
-      <div className="max-h-[88vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl bg-bone p-8 shadow-lift sm:rounded-3xl sm:p-10" onClick={(e) => e.stopPropagation()}>
-        <button onClick={onClose} className="mb-4 ml-auto block text-[20px] leading-none text-muted hover:text-ink" aria-label="Close">×</button>
-        {children}
+    <div className="ed1" lang={lang}>
+      {/* fixed header (post-dock) */}
+      <header className="tophead" ref={tophead}>
+        <button className="burger" aria-label="Menu" onClick={() => setMenuOpen(true)}><span /><span /><span /></button>
+        <Link className="cwm" href="/sign-up"><i>f</i>orma</Link>
+        <div className="auth">
+          <Link className="in" href="/sign-in" {...H("authLogin")} />
+          <Link className="up" href="/sign-up" {...H("authSignup")} />
+        </div>
+      </header>
+
+      {/* full-screen menu */}
+      <div className={`menuovl${menuOpen ? " open" : ""}`}>
+        <button className="x" onClick={() => setMenuOpen(false)} {...H("menuClose")} />
+        <div>
+          <Link href="/sign-up" {...H("menuAbout")} />
+          <Link href="/sign-up" {...H("menuPricing")} />
+          <Link href="/sign-up" {...H("menuFeatures")} />
+          <div className="small"><Link href="/sign-in" {...H("authLogin")} /><Link href="/sign-up" {...H("authSignup")} /></div>
+        </div>
+      </div>
+
+      {/* concierge floater + desk */}
+      <button className="fab" aria-label={s("deskT")} ref={fab} onClick={() => setDeskOpen((v) => !v)}>
+        <Star size={24} fill="#F5F2EB" />
+      </button>
+      <div className={`deskpanel${deskOpen ? " open" : ""}`}>
+        <div className="deskhead">
+          <Star size={18} fill="#111111" />
+          <div className="t" {...H("deskT")} />
+          <div className="g">{greeting}</div>
+        </div>
+        <div className="chat">
+          {msgs.map((m, i) => <div key={i} className={`msg ${m.cls}`}>{m.text}</div>)}
+          <div ref={chatEnd} />
+        </div>
+        <div className="chips">
+          {chips.map((c) => <button key={c.k} onClick={() => ask(c.q)} {...H(c.k)} />)}
+        </div>
+        <form className="askrow" onSubmit={(e) => { e.preventDefault(); const inp = e.currentTarget.elements.namedItem("q") as HTMLInputElement; if (inp.value.trim()) { ask(inp.value.trim()); inp.value = ""; } }}>
+          <input name="q" type="text" placeholder={s("askPh")} autoComplete="off" />
+          <button type="submit" {...H("askBtn")} />
+        </form>
+      </div>
+
+      {/* transparent hero nav */}
+      <nav>
+        <Wordmark className="wordmark" />
+        <div className="links">
+          <Link className="nl" href="/sign-up" {...H("navAtelier")} />
+          <Link className="nl" href="/sign-up" {...H("navPricing")} />
+          <Link className="nl" href="/sign-in" {...H("navSignin")} />
+          <Link className="cta" href="/sign-up" {...H("navCta")} />
+        </div>
+      </nav>
+
+      {/* hero */}
+      <section className="hero" ref={hero}>
+        <div className="inner" ref={heroInner}>
+          <div className={`li${loaded ? " in" : ""}`}><Star size={32} fill="#F5F2EB" /></div>
+          <div className={`kick li${loaded ? " in" : ""}`} style={{ transitionDelay: ".15s" }} {...H("heroKick")} />
+          <h1 className={`li${loaded ? " in" : ""}`} style={{ transitionDelay: ".3s" }} {...H("heroH1")} />
+          <div className={`sub li${loaded ? " in" : ""}`} style={{ transitionDelay: ".5s" }} {...H("heroSub")} />
+        </div>
+        <div className={`hint li${loaded ? " in" : ""}`} style={{ transitionDelay: ".9s" }} {...H("heroHint")} />
+      </section>
+
+      {/* the convergence */}
+      <section className="conv" ref={conv}>
+        <div className="stage">
+          {(["planner", "couple", "vendors", "guests"] as const).map((side) => (
+            <div key={side} className="word" data-side={side} {...H(`w${side[0].toUpperCase()}${side.slice(1)}`)} />
+          ))}
+          <div className="center" ref={center}>
+            <div className="cstar" ref={cstar}><Star size={40} fill="#111111" /></div>
+            <div className="cw" ref={cw}><i>f</i>orma</div>
+          </div>
+          <div className="resolve" ref={resolve}>
+            <div className="r1" {...H("resolve1")} />
+          </div>
+        </div>
+      </section>
+
+      {/* photo ribbon */}
+      <section className="ribbon" ref={ribbon}>
+        <div className="lead">
+          <Star size={24} fill="#111111" />
+          <div className="q" {...H("ribbonQ")} />
+        </div>
+        <div className="track" ref={track}>
+          {RIBBON.map((r) => (
+            <figure key={r.img}>
+              <div className="imgwrap"><Image src={`/landing/${r.img}.jpg`} alt="" fill sizes="440px" style={{ objectFit: "cover" }} loading="lazy" /></div>
+              <figcaption {...H(r.cap)} />
+            </figure>
+          ))}
+        </div>
+      </section>
+
+      {/* the four, one line each */}
+      <section className="four">
+        {[1, 2, 3, 4].map((n) => (
+          <div className="row" key={n}>
+            <div className="who"><Star size={13} fill="#8A7557" /><span {...H(`row${n}w`)} /></div>
+            <div className="what" {...H(`row${n}d`)} />
+          </div>
+        ))}
+      </section>
+
+      {/* native services carousel */}
+      <section className="inside">
+        <div className="wrap">
+          <div className="head">
+            <Star size={22} fill="#D7C3A5" />
+            <h2 {...H("insideH2")} />
+          </div>
+          <div className="caro" ref={caro}><div className="ctrack" ref={ctrack}>
+            {[0, 1, 2].flatMap((dup) => SERVICES.map((i) => (
+              <div className="cap" key={`${dup}-${i}`}>
+                <div className="shot"><span>forma</span></div>
+                <CardIcon i={i} />
+                <div className="nm" {...H(`s${i + 1}n`)} />
+                <div className="d" {...H(`s${i + 1}d`)} />
+              </div>
+            )))}
+          </div></div>
+          <div className="after"><Link className="go" href="/sign-up" {...H("atelierGo")} /></div>
+        </div>
+      </section>
+
+      {/* oxblood close */}
+      <section className="close">
+        <Star size={34} fill="#6E353B" />
+        <h2 {...H("closeH2")} />
+        <Link className="cta" href="/sign-up" {...H("navCta")} />
+      </section>
+
+      {/* directory showcase (illustrative studios, not real listings) */}
+      <section className="dirstrip">
+        <div className="inner">
+          <div>
+            <div className="kick"><Star size={12} fill="#8A7557" /><span {...H("dirKick")} /></div>
+            <h2 {...H("dirH2")} />
+            <p {...H("dirP")} />
+            <Link className="go2" href="/planners" {...H("dirGo")} />
+          </div>
+          <div className="dcards">
+            {DIRECTORY.map((c) => (
+              <Link className={`dcard ${c.c}`} href="/planners" key={c.img}>
+                <div className="imgwrap"><Image src={`/landing/${c.img}-640.jpg`} alt="" fill sizes="(max-width:900px) 50vw, 320px" style={{ objectFit: "cover" }} loading="lazy" /></div>
+                <div className="b">
+                  <div className="n">{c.name}</div>
+                  <div className="m">{c.meta}</div>
+                  <div className="l" {...H(c.label)} />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* footer */}
+      <footer>
+        <Star size={16} fill="#F5F2EB" /><br />
+        <Wordmark className="wordmark" />
+        <div className="row2">
+          <Link href="/sign-up" {...H("navAtelier")} />
+          <Link href="/sign-up" {...H("navPricing")} />
+          <Link href="/planners" {...H("footDirectory")} />
+          <button type="button" onClick={() => setLangOpen((v) => !v)} {...H("footLanguage")} />
+          <Link href="/sign-in" {...H("navSignin")} />
+        </div>
+        <div className="fine" {...H("footFine")} />
+      </footer>
+
+      {/* language menu */}
+      <div className={`langmenu${langOpen ? " open" : ""}`}>
+        {LANGS.map((l) => (
+          <button key={l.code} className={l.code === lang ? "cur" : ""} onClick={() => { setLang(l.code); setLangOpen(false); }}>{l.label}</button>
+        ))}
       </div>
     </div>
   );

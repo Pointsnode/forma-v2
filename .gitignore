@@ -11,3 +11,5 @@ next-env.d.ts
 demo pictures/
 
 supabase/.temp/
+
+_to_delete/

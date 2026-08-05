@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/i18n/routing";
-import { getDirectory, regionsFromDirectory } from "@/lib/directory";
 import { alternates, localeUrl } from "@/lib/seo";
 import { Landing } from "./landing";
 
@@ -27,7 +26,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: L
 export default async function LandingPage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const cards = await getDirectory();
-  const regions = regionsFromDirectory(cards);
-  return <Landing locale={locale} cards={cards} regions={regions} />;
+  // Edition One is self-contained: the directory cards on this marketing page are
+  // illustrative fictional studios (approved for launch), NOT real directory listings,
+  // so no directory read happens here.
+  return <Landing locale={locale} />;
 }
