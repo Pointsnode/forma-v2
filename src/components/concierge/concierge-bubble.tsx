@@ -253,7 +253,9 @@ export function ConciergeBubble({ weddings, usage: usage0, initialPending = 0 }:
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
                 rows={1} placeholder={scopeName ? t("askWedding") : t("askStudio")} disabled={busy}
                 className="max-h-24 flex-1 resize-none bg-transparent px-4 py-3.5 text-[13px] font-light text-bone outline-none placeholder:text-[rgba(245,242,235,0.35)]" />
-              <button onClick={send} disabled={busy || !input.trim()} className="m-2 shrink-0 rounded-[var(--radius)] bg-wine px-[18px] py-3 text-[10.5px] font-medium uppercase tracking-[0.16em] text-bone transition-opacity disabled:opacity-40">{t("ask")}</button>
+              <button onClick={send} disabled={busy || !input.trim()} aria-label={t("ask")} className="m-2 flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-[var(--radius)] bg-wine text-bone transition-opacity disabled:opacity-40">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5" /></svg>
+              </button>
             </div>
             <p className="px-4 pb-2 text-[10px] tracking-[0.06em] text-[rgba(245,242,235,0.3)]">{t("meter", { used: fmtTokens(usage.used), cap: fmtTokens(usage.cap) })}{usage.cap > 0 ? ` · ${capPct}%` : ""}</p>
           </div>
