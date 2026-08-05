@@ -31,13 +31,20 @@ export function SectionLabel({ children, className }: { children: ReactNode; cla
 }
 
 // ── Chip grammar (the ONLY place status color appears) ────────────────────────────
-// settled = solid teal (paid/booked/on track/done) · attention = solid wine (due/overdue/
-// unsigned/blocked) · pending = taupe outline (quoted/waiting/drafting) · time = solid
-// champagne (date/count tokens only). Sharp: 9.5px, 500, .14em, uppercase, radius.
-export type ChipTone = "settled" | "attention" | "pending" | "time";
+// settled = solid teal (paid/booked/on track/done) · attention = solid wine (due/needs a
+// hand) · urgent = solid oxblood (needs you today) · pending = taupe outline (quoted/
+// waiting/drafting) · time = solid champagne (date/count tokens only). 9.5px, 500, .14em.
+//
+// URGENCY IS EARNED, NEVER FELT. The oxblood `urgent` tier appears ONLY on a written rule
+// the data already knows — a payment past its due date, a contract expired, a wedding
+// inside seven days with a critical item open — never by judgment call. If a screen shows
+// more than one or two, the studio is having a hard week; the color must never soften into
+// a mood. Everything merely needing a hand stays wine `attention`.
+export type ChipTone = "settled" | "attention" | "urgent" | "pending" | "time";
 const CHIP_TONE: Record<ChipTone, string> = {
   settled: "bg-teal text-bone",
   attention: "bg-wine text-bone",
+  urgent: "bg-oxblood text-bone",
   pending: "border border-taupe text-taupe",
   time: "bg-champagne text-ink",
 };

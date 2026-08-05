@@ -2,10 +2,10 @@ import { notFound } from "next/navigation";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { loadWeddingContext } from "@/lib/load-wedding";
-import { loadLedger } from "@/lib/money";
+import { loadLedger, daysOverdue } from "@/lib/money";
 import { WeddingShell } from "@/components/wedding/wedding-shell";
 import { AddLineForm, PayButton, MarkPaid } from "@/components/money/ledger-controls";
-import { Card, StatRow, Stat, SectionTitle, Row, RowMain, Badge, Tag, type BadgeTone } from "@/components/ui";
+import { Card, StatRow, Stat, SectionTitle, Row, RowMain, Badge, Chip, Tag, type BadgeTone } from "@/components/ui";
 import { formatMoney } from "@/lib/wedding";
 import { loadDatePrefs } from "@/lib/prefs";
 import { formatDate } from "@/lib/format-date";
@@ -66,7 +66,14 @@ export default async function BudgetTab({ params }: { params: Promise<{ locale: 
                   }
                 />
                 <span className="shrink-0 font-medium text-[13.5px] text-ink">{fmt(l.amount)}</span>
-                <Badge tone={STATUS_TONE[l.status] ?? "sand"}>{tm(`status_${l.status}`)}</Badge>
+                {(() => {
+                  // urgency is earned: a line strictly past its due date (and unsettled) wears
+                  // the oxblood urgent chip; every other state keeps its normal status badge.
+                  const od = daysOverdue(l.due_date, l.status);
+                  return od > 0
+                    ? <Chip tone="urgent">{tm("overdue", { n: od })}</Chip>
+                    : <Badge tone={STATUS_TONE[l.status] ?? "sand"}>{tm(`status_${l.status}`)}</Badge>;
+                })()}
                 {l.kind === "planner_fee" && l.status === "due" && role === "member" ? <PayButton lineId={l.id} /> : null}
                 {role === "staff" && l.kind !== "planner_fee" && !["paid", "settled", "void"].includes(l.status) ? <MarkPaid lineId={l.id} /> : null}
               </Row>

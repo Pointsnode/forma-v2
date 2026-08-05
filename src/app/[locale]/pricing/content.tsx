@@ -7,10 +7,12 @@ import { T, useEd1 } from "@/components/edition-one/dict";
 // the prose that mentions figures (e.g. "$128") comes from the catalogs per language.
 export function PricingContent() {
   const { s } = useEd1();
+  // Locked model (2026-08-05): $89 first account, $49 each additional, $49 per additional
+  // fifty weddings past the team cap. Everything — the concierge included — is in every plan.
   const prices = [
-    { amt: "79", who: "pricing.p1.who", note: "pricing.p1.note" },
+    { amt: "89", who: "pricing.p1.who", note: "pricing.p1.note" },
     { amt: "49", who: "pricing.p2.who", note: "pricing.p2.note" },
-    { amt: "15", who: "pricing.p3.who", note: "pricing.p3.note" },
+    { amt: "49", who: "pricing.p3.who", note: "pricing.p3.note" },
   ];
   return (
     <>
@@ -37,8 +39,9 @@ export function PricingContent() {
           <Star size={20} fill="#111111" />
           <T k="pricing.inc.h2" as="h2" style={{ marginTop: 20 }} />
           <div className="inc">
-            {Array.from({ length: 11 }, (_, i) => (
-              <span key={i}><Star size={10} fill="#8A7557" />{s(`pricing.inc.i${i + 1}`)}</span>
+            {/* i12 (the AI concierge) renders right after i1, then the rest in order. */}
+            {[1, 12, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((n) => (
+              <span key={n}><Star size={10} fill="#8A7557" />{s(`pricing.inc.i${n}`)}</span>
             ))}
           </div>
         </section>

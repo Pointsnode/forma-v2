@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import { Card, Heading, Badge, cx } from "@/components/ui";
+import { Card, Heading, Badge, DomainHeadCard, cx } from "@/components/ui";
 import { seatBill, PRICE_ADMIN, PRICE_ADDITIONAL, PRICE_CONCIERGE } from "@/lib/pricing";
 import type { DateFormat } from "@/lib/format-date";
 import {
@@ -189,9 +189,8 @@ function PlanSection({ data }: { data: SettingsData }) {
 
   return (
     <div className="flex flex-col gap-[18px]">
-      <Card>
-        <Heading className="text-[19px]">{t("planTitle")}</Heading>
-        <p className="mb-4 mt-0.5 text-[12.5px] text-muted">{t("planHint")}</p>
+      <DomainHeadCard domain="money" title={t("planTitle")}>
+        <p className="mb-4 text-[12.5px] text-muted">{t("planHint")}</p>
         {bill ? (
           <div className="max-w-sm space-y-2 text-[13px]">
             <div className="flex items-center justify-between"><span className="text-muted">{t("lineAdmin", { price: money(PRICE_ADMIN) })}</span><span className="text-ink">{money(PRICE_ADMIN)}</span></div>
@@ -208,7 +207,7 @@ function PlanSection({ data }: { data: SettingsData }) {
             <p className="pt-1 text-[11.5px] text-muted">{t("seatsOnTeam")}</p>
           </div>
         ) : null}
-      </Card>
+      </DomainHeadCard>
 
       <Card>
         <div className="flex items-start justify-between gap-4">

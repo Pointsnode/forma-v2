@@ -414,7 +414,17 @@
     "statusApproved": "Aprobado, listo",
     "statusDismissed": "Descartado",
     "actionFailed": "No se pudo completar",
-    "newThread": "Nuevo"
+    "newThread": "Nuevo",
+    "kicker": "El conserje",
+    "ledger": "El historial",
+    "askWedding": "Pregunta sobre esta boda",
+    "askStudio": "Pregunta sobre el estudio",
+    "ask": "Preguntar",
+    "thinking": "pensando",
+    "copyAria": "Copiar",
+    "copied": "Copiado",
+    "today": "Hoy",
+    "yesterday": "Ayer"
   },
   "tasks": {
     "tab": "Tareas",
@@ -797,7 +807,9 @@
     "radarHint": "cada fecha límite en los próximos 60 días, suyas y tuyas",
     "urgent": "Urgente",
     "urgentHint": "vence ahora o bloquea una puerta",
-    "yours": "tuyo"
+    "yours": "tuyo",
+    "overdue": "Vencido {n, plural, one {# día} other {# días}}",
+    "dueChip": "Por vencer"
   },
   "contract": {
     "tab": "Contratos",

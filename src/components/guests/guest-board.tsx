@@ -60,7 +60,8 @@ export async function GuestBoard({
                       <div className="mt-1.5 flex h-2.5 overflow-hidden rounded-[var(--radius)] bg-bone">
                         <span className="bg-teal" style={{ width: `${pct(c?.confirmed ?? 0)}%` }} />
                         <span className="bg-champagne" style={{ width: `${pct(c?.maybe ?? 0)}%` }} />
-                        <span className="bg-oxblood" style={{ width: `${pct(c?.declined ?? 0)}%` }} />
+                        {/* declined = a neutral closed state, not urgency; oxblood is reserved. */}
+                        <span className="bg-graphite" style={{ width: `${pct(c?.declined ?? 0)}%` }} />
                       </div>
                     </div>
                   );

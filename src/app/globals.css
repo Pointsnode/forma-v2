@@ -15,12 +15,26 @@
   --color-ash: #6B655B;        /* meta / labels / captions */
   --color-muted: var(--color-ash);
 
-  /* Edition One accents */
+  /* Edition One accents. These are FILLS, never flipped by theme: the same seven hexes
+     in day and night. Contrast law (encoded here, enforced by usage): wine/teal/oxblood
+     are NEVER text on a dark ground — chips and buttons only. Champagne/taupe may be text. */
   --color-champagne: #D7C3A5;  /* the time domain */
   --color-taupe: #8A7557;      /* the people domain (was #7a6a50) */
   --color-wine: #6E353B;       /* primary action + attention chips */
-  --color-oxblood: #44161F;    /* one dose per screen (the concierge card) */
+  --color-oxblood: #44161F;    /* the once-per-screen voice (the concierge) + urgent chips */
   --color-teal: #2F5552;       /* the money domain + settled chips */
+
+  /* ── The themeable layer (Night mode wiring; Night ships later). Every SURFACE and TYPE
+     color the app themes resolves through one of these semantic tokens. Day values below
+     equal today's palette exactly, so default renders identically; the [data-theme="night"]
+     block after @theme flips them. Accents above are deliberately NOT here — they don't flip. */
+  --color-surface-page: var(--color-bone);     /* the room */
+  --color-surface-card: var(--color-bone);     /* a raised card */
+  --color-surface-chrome: var(--color-ink);    /* top bar + hero band (dark that deepens) */
+  --color-text-primary: var(--color-ink);      /* headings / primary type */
+  --color-text-body: var(--color-graphite);    /* body copy */
+  --color-text-meta: var(--color-ash);         /* meta / labels / captions */
+  --color-hairline-token: var(--color-hairline); /* the hairline that flips to bone-alpha */
 
   /* Retired identities (sand/sand-soft, sage/sage-soft/sage-ink, wine-soft, maroon) were
      aliased here during the foundation, then every call site was migrated to its Edition
@@ -42,10 +56,36 @@
   --shadow-hero: none;
 }
 
+/* ── Night register. Token-level inversion, same seven accent colors, same geometry —
+   only the semantic surface/type tokens flip. Values from the night reference: room
+   #161513, raised card #1C1A18, chrome #0D0C0B, type to bone, meta #8F887B, bone-alpha
+   hairlines. NOTE: no user route sets data-theme; only /styleguide?theme=night opts in.
+   The Appearance setting (Default/Bone/Night) ships in the Night milestone. */
+[data-theme="night"] {
+  --color-surface-page: #161513;
+  --color-surface-card: #1C1A18;
+  --color-surface-chrome: #0D0C0B;
+  --color-text-primary: #F5F2EB;
+  --color-text-body: #C9C3B8;
+  --color-text-meta: #8F887B;
+  --color-hairline-token: rgba(245, 242, 235, 0.12);
+}
+
 html, body { height: 100%; }
 body {
-  background: var(--color-bone);
-  color: var(--color-ink);
+  background: var(--color-surface-page);
+  color: var(--color-text-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+/* The concierge star breathes while the model works — opacity + a slight scale, never a
+   rotation and never a spinner (house law). ~1.6s ease, matching the desk reference. */
+@keyframes breathe {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.12); }
+}
+.concierge-breathe { animation: breathe 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .concierge-breathe { animation: none; opacity: 0.8; }
 }

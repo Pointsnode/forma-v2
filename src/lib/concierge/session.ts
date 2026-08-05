@@ -102,7 +102,7 @@ export async function saveMessage(
 // recent with its full message history — so seeded/persisted conversations are
 // reachable and a reload never orphans history.
 export type ThreadSummary = { id: string; title: string; updated_at: string };
-export type StoredMessage = { id: string; role: "planner" | "concierge"; content: string; draft_ref: unknown; action_ref: unknown };
+export type StoredMessage = { id: string; role: "planner" | "concierge"; content: string; draft_ref: unknown; action_ref: unknown; created_at: string };
 
 export async function listThreads(supabase: SupabaseClient, scope: Scope, workspaceId: string): Promise<ThreadSummary[]> {
   let q = supabase.from("concierge_threads").select("id, title, updated_at").eq("workspace_id", workspaceId).order("updated_at", { ascending: false }).limit(25);
@@ -112,7 +112,7 @@ export async function listThreads(supabase: SupabaseClient, scope: Scope, worksp
 }
 
 export async function loadThreadMessages(supabase: SupabaseClient, threadId: string): Promise<StoredMessage[]> {
-  const { data } = await supabase.from("concierge_messages").select("id, role, content, draft_ref, action_ref").eq("thread_id", threadId).order("created_at", { ascending: true });
+  const { data } = await supabase.from("concierge_messages").select("id, role, content, draft_ref, action_ref, created_at").eq("thread_id", threadId).order("created_at", { ascending: true });
   return (data ?? []) as StoredMessage[];
 }
 

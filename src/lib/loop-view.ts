@@ -32,7 +32,9 @@ export type InviteVM = { id: string; role: string; token: string; expiresAt: str
 export function statusClass(s: ProposalStatus): string {
   switch (s) {
     case "approved": return "bg-bone text-teal";
-    case "change_requested": return "bg-oxblood text-bone";
+    // change_requested = the couple wants changes → needs a hand (wine attention); oxblood
+    // is reserved for earned urgency (the floater voice + overdue chips), never a status.
+    case "change_requested": return "bg-wine text-bone";
     case "declined": return "bg-bone text-wine";
     case "withdrawn": return "bg-hairline text-muted";
     case "draft": return "bg-bone text-taupe";
