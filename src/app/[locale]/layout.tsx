@@ -11,9 +11,9 @@ import "../globals.css";
 // --font-display/-sans/-accent tokens, unchanged). The brand faces below load GLOBALLY
 // so their CSS variables exist everywhere, but only the landing's .brand scope remaps
 // the tokens onto them — so no studio surface changes (M17-brand resolution 2).
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair", display: "swap" });
+const playfair = Playfair_Display({ subsets: ["latin"], style: ["normal", "italic"], variable: "--font-playfair", display: "swap" });
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const cormorant = Cormorant_Garamond({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-cormorant", display: "swap" });
+const cormorant = Cormorant_Garamond({ subsets: ["latin"], weight: ["400", "500", "600"], style: ["normal", "italic"], variable: "--font-cormorant", display: "swap" });
 
 // Brand display + accent: Hosgura Prestica (self-hosted; one family, real italic).
 const hosgura = localFont({
