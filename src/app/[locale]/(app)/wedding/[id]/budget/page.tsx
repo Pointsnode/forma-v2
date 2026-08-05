@@ -37,7 +37,7 @@ export default async function BudgetTab({ params }: { params: Promise<{ locale: 
 
       <StatRow>
         <Stat value={fmt(rollup.budget_total)} label={tm("budget")} />
-        <Stat value={fmt(rollup.paid)} valueClassName="text-sage-ink" label={tm("paid")} />
+        <Stat value={fmt(rollup.paid)} valueClassName="text-teal" label={tm("paid")} />
         <Stat value={fmt(rollup.committed)} label={tm("committed")} />
         <Stat value={fmt(rollup.open)} label={tm("open")} />
       </StatRow>

@@ -14,7 +14,7 @@ type LookupPayload = {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-paper px-5 py-12">
+    <div className="min-h-screen bg-bone px-5 py-12">
       <div className="mx-auto max-w-md">{children}</div>
     </div>
   );
@@ -56,7 +56,7 @@ export default async function RsvpPage({
       </div>
 
       {!payload.open ? (
-        <div className="rounded-2xl bg-bone p-6 shadow-card">
+        <div className="rounded-[var(--radius)] bg-bone p-6">
           <p className="mb-1 font-display text-[20px] text-ink">{payload.closed_reason === "expired" ? t("expiredTitle") : t("closedTitle")}</p>
           <p className="font-accent text-[15.5px] text-muted">{payload.closed_reason === "expired" ? t("expiredBody") : t("closedBody")}</p>
         </div>

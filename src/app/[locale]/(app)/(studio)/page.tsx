@@ -117,8 +117,8 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
       </StatRow>
 
       {soon && soonWhen ? (
-        <Link href="/calendar" className="mt-3 inline-flex items-center gap-2 rounded-full bg-paper px-3.5 py-1.5 text-[13px] shadow-card transition-shadow hover:shadow-lift">
-          <span className="h-2 w-2 rounded-full bg-ink" />
+        <Link href="/calendar" className="mt-3 inline-flex items-center gap-2 rounded-[var(--radius)] bg-bone px-3.5 py-1.5 text-[13px] transition-shadow">
+          <span className="h-2 w-2 rounded-[var(--radius)] bg-ink" />
           <span className="text-muted">{tc("nextMeeting")}</span>
           <span className="font-medium text-ink">{soon.invitee}</span>
           <span className="text-taupe">· {soonWhen}</span>
@@ -142,7 +142,7 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
                     title={
                       <>
                         {f.actorKind === "concierge" ? (
-                          <span className="font-medium"><span aria-hidden className="mr-1 inline-flex h-4 w-4 -translate-y-px items-center justify-center rounded-full bg-ink align-middle text-[10px] leading-none text-bone">c</span>{tc("byConcierge", { planner: f.actorName ?? "" })}</span>
+                          <span className="font-medium"><span aria-hidden className="mr-1 inline-flex h-4 w-4 -translate-y-px items-center justify-center rounded-[var(--radius)] bg-ink align-middle text-[10px] leading-none text-bone">c</span>{tc("byConcierge", { planner: f.actorName ?? "" })}</span>
                         ) : (
                           <span className="font-medium">{f.actorName ?? "Forma"}</span>
                         )} {tc(`verb.${f.verb}`)}
@@ -163,10 +163,10 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
             ) : (
               chase.map((c) => (
                 <Link key={c.id} href={c.href} className="block">
-                  <Row className="-mx-2 rounded-xl px-2 hover:bg-bone">
+                  <Row className="-mx-2 rounded-[var(--radius)] px-2 hover:bg-bone">
                     <Monogram initials={c.tag || "·"} size={28} />
                     <RowMain title={c.title} detail={c.kind === "task" ? tc("chaseTask") : undefined} />
-                    <span className={cx("shrink-0 rounded-full px-2.5 py-[3px] text-[11px] font-medium", c.ageDays >= 7 ? "bg-wine-soft text-wine" : "bg-sand-soft text-taupe")}>
+                    <span className={cx("shrink-0 rounded-[var(--radius)] px-2.5 py-[3px] text-[11px] font-medium", c.ageDays >= 7 ? "bg-bone text-wine" : "bg-bone text-taupe")}>
                       {tc("ageDays", { days: c.ageDays })}
                     </span>
                   </Row>
@@ -185,7 +185,7 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
             {radar.slice(0, 6).map((r) => (
               <Row key={r.id}>
                 <span className="w-14 shrink-0 font-accent text-[14px] italic text-taupe">{r.due_date.slice(5)}</span>
-                <RowMain title={<>{r.title} {r.is_fee ? <span className="ml-1 rounded-full bg-sand-soft px-2 py-[1px] text-[10.5px] text-taupe">{tmoney("yours")}</span> : null}</>} detail={r.couple_display} />
+                <RowMain title={<>{r.title} {r.is_fee ? <span className="ml-1 rounded-[var(--radius)] bg-bone px-2 py-[1px] text-[10.5px] text-taupe">{tmoney("yours")}</span> : null}</>} detail={r.couple_display} />
                 <span className="shrink-0 font-medium text-[13.5px] text-ink">{fmt(Number(r.amount))}</span>
               </Row>
             ))}
@@ -199,9 +199,9 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
             <p className="mb-3 mt-0.5 text-[12.5px] text-muted">{tmoney("urgentHint")}</p>
             {urgent.slice(0, 5).map((r) => (
               <Link key={r.id} href={`/wedding/${r.wedding_id}/budget`} className="block">
-                <Row className="-mx-2 rounded-xl px-2 hover:bg-bone">
+                <Row className="-mx-2 rounded-[var(--radius)] px-2 hover:bg-bone">
                   <RowMain title={r.title} detail={r.couple_display} />
-                  <span className="shrink-0 rounded-full bg-wine-soft px-2.5 py-[3px] text-[11px] font-medium text-wine">{fmt(Number(r.amount))}</span>
+                  <span className="shrink-0 rounded-[var(--radius)] bg-bone px-2.5 py-[3px] text-[11px] font-medium text-wine">{fmt(Number(r.amount))}</span>
                 </Row>
               </Link>
             ))}
@@ -218,7 +218,7 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
               const cd = countdownLabel(w.date_start, w.phase, tw);
               return (
                 <Link key={w.id} href={`/wedding/${w.id}`} className="block">
-                  <Row className="-mx-2 rounded-xl px-2 hover:bg-bone">
+                  <Row className="-mx-2 rounded-[var(--radius)] px-2 hover:bg-bone">
                     <Monogram initials={initials(w.couple_display)} size={34} />
                     <RowMain
                       title={<span className="inline-flex items-center gap-2 font-display text-[16px] font-normal">{w.couple_display} <PhaseDots phase={w.phase} /></span>}

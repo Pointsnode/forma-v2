@@ -35,7 +35,7 @@ export default async function ContractsTab({ params }: { params: Promise<{ local
         ) : (
           contracts.map((c) => (
             <Link key={c.id} href={`/wedding/${id}/contracts/${c.id}`} className="block">
-              <Row className="-mx-2 rounded-xl px-2 hover:bg-bone">
+              <Row className="-mx-2 rounded-[var(--radius)] px-2 hover:bg-bone">
                 <Icon>{c.title.trim()[0]?.toUpperCase() ?? "C"}</Icon>
                 <RowMain
                   title={c.title}

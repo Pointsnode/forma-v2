@@ -49,7 +49,7 @@ export default async function TasksPage({ params }: { params: Promise<{ locale: 
           const moves = nextMoves.get(w.id) ?? [];
           if (w.phase === "closed" || moves.length === 0) return null;
           return (
-            <div key={w.id} className="flex flex-col overflow-hidden rounded-2xl bg-paper shadow-card">
+            <div key={w.id} className="flex flex-col overflow-hidden rounded-[var(--radius)] bg-bone">
               <div className="flex h-16 items-end justify-between p-3 text-[rgba(255,253,249,0.95)]" style={{ background: heroToneAt(i) }}>
                 <BentoBig size={16}>{w.couple_display}</BentoBig>
                 <span className="font-accent text-[13px] italic">{days != null ? (days >= 0 ? `${days} ${tw("days")}` : tw("daysAgo", { count: -days })) : ""}</span>

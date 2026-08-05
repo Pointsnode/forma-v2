@@ -9,7 +9,6 @@
   --color-ink-soft: #1C1C1B;   /* raised charcoal (rarely used) */
   --color-char: #1C1C1B;
   --color-bone: #F5F2EB;
-  --color-paper: #F5F2EB;      /* Edition One: cards are bone on bone (alias) */
   --color-hairline: #E4DFD3;
   --color-hairline-dark: rgba(245, 242, 235, 0.16); /* bone-alpha hairline on charcoal */
   --color-graphite: #3B3833;   /* body copy on bone */
@@ -23,15 +22,10 @@
   --color-oxblood: #44161F;    /* one dose per screen (the concierge card) */
   --color-teal: #2F5552;       /* the money domain + settled chips */
 
-  /* Retired identities, aliased to their nearest Edition One value so nothing breaks
-     while call sites migrate. Delete once the grep for these names comes back clean. */
-  --color-sand: var(--color-champagne);
-  --color-sand-soft: var(--color-bone);
-  --color-sage: var(--color-teal);
-  --color-sage-soft: var(--color-bone);
-  --color-sage-ink: var(--color-teal);
-  --color-wine-soft: var(--color-bone);
-  --color-maroon: var(--color-oxblood);
+  /* Retired identities (sand/sand-soft, sage/sage-soft/sage-ink, wine-soft, maroon) were
+     aliased here during the foundation, then every call site was migrated to its Edition
+     One value (sand→champagne, -softs→bone, sage/sage-ink→teal, maroon→oxblood) and the
+     aliases deleted. Grep for these names across src/ now comes back clean. */
 
   --font-display: var(--font-playfair), Georgia, serif;
   --font-sans: var(--font-inter), system-ui, sans-serif;

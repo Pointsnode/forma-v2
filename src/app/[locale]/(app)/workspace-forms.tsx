@@ -12,13 +12,13 @@ export function CreateWorkspaceForm() {
     <form action={action} className="flex flex-col gap-4">
       <label className="flex flex-col gap-1.5">
         <span className="text-[13px] text-muted">{t("name")}</span>
-        <input name="name" required maxLength={120} className="w-full rounded-xl bg-bone px-3.5 py-2.5 text-[14px] text-ink shadow-card outline-none focus:shadow-lift" />
+        <input name="name" required maxLength={120} className="w-full rounded-[var(--radius)] bg-bone px-3.5 py-2.5 text-[14px] text-ink outline-none" />
       </label>
       <fieldset className="flex gap-2">
         {(["studio", "couple"] as const).map((k, i) => (
           <label key={k} className="flex-1 cursor-pointer">
             <input type="radio" name="kind" value={k} defaultChecked={i === 0} className="peer sr-only" />
-            <span className="block rounded-xl bg-bone px-4 py-3 text-center text-[14px] text-muted shadow-card peer-checked:bg-ink peer-checked:text-bone">
+            <span className="block rounded-[var(--radius)] bg-bone px-4 py-3 text-center text-[14px] text-muted peer-checked:bg-ink peer-checked:text-bone">
               {t(k === "studio" ? "kindStudio" : "kindCouple")}
             </span>
           </label>

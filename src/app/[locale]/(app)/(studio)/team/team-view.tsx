@@ -15,7 +15,7 @@ export type RosterMember = {
 };
 export type PendingInvite = { id: string; email: string; grants: string[]; title: string | null; token: string; expiresAt: string };
 
-const INPUT = "w-full rounded-xl bg-bone px-3.5 py-2.5 text-[14px] text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-sand";
+const INPUT = "w-full rounded-[var(--radius)] bg-bone px-3.5 py-2.5 text-[14px] text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-champagne";
 
 function money(n: number) { return `$${n.toLocaleString("en-US")}`; }
 function nameInitials(name: string) {
@@ -40,7 +40,7 @@ function BoxGrid({ value, onChange, disabled }: { value: string[]; onChange: (g:
         {PRESETS.map((p) => (
           <button key={p.key} type="button" disabled={disabled}
             onClick={() => onChange([...p.grants])}
-            className="rounded-full border border-hairline px-3 py-1 text-[12px] text-muted hover:border-ink hover:text-ink disabled:opacity-50">
+            className="rounded-[var(--radius)] border border-hairline px-3 py-1 text-[12px] text-muted hover:border-ink hover:text-ink disabled:opacity-50">
             {t(`preset.${p.key}`)}
           </button>
         ))}
@@ -53,7 +53,7 @@ function BoxGrid({ value, onChange, disabled }: { value: string[]; onChange: (g:
             <button key={k} type="button" onClick={() => toggle(k)} disabled={locked && !on}
               aria-pressed={on}
               className={cx(
-                "rounded-full px-3 py-1 text-[12px] transition",
+                "rounded-[var(--radius)] px-3 py-1 text-[12px] transition",
                 on ? "bg-ink text-bone" : "border border-hairline text-muted hover:border-ink hover:text-ink",
                 locked ? "cursor-default" : "cursor-pointer",
               )}>
@@ -68,12 +68,12 @@ function BoxGrid({ value, onChange, disabled }: { value: string[]; onChange: (g:
 
 function BoxChips({ grants }: { grants: string[] }) {
   const t = useTranslations("team");
-  if (grants.includes("admin")) return <span className="rounded-full bg-ink px-2.5 py-0.5 text-[11.5px] text-bone">{t("box.admin")}</span>;
+  if (grants.includes("admin")) return <span className="rounded-[var(--radius)] bg-ink px-2.5 py-0.5 text-[11.5px] text-bone">{t("box.admin")}</span>;
   if (grants.length === 0) return <span className="text-[12px] text-muted">{t("noBoxes")}</span>;
   return (
     <span className="flex flex-wrap gap-1">
       {CLEARANCE_BOXES.filter((k) => grants.includes(k)).map((k) => (
-        <span key={k} className="rounded-full bg-bone px-2.5 py-0.5 text-[11.5px] text-ink">{t(`box.${k}`)}</span>
+        <span key={k} className="rounded-[var(--radius)] bg-bone px-2.5 py-0.5 text-[11.5px] text-ink">{t(`box.${k}`)}</span>
       ))}
     </span>
   );
@@ -121,7 +121,7 @@ function MemberRow({ member, isAdmin }: { member: RosterMember; isAdmin: boolean
       </div>
       <div className="pb-3 md:hidden"><BoxChips grants={member.grants} /></div>
       {editing && isAdmin ? (
-        <div className="mb-3 flex flex-col gap-3 rounded-xl bg-bone/60 p-4">
+        <div className="mb-3 flex flex-col gap-3 rounded-[var(--radius)] bg-bone/60 p-4">
           <label className="flex flex-col gap-1.5">
             <span className="text-[12px] text-muted">{t("titleLabel")}</span>
             <input className={INPUT} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("titlePlaceholder")} />
@@ -264,7 +264,7 @@ function ConciergeSettings({ roster, concierge, isAdmin }: { roster: RosterMembe
             <span className="text-muted">{t("usageLabel")}</span>
             <span className="text-ink">{concierge.used.toLocaleString("en-US")} / {concierge.cap.toLocaleString("en-US")} {t("tokens")}</span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-bone"><div className="h-full rounded-full bg-ink" style={{ width: `${pct}%` }} /></div>
+          <div className="h-2 overflow-hidden rounded-[var(--radius)] bg-bone"><div className="h-full rounded-[var(--radius)] bg-ink" style={{ width: `${pct}%` }} /></div>
         </div>
         {isAdmin ? (
           <div className="flex flex-col gap-1.5">
@@ -285,7 +285,7 @@ function ConciergeSettings({ roster, concierge, isAdmin }: { roster: RosterMembe
           ) : (
             <div className="flex flex-wrap gap-2">
               {withConcierge.map((m) => (
-                <span key={m.userId} className="flex items-center gap-2 rounded-full bg-bone px-3 py-1 text-[12.5px] text-ink">
+                <span key={m.userId} className="flex items-center gap-2 rounded-[var(--radius)] bg-bone px-3 py-1 text-[12.5px] text-ink">
                   <Monogram initials={nameInitials(m.name)} size={20} />{m.name}
                 </span>
               ))}

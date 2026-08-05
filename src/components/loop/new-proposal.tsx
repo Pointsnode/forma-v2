@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui";
 import { createProposal } from "@/app/[locale]/(app)/wedding/[id]/loop-actions";
 
-const inputCls = "w-full rounded-xl bg-bone px-3.5 py-2.5 text-[14px] text-ink shadow-card outline-none focus:shadow-lift";
+const inputCls = "w-full rounded-[var(--radius)] bg-bone px-3.5 py-2.5 text-[14px] text-ink outline-none";
 
 export function NewProposal({ weddingId, events }: { weddingId: string; events: { id: string; label: string }[] }) {
   const t = useTranslations("proposals");
@@ -29,7 +29,7 @@ export function NewProposal({ weddingId, events }: { weddingId: string; events: 
 
   if (!open) return <Button variant="ghost" onClick={() => setOpen(true)}>+ {t("new")}</Button>;
   return (
-    <div className="flex flex-col gap-3 rounded-2xl bg-paper p-4 shadow-card">
+    <div className="flex flex-col gap-3 rounded-[var(--radius)] bg-bone p-4">
       <p className="font-display text-[16px] text-ink">{t("newTitle")}</p>
       <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("title")}</span>
         <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} className={inputCls} /></label>

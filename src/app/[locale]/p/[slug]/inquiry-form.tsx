@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { submitInquiry, type InquiryInput } from "./actions";
 
 const FIELD =
-  "w-full rounded-xl bg-bone px-4 py-3 text-[15px] text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-sand";
+  "w-full rounded-[var(--radius)] bg-bone px-4 py-3 text-[15px] text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-champagne";
 
 // Maps the DB function's human errcodes to a translated line. Anything unmapped
 // falls back to the generic message.
@@ -42,7 +42,7 @@ export function InquiryForm({
 
   if (done) {
     return (
-      <div className="rounded-2xl bg-paper p-8 text-center shadow-card">
+      <div className="rounded-[var(--radius)] bg-bone p-8 text-center">
         <p className="font-display text-[22px] text-ink">{labels.sentTitle}</p>
         <p className="mt-1.5 font-accent text-[16px] italic text-taupe">{labels.sentBody}</p>
       </div>
@@ -50,7 +50,7 @@ export function InquiryForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="rounded-2xl bg-paper p-6 shadow-card sm:p-7">
+    <form onSubmit={onSubmit} className="rounded-[var(--radius)] bg-bone p-6 sm:p-7">
       <h3 className="font-display text-[22px] text-ink">{labels.formTitle}</h3>
       <p className="mb-4 mt-0.5 font-accent text-[15px] italic text-taupe">{labels.formHint}</p>
       <div className="grid gap-3">
@@ -79,7 +79,7 @@ export function InquiryForm({
       <button
         type="submit"
         disabled={pending}
-        className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-ink px-5 py-3 text-[14px] font-medium text-bone transition-opacity hover:opacity-90 disabled:opacity-50"
+        className="mt-4 inline-flex w-full items-center justify-center rounded-[var(--radius)] bg-ink px-5 py-3 text-[14px] font-medium text-bone transition-opacity hover:opacity-90 disabled:opacity-50"
       >
         {pending ? labels.sending : labels.send}
       </button>

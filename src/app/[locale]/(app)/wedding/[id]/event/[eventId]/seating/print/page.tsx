@@ -28,7 +28,7 @@ export default async function SeatingPrint({ params }: { params: Promise<{ local
   const escort = floor.tables.flatMap((tb) => tb.seats.map((s) => ({ ...s, tableName: tb.name }))).sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <div className="mx-auto max-w-[860px] bg-paper p-8 text-ink print:p-0">
+    <div className="mx-auto max-w-[860px] bg-bone p-8 text-ink print:p-0">
       <div className="mb-4 flex items-center justify-between print:hidden">
         <a href={`/wedding/${id}/event/${eventId}#seating`} className="text-[12.5px] text-muted hover:text-ink">← {t("backToEditor")}</a>
         <PrintButton />
@@ -45,7 +45,7 @@ export default async function SeatingPrint({ params }: { params: Promise<{ local
       {floor.plan?.backgroundUrl ? (
         <section className="mb-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={floor.plan.backgroundUrl} alt={t("blueprint")} className="w-full rounded-lg border border-hairline" />
+          <img src={floor.plan.backgroundUrl} alt={t("blueprint")} className="w-full rounded-[var(--radius)] border border-hairline" />
         </section>
       ) : null}
 
@@ -54,7 +54,7 @@ export default async function SeatingPrint({ params }: { params: Promise<{ local
         <h2 className="mb-2 text-[12px] uppercase tracking-[0.14em] text-muted">{t("byTable")}</h2>
         <div className="grid grid-cols-2 gap-4">
           {floor.tables.map((tb) => (
-            <div key={tb.id} className="break-inside-avoid rounded-lg border border-hairline p-3">
+            <div key={tb.id} className="break-inside-avoid rounded-[var(--radius)] border border-hairline p-3">
               <p className="mb-1 flex justify-between font-display text-[15px]">{tb.name}<span className="text-[12px] text-muted">{tb.seats.length}/{tb.capacity}</span></p>
               {tb.seats.sort((a, b) => a.seatNo - b.seatNo).map((s) => (
                 <p key={s.seatNo} className="text-[12.5px] text-ink-soft"><b className="text-taupe">{seatLabel(s.seatNo)}</b> · {s.name}{s.diet.length ? ` · ${s.diet.join(", ")}` : ""}</p>
@@ -70,7 +70,7 @@ export default async function SeatingPrint({ params }: { params: Promise<{ local
         <h2 className="mb-2 text-[12px] uppercase tracking-[0.14em] text-muted">{t("escortCards")}</h2>
         <div className="grid grid-cols-3 gap-3">
           {escort.map((e) => (
-            <div key={e.guestId} className="break-inside-avoid rounded-lg border border-hairline p-3 text-center">
+            <div key={e.guestId} className="break-inside-avoid rounded-[var(--radius)] border border-hairline p-3 text-center">
               <p className="font-display text-[15px] text-ink">{e.name}</p>
               <p className="mt-1 text-[12.5px] text-taupe">{e.tableName} · {t("chair")} {seatLabel(e.seatNo)}</p>
               {e.diet.length ? <p className="mt-0.5 text-[11px] text-wine">{e.diet.join(", ")}</p> : null}

@@ -8,7 +8,7 @@ import { createTask, type TaskInput } from "@/app/[locale]/(app)/wedding/[id]/ta
 type Opt = { id: string; name: string };
 type EventOpt = { id: string; label: string };
 export type PreLink = { kind: "proposal" | "contract" | "engagement" | "document"; id: string; label: string };
-const inputCls = "w-full rounded-xl bg-bone px-3.5 py-2.5 text-[14px] text-ink shadow-card outline-none focus:shadow-lift";
+const inputCls = "w-full rounded-[var(--radius)] bg-bone px-3.5 py-2.5 text-[14px] text-ink outline-none";
 
 // The "+ Task" quick-add. In the top bar it's the global creator; on an object card
 // it opens PRE-LINKED (§1E) — the subject link rides in as a removable chip, and the
@@ -67,7 +67,7 @@ export function QuickAddTask({ weddings, workspaceId, defaultWeddingId, defaultE
 
   const trigger = variant === "inline"
     ? <button onClick={() => setOpen(true)} className="text-[12px] text-wine hover:underline hover:underline-offset-2">+ {t("tab")}</button>
-    : <button onClick={() => setOpen(true)} className="rounded-full border border-[rgba(247,244,238,0.25)] px-3 py-1.5 text-[12.5px] text-bone hover:bg-[rgba(247,244,238,0.1)]">+ {t("tab")}</button>;
+    : <button onClick={() => setOpen(true)} className="rounded-[var(--radius)] border border-[rgba(247,244,238,0.25)] px-3 py-1.5 text-[12.5px] text-bone hover:bg-[rgba(247,244,238,0.1)]">+ {t("tab")}</button>;
 
   return (
     <>
@@ -75,10 +75,10 @@ export function QuickAddTask({ weddings, workspaceId, defaultWeddingId, defaultE
       {open ? (
         <div className="fixed inset-0 z-[95] flex items-center justify-center p-4">
           <button className="absolute inset-0 bg-[rgba(21,18,16,0.55)]" onClick={() => setOpen(false)} aria-label={t("close")} />
-          <div className="relative flex w-full max-w-[460px] flex-col gap-3 rounded-[18px] bg-paper p-6 shadow-hero">
+          <div className="relative flex w-full max-w-[460px] flex-col gap-3 rounded-[var(--radius)] bg-bone p-6">
             <p className="font-display text-[18px] text-ink">{t("newTask")}</p>
             {link ? (
-              <div className="flex items-center gap-2 rounded-xl bg-bone px-3 py-2">
+              <div className="flex items-center gap-2 rounded-[var(--radius)] bg-bone px-3 py-2">
                 <span className="text-[11px] uppercase tracking-[0.06em] text-muted">{t("linked")}</span>
                 <span className="min-w-0 flex-1 truncate text-[12.5px] text-ink">{link.label}</span>
                 <button onClick={() => setLink(null)} className="text-[12px] text-muted hover:text-wine" title={t("unlink")}>✕</button>
@@ -126,10 +126,10 @@ export function QuickAddTask({ weddings, workspaceId, defaultWeddingId, defaultE
             ) : null}
             <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("note")}</span>
               <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className={inputCls} /></label>
-            <label className="flex items-center gap-2 text-[13px] text-ink"><input type="checkbox" checked={flagged} onChange={(e) => setFlagged(e.target.checked)} /> <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[2px] bg-wine" />{t("markUrgent")}</span></label>
+            <label className="flex items-center gap-2 text-[13px] text-ink"><input type="checkbox" checked={flagged} onChange={(e) => setFlagged(e.target.checked)} /> <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[var(--radius)] bg-wine" />{t("markUrgent")}</span></label>
             <div className="flex gap-2">
-              <button onClick={save} disabled={busy || !title.trim()} className="rounded-full bg-ink px-4 py-2 text-[13px] text-bone disabled:opacity-40">{t("save")}</button>
-              <button onClick={() => setOpen(false)} className="rounded-full px-3 py-2 text-[13px] text-muted hover:text-ink">{t("cancel")}</button>
+              <button onClick={save} disabled={busy || !title.trim()} className="rounded-[var(--radius)] bg-ink px-4 py-2 text-[13px] text-bone disabled:opacity-40">{t("save")}</button>
+              <button onClick={() => setOpen(false)} className="rounded-[var(--radius)] px-3 py-2 text-[13px] text-muted hover:text-ink">{t("cancel")}</button>
             </div>
           </div>
         </div>

@@ -246,24 +246,24 @@ export function FloorEditor(props: FloorEditorProps) {
       <div className="min-w-0 flex-1">
         {canEditGeom ? (
           <div className="mb-2 flex flex-wrap items-center gap-1.5">
-            {SHAPES.map((sh) => <button key={sh} onClick={() => addShape(sh)} className="rounded-lg bg-ink px-2.5 py-1.5 text-[12px] text-bone">+ {t(`shape_${sh}`)}</button>)}
-            <button onClick={addLoose} className="rounded-lg bg-ink px-2.5 py-1.5 text-[12px] text-bone">+ {t("addLooseSeat")}</button>
+            {SHAPES.map((sh) => <button key={sh} onClick={() => addShape(sh)} className="rounded-[var(--radius)] bg-ink px-2.5 py-1.5 text-[12px] text-bone">+ {t(`shape_${sh}`)}</button>)}
+            <button onClick={addLoose} className="rounded-[var(--radius)] bg-ink px-2.5 py-1.5 text-[12px] text-bone">+ {t("addLooseSeat")}</button>
             <span className="mx-1 h-4 w-px bg-hairline" />
-            {DECOR.map((d) => <button key={d} onClick={() => addDecor(d)} className="rounded-lg bg-bone px-2.5 py-1.5 text-[12px] text-taupe hover:text-ink">+ {t(`kind_${d}`)}</button>)}
+            {DECOR.map((d) => <button key={d} onClick={() => addDecor(d)} className="rounded-[var(--radius)] bg-bone px-2.5 py-1.5 text-[12px] text-taupe hover:text-ink">+ {t(`kind_${d}`)}</button>)}
             <span className="ml-auto text-[11.5px] text-muted">{saveState === "saving" ? t("saving") : saveState === "saved" ? t("saved") : ""}</span>
           </div>
         ) : (
           <div className="mb-2 flex items-center gap-2 text-[12px] text-muted">
-            <span className="rounded-full bg-bone px-2.5 py-1">{props.coupleCanEdit ? t("coupleCanEdit") : t("readOnly")}</span>
+            <span className="rounded-[var(--radius)] bg-bone px-2.5 py-1">{props.coupleCanEdit ? t("coupleCanEdit") : t("readOnly")}</span>
             <span className="ml-auto">{saveState === "saving" ? t("saving") : saveState === "saved" ? t("saved") : ""}</span>
           </div>
         )}
 
         {/* §L blueprint bar (staff) */}
         {canEditGeom ? (
-          <div className="mb-2 flex flex-wrap items-center gap-2 rounded-xl bg-bone/60 px-2.5 py-1.5 text-[11.5px] text-muted">
+          <div className="mb-2 flex flex-wrap items-center gap-2 rounded-[var(--radius)] bg-bone/60 px-2.5 py-1.5 text-[11.5px] text-muted">
             {!props.background ? (
-              <label className="cursor-pointer rounded bg-paper px-2 py-1 text-ink shadow-card hover:opacity-90">
+              <label className="cursor-pointer rounded bg-bone px-2 py-1 text-ink hover:opacity-90">
                 {uploading ? t("blueprintConverting") : t("addBlueprint")}
                 <input type="file" accept="image/png,image/jpeg,application/pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) onUpload(f); e.target.value = ""; }} />
               </label>
@@ -273,9 +273,9 @@ export function FloorEditor(props: FloorEditorProps) {
                 <label className="flex items-center gap-1">{t("opacity")}
                   <input type="range" min={10} max={100} defaultValue={Math.round((bg.opacity ?? 0.55) * 100)} onMouseUp={(e) => saveBg({ opacity: Number((e.target as HTMLInputElement).value) / 100 })} onTouchEnd={(e) => saveBg({ opacity: Number((e.target as HTMLInputElement).value) / 100 })} className="w-20 accent-ink" />
                 </label>
-                <button onClick={fitBg} className="rounded bg-paper px-2 py-0.5 text-ink shadow-card">{t("fit")}</button>
-                <button onClick={() => saveBg({ locked: !bgLocked })} className="rounded bg-paper px-2 py-0.5 text-ink shadow-card">{bgLocked ? t("unlock") : t("lock")}</button>
-                <button onClick={() => { setBgImg(null); whisper(removeBackground(props.planId)); }} className="rounded bg-paper px-2 py-0.5 text-wine shadow-card">{t("removeBlueprint")}</button>
+                <button onClick={fitBg} className="rounded bg-bone px-2 py-0.5 text-ink">{t("fit")}</button>
+                <button onClick={() => saveBg({ locked: !bgLocked })} className="rounded bg-bone px-2 py-0.5 text-ink">{bgLocked ? t("unlock") : t("lock")}</button>
+                <button onClick={() => { setBgImg(null); whisper(removeBackground(props.planId)); }} className="rounded bg-bone px-2 py-0.5 text-wine">{t("removeBlueprint")}</button>
               </>
             )}
             <span className="ml-1 text-taupe">{t("blueprintHint")}</span>
@@ -289,14 +289,14 @@ export function FloorEditor(props: FloorEditorProps) {
         {props.exceptions.length ? (
           <div className="mb-2 flex flex-wrap gap-1.5">
             {props.exceptions.map((e) => (
-              <button key={e.guestId} onClick={() => canSeat && unseat(e.guestId)} className="rounded-full bg-wine-soft px-2.5 py-1 text-[11.5px] text-wine hover:bg-wine hover:text-bone" title={t("exceptionHint")}>
+              <button key={e.guestId} onClick={() => canSeat && unseat(e.guestId)} className="rounded-[var(--radius)] bg-bone px-2.5 py-1 text-[11.5px] text-wine hover:bg-wine hover:text-bone" title={t("exceptionHint")}>
                 {t("exception", { name: e.name })}
               </button>
             ))}
           </div>
         ) : null}
 
-        <div className="overflow-auto rounded-2xl bg-paper shadow-card" style={{ maxHeight: 620 }}>
+        <div className="overflow-auto rounded-[var(--radius)] bg-bone" style={{ maxHeight: 620 }}>
           <Stage ref={stageRef} width={props.canvas.w * scale} height={props.canvas.h * scale} scaleX={scale} scaleY={scale}
             onMouseDown={(e) => { if (e.target === e.target.getStage()) { setSel(null); setChair(null); setPickGuest(null); } }}>
             <Layer>
@@ -388,22 +388,22 @@ export function FloorEditor(props: FloorEditorProps) {
       </div>
 
       <aside className="w-full shrink-0 lg:w-[280px]">
-        <div className="rounded-2xl bg-paper p-4 shadow-card">
+        <div className="rounded-[var(--radius)] bg-bone p-4">
           <p className="mb-2 font-display text-[15px] text-ink">{t("attending", { count: props.attendingCount })}</p>
           {chair && !pickGuest ? (
-            <div className="mb-3 rounded-xl bg-bone p-3">
+            <div className="mb-3 rounded-[var(--radius)] bg-bone p-3">
               <p className="mb-2 text-[12px] text-muted">{t("chairAt", { table: chairTable?.name ?? "", seat: seatLabel(chair.seatNo) })}</p>
               {occupant ? (
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-[13.5px] text-ink">{occupant.name}{occupant.diet.length ? <span className="ml-1 text-[11px] text-taupe">· {occupant.diet.join(", ")}</span> : null}</span>
-                  {canSeat ? <button onClick={() => unseat(occupant.guestId)} className="rounded-full bg-wine-soft px-2.5 py-1 text-[11.5px] text-wine">{t("unseat")}</button> : null}
+                  {canSeat ? <button onClick={() => unseat(occupant.guestId)} className="rounded-[var(--radius)] bg-bone px-2.5 py-1 text-[11.5px] text-wine">{t("unseat")}</button> : null}
                 </div>
               ) : canSeat ? (
                 <>
-                  <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("searchUnseated")} className="mb-2 w-full rounded-lg bg-paper px-2.5 py-1.5 text-[13px] text-ink shadow-card outline-none" />
+                  <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("searchUnseated")} className="mb-2 w-full rounded-[var(--radius)] bg-bone px-2.5 py-1.5 text-[13px] text-ink outline-none" />
                   <div className="flex max-h-40 flex-col gap-1 overflow-auto">
                     {unseated.map((a) => (
-                      <button key={a.guestId} onClick={() => seat(a.guestId)} className="flex items-center justify-between rounded-lg px-2 py-1 text-left text-[13px] text-ink hover:bg-paper">
+                      <button key={a.guestId} onClick={() => seat(a.guestId)} className="flex items-center justify-between rounded-[var(--radius)] px-2 py-1 text-left text-[13px] text-ink hover:bg-bone">
                         <span>{a.name}</span>{a.diet.length ? <span className="text-[10.5px] text-taupe">{a.diet.join(", ")}</span> : null}
                       </button>
                     ))}
@@ -421,8 +421,8 @@ export function FloorEditor(props: FloorEditorProps) {
               return (
                 <button key={a.guestId} disabled={!canSeat}
                   onClick={() => { if (a.seated) { unseat(a.guestId); } else { setChair(null); setPickGuest(picked ? null : a.guestId); } }}
-                  className={`flex items-center gap-2 rounded-lg px-2 py-1 text-left text-[13px] ${picked ? "bg-ink text-bone" : "hover:bg-bone"}`}>
-                  <span className={picked ? "text-bone" : a.seated ? "text-sage-ink" : "text-muted"}>{a.seated ? "✓" : "·"}</span>
+                  className={`flex items-center gap-2 rounded-[var(--radius)] px-2 py-1 text-left text-[13px] ${picked ? "bg-ink text-bone" : "hover:bg-bone"}`}>
+                  <span className={picked ? "text-bone" : a.seated ? "text-teal" : "text-muted"}>{a.seated ? "✓" : "·"}</span>
                   <span className={picked ? "text-bone" : a.seated ? "text-ink" : "text-taupe"}>{a.name}</span>
                   {a.diet.length ? <span className={`ml-auto text-[10.5px] ${picked ? "text-bone/70" : "text-taupe"}`}>{a.diet.join(", ")}</span> : null}
                 </button>
@@ -454,7 +454,7 @@ function TableInspector({
             {tables.map((tb) => <option key={tb.id} value={tb.id}>{tb.name}</option>)}
           </select>
         </label>
-        <button onClick={onDelete} className="rounded bg-wine-soft px-2 py-0.5 text-[11.5px] text-wine">{t("delete")}</button>
+        <button onClick={onDelete} className="rounded bg-bone px-2 py-0.5 text-[11.5px] text-wine">{t("delete")}</button>
       </span>
     );
   }
@@ -476,7 +476,7 @@ function TableInspector({
         </label>
       ) : null}
       <button onClick={onDuplicate} className="rounded bg-bone px-2 py-0.5 text-[11.5px] text-ink">{t("duplicate")}</button>
-      <button onClick={onDelete} className="rounded bg-wine-soft px-2 py-0.5 text-[11.5px] text-wine">{t("delete")}</button>
+      <button onClick={onDelete} className="rounded bg-bone px-2 py-0.5 text-[11.5px] text-wine">{t("delete")}</button>
     </span>
   );
 }

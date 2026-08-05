@@ -43,7 +43,7 @@ export function RsvpForm({
 
   if (done) {
     return (
-      <div className="rounded-2xl bg-bone p-6 text-center shadow-card">
+      <div className="rounded-[var(--radius)] bg-bone p-6 text-center">
         <p className="font-display text-[20px] text-ink">{t("thanks")}</p>
         <p className="mt-1 font-accent text-[15px] text-muted">{t("thanksEdit")}</p>
       </div>
@@ -55,7 +55,7 @@ export function RsvpForm({
       <p className="font-accent text-[16px] text-muted">{t("respondHint", { couple })}</p>
       <div className="flex flex-col gap-3">
         {events.map((e) => (
-          <div key={e.event_id} className="rounded-2xl bg-bone p-4 shadow-card">
+          <div key={e.event_id} className="rounded-[var(--radius)] bg-bone p-4">
             <div className="mb-2 flex items-baseline justify-between">
               <span className="font-display text-[17px] text-ink">{e.label}</span>
               {e.event_date ? <span className="font-accent text-[14px] text-muted">{e.event_date}</span> : null}
@@ -63,8 +63,8 @@ export function RsvpForm({
             <div className="flex gap-2">
               {STATUSES.map((s) => (
                 <button key={s} onClick={() => setAnswers({ ...answers, [e.event_id]: s })}
-                  className={cx("flex-1 rounded-xl px-3 py-2 text-[14px] transition-colors",
-                    answers[e.event_id] === s ? "bg-ink text-bone" : "bg-paper text-muted shadow-card hover:text-ink")}>
+                  className={cx("flex-1 rounded-[var(--radius)] px-3 py-2 text-[14px] transition-colors",
+                    answers[e.event_id] === s ? "bg-ink text-bone" : "bg-bone text-muted hover:text-ink")}>
                   {t(s)}
                 </button>
               ))}
@@ -76,16 +76,16 @@ export function RsvpForm({
       {guest.plus_one_allowed ? (
         <label className="flex flex-col gap-1">
           <span className="text-[13px] text-muted">{t("plusOneName")}</span>
-          <input value={plusOne} onChange={(e) => setPlusOne(e.target.value)} className="rounded-xl bg-bone px-3.5 py-2.5 text-[15px] text-ink shadow-card outline-none focus:shadow-lift" />
+          <input value={plusOne} onChange={(e) => setPlusOne(e.target.value)} className="rounded-[var(--radius)] bg-bone px-3.5 py-2.5 text-[15px] text-ink outline-none" />
         </label>
       ) : null}
       <label className="flex flex-col gap-1">
         <span className="text-[13px] text-muted">{t("dietary")}</span>
-        <input value={dietary} onChange={(e) => setDietary(e.target.value)} className="rounded-xl bg-bone px-3.5 py-2.5 text-[15px] text-ink shadow-card outline-none focus:shadow-lift" />
+        <input value={dietary} onChange={(e) => setDietary(e.target.value)} className="rounded-[var(--radius)] bg-bone px-3.5 py-2.5 text-[15px] text-ink outline-none" />
       </label>
 
       {err ? <p className="text-[14px] text-wine">{err}</p> : null}
-      <button onClick={submit} disabled={pending} className="rounded-full bg-ink px-6 py-3 text-[15px] font-medium text-bone transition-opacity hover:opacity-90 disabled:opacity-50">
+      <button onClick={submit} disabled={pending} className="rounded-[var(--radius)] bg-ink px-6 py-3 text-[15px] font-medium text-bone transition-opacity hover:opacity-90 disabled:opacity-50">
         {pending ? t("submitting") : t("submit")}
       </button>
     </div>

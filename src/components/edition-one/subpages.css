@@ -108,3 +108,6 @@
   .ed1 table { font-size: 12px; }
   .ed1 th, .ed1 td { padding: 11px 6px; }
 }
+
+/* Edition One corner alignment (foundation §5): subpage drawn controls at 4px. */
+.ed1 .go2, .ed1 .auth .up, .ed1 .btn, .ed1 .chip { border-radius: 4px; }

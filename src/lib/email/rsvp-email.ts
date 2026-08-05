@@ -8,16 +8,16 @@ type Args = { to: string; guestName: string; couple: string; rsvpUrl: string; ki
 
 const COPY = {
   en: {
-    rsvp_invite: { subject: (c: string) => `You're invited — ${c}`, lead: (c: string) => `${c} would love to know if you can join them.`, cta: "Respond now" },
-    rsvp_reminder: { subject: (c: string) => `A gentle reminder — ${c}`, lead: (c: string) => `We haven't heard from you yet for ${c}. It only takes a moment.`, cta: "Respond now" },
-    rsvp_close: { subject: (c: string) => `RSVPs are closing — ${c}`, lead: (c: string) => `The guest list for ${c} is about to close. Last chance to let them know.`, cta: "Respond now" },
+    rsvp_invite: { subject: (c: string) => `You're invited, ${c}`, lead: (c: string) => `${c} would love to know if you can join them.`, cta: "Respond now" },
+    rsvp_reminder: { subject: (c: string) => `A gentle reminder, ${c}`, lead: (c: string) => `We haven't heard from you yet for ${c}. It only takes a moment.`, cta: "Respond now" },
+    rsvp_close: { subject: (c: string) => `RSVPs are closing, ${c}`, lead: (c: string) => `The guest list for ${c} is about to close. Last chance to let them know.`, cta: "Respond now" },
     hi: (n: string) => `Dear ${n},`,
     footer: "Sent by Forma on behalf of the couple. One link, no account needed.",
   },
   es: {
-    rsvp_invite: { subject: (c: string) => `Estás invitado — ${c}`, lead: (c: string) => `A ${c} le encantaría saber si puedes acompañarles.`, cta: "Responder ahora" },
-    rsvp_reminder: { subject: (c: string) => `Un recordatorio — ${c}`, lead: (c: string) => `Aún no tenemos tu respuesta para ${c}. Solo toma un momento.`, cta: "Responder ahora" },
-    rsvp_close: { subject: (c: string) => `El RSVP está por cerrar — ${c}`, lead: (c: string) => `La lista de ${c} está por cerrarse. Última oportunidad para avisarles.`, cta: "Responder ahora" },
+    rsvp_invite: { subject: (c: string) => `Estás invitado, ${c}`, lead: (c: string) => `A ${c} le encantaría saber si puedes acompañarles.`, cta: "Responder ahora" },
+    rsvp_reminder: { subject: (c: string) => `Un recordatorio, ${c}`, lead: (c: string) => `Aún no tenemos tu respuesta para ${c}. Solo toma un momento.`, cta: "Responder ahora" },
+    rsvp_close: { subject: (c: string) => `El RSVP está por cerrar, ${c}`, lead: (c: string) => `La lista de ${c} está por cerrarse. Última oportunidad para avisarles.`, cta: "Responder ahora" },
     hi: (n: string) => `Hola ${n},`,
     footer: "Enviado por Forma en nombre de la pareja. Un enlace, sin cuenta.",
   },

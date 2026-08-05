@@ -31,7 +31,7 @@ export function MenuForm({ code, events }: { code: string; events: Ev[] }) {
   return (
     <div className="flex flex-col gap-4">
       {events.map((e) => (
-        <div key={e.event_id} className="rounded-2xl bg-paper p-5 shadow-card">
+        <div key={e.event_id} className="rounded-[var(--radius)] bg-bone p-5">
           <div className="mb-2 flex items-baseline justify-between">
             <p className="font-display text-[18px] text-ink">{e.label}</p>
             {e.locked ? <span className="text-[12px] text-taupe">{t("locked")}</span> : null}
@@ -41,9 +41,9 @@ export function MenuForm({ code, events }: { code: string; events: Ev[] }) {
               const on = picks[e.event_id] === o.id;
               return (
                 <button key={o.id} type="button" disabled={e.locked} onClick={() => setPicks((p) => ({ ...p, [e.event_id]: on ? null : o.id }))}
-                  className={cx("flex items-center justify-between rounded-xl px-4 py-3 text-left text-[15px]", on ? "bg-ink text-bone" : "bg-bone text-ink", e.locked && "opacity-60")}>
+                  className={cx("flex items-center justify-between rounded-[var(--radius)] px-4 py-3 text-left text-[15px]", on ? "bg-ink text-bone" : "bg-bone text-ink", e.locked && "opacity-60")}>
                   <span>{o.label}</span>
-                  {o.diet_tags.length ? <span className={cx("text-[12px]", on ? "text-sand" : "text-taupe")}>{o.diet_tags.join(" · ")}</span> : null}
+                  {o.diet_tags.length ? <span className={cx("text-[12px]", on ? "text-champagne" : "text-taupe")}>{o.diet_tags.join(" · ")}</span> : null}
                 </button>
               );
             })}
@@ -58,7 +58,7 @@ export function MenuForm({ code, events }: { code: string; events: Ev[] }) {
 
 function Banner({ tone, title, body }: { tone?: "sage"; title: string; body: string }) {
   return (
-    <div className={cx("rounded-2xl p-8 text-center shadow-card", tone === "sage" ? "bg-sage-soft text-sage-ink" : "bg-paper")}>
+    <div className={cx("rounded-[var(--radius)] p-8 text-center", tone === "sage" ? "bg-bone text-teal" : "bg-bone")}>
       <p className="font-display text-[22px] text-ink">{title}</p>
       <p className="mt-1.5 font-accent text-[15px] text-muted">{body}</p>
     </div>

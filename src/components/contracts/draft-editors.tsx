@@ -8,7 +8,7 @@ import {
   saveDraftBody, addField, removeField, addSigner, removeSigner, reorderSigner,
 } from "@/app/[locale]/(app)/wedding/[id]/contract-actions";
 
-const inputCls = "w-full rounded-xl bg-bone px-3.5 py-2.5 text-[14px] text-ink shadow-card outline-none focus:shadow-lift";
+const inputCls = "w-full rounded-[var(--radius)] bg-bone px-3.5 py-2.5 text-[14px] text-ink outline-none";
 
 export type FieldVM = { id: string; field_key: string; label: string; merge_source: string; signer_order: number | null; required: boolean };
 export type SignerVM = { id: string; sign_order: number; role: string; name: string; email: string | null };
@@ -29,7 +29,7 @@ export function DraftBody({ contractId, body }: { contractId: string; body: stri
       />
       <div className="flex items-center gap-2">
         <Button onClick={() => start(async () => { const r = await saveDraftBody(contractId, val); if (!r?.error) setSaved(true); })} disabled={pending}>{t("saveBody")}</Button>
-        {saved ? <span className="text-[12.5px] text-sage-ink">{t("savedNote")}</span> : null}
+        {saved ? <span className="text-[12.5px] text-teal">{t("savedNote")}</span> : null}
       </div>
     </div>
   );
@@ -60,7 +60,7 @@ export function FieldsEditor({ contractId, fields }: { contractId: string; field
         {!adding ? <button onClick={() => setAdding(true)} className="text-[12.5px] text-wine hover:underline hover:underline-offset-2">+ {t("addField")}</button> : null}
       </div>
       {fields.map((f) => (
-        <Row key={f.id} className="-mx-2 rounded-xl px-2">
+        <Row key={f.id} className="-mx-2 rounded-[var(--radius)] px-2">
           <RowMain
             title={<span className="inline-flex items-center gap-2">{f.label}<code className="rounded bg-bone px-1.5 py-0.5 text-[11px] text-muted">{`{${f.field_key}}`}</code></span>}
             detail={`${t(`mergeSource_${f.merge_source}`)}${f.required ? ` · ${t("fRequired")}` : ""}`}
@@ -70,7 +70,7 @@ export function FieldsEditor({ contractId, fields }: { contractId: string; field
       ))}
       {fields.length === 0 && !adding ? <p className="py-2 text-[13px] text-muted">{t("fieldsEmpty")}</p> : null}
       {adding ? (
-        <div className="mt-2 flex flex-col gap-3 rounded-2xl bg-bone p-4">
+        <div className="mt-2 flex flex-col gap-3 rounded-[var(--radius)] bg-bone p-4">
           <div className="grid grid-cols-2 gap-3">
             <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("fLabel")}</span>
               <input value={label} onChange={(e) => setLabel(e.target.value)} className={inputCls} /></label>
@@ -121,7 +121,7 @@ export function SignersEditor({ contractId, signers }: { contractId: string; sig
         {!adding ? <button onClick={() => setAdding(true)} className="text-[12.5px] text-wine hover:underline hover:underline-offset-2">+ {t("addSigner")}</button> : null}
       </div>
       {signers.map((s, i) => (
-        <Row key={s.id} className="-mx-2 rounded-xl px-2">
+        <Row key={s.id} className="-mx-2 rounded-[var(--radius)] px-2">
           <span className="font-accent text-[14px] italic text-taupe">{s.sign_order}</span>
           <RowMain title={s.name} detail={<span className="inline-flex items-center gap-2">{t(`role_${s.role}`)}{s.email ? ` · ${s.email}` : ""}</span>} />
           <div className="flex items-center gap-1.5 text-[13px] text-muted">
@@ -133,7 +133,7 @@ export function SignersEditor({ contractId, signers }: { contractId: string; sig
       ))}
       {signers.length === 0 && !adding ? <p className="py-2 text-[13px] text-muted">{t("signersEmpty")}</p> : null}
       {adding ? (
-        <div className="mt-2 flex flex-col gap-3 rounded-2xl bg-bone p-4">
+        <div className="mt-2 flex flex-col gap-3 rounded-[var(--radius)] bg-bone p-4">
           <div className="grid grid-cols-[1.2fr_1fr] gap-3">
             <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("sName")}</span>
               <input value={name} onChange={(e) => setName(e.target.value)} className={inputCls} /></label>

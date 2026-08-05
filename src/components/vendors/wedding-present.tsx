@@ -52,7 +52,7 @@ export function WeddingPresentPicker({ weddingId, events, catalogue }: { wedding
       {mode ? (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
           <button aria-hidden className="absolute inset-0 cursor-default bg-[rgba(21,18,16,0.55)]" onClick={close} />
-          <div className="relative flex max-h-[86vh] w-full max-w-[560px] flex-col rounded-[18px] bg-paper p-7 shadow-hero">
+          <div className="relative flex max-h-[86vh] w-full max-w-[560px] flex-col rounded-[var(--radius)] bg-bone p-7">
             <div className="flex items-center justify-between">
               <h3 className="font-display text-[23px] text-ink">{mode === "venue" ? t("presentAVenue") : t("presentAVendor")}</h3>
               <button onClick={close} className="text-[20px] leading-none text-muted hover:text-ink" aria-label={t("cancel")}>×</button>
@@ -74,11 +74,11 @@ export function WeddingPresentPicker({ weddingId, events, catalogue }: { wedding
             ) : (
               <>
                 <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("searchCatalogue")}
-                  className="mt-4 w-full rounded-xl bg-bone px-3.5 py-2.5 text-[14px] text-ink shadow-card outline-none focus:shadow-lift" />
+                  className="mt-4 w-full rounded-[var(--radius)] bg-bone px-3.5 py-2.5 text-[14px] text-ink outline-none" />
                 {mode === "vendor" ? (
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {["all", ...NON_VENUE_KINDS].map((k) => (
-                      <button key={k} onClick={() => setKind(k)} className={cx("rounded-full px-3 py-1 text-[12px]", kind === k ? "bg-ink text-bone" : "bg-bone text-muted hover:text-ink")}>
+                      <button key={k} onClick={() => setKind(k)} className={cx("rounded-[var(--radius)] px-3 py-1 text-[12px]", kind === k ? "bg-ink text-bone" : "bg-bone text-muted hover:text-ink")}>
                         {k === "all" ? t("filterAll") : t(kindKey(k))}
                       </button>
                     ))}
@@ -87,12 +87,12 @@ export function WeddingPresentPicker({ weddingId, events, catalogue }: { wedding
                 <div className="mt-3 flex-1 space-y-1 overflow-y-auto">
                   {list.length === 0 ? <p className="py-6 text-center font-accent text-[15px] italic text-muted">{t("catalogueEmpty")}</p> : null}
                   {list.map((v) => v.live ? (
-                    <div key={v.id} className="flex items-center justify-between rounded-xl px-3 py-2.5 opacity-60">
+                    <div key={v.id} className="flex items-center justify-between rounded-[var(--radius)] px-3 py-2.5 opacity-60">
                       <span className="text-[14px] text-ink">{v.name}<span className="ml-2 text-[12px] text-muted">{t(kindKey(v.kind))}</span></span>
                       <span className="text-[11.5px] uppercase tracking-[0.12em] text-taupe">{t("alreadyPresented")}</span>
                     </div>
                   ) : (
-                    <button key={v.id} onClick={() => setPicked(v)} className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left hover:bg-bone">
+                    <button key={v.id} onClick={() => setPicked(v)} className="flex w-full items-center justify-between rounded-[var(--radius)] px-3 py-2.5 text-left hover:bg-bone">
                       <span className="text-[14px] text-ink">{v.name}<span className="ml-2 text-[12px] text-muted">{t(kindKey(v.kind))}{v.cities.length ? ` · ${v.cities[0]}` : ""}</span></span>
                       <span className="text-[13px] text-taupe">{t("present")} →</span>
                     </button>
@@ -105,7 +105,7 @@ export function WeddingPresentPicker({ weddingId, events, catalogue }: { wedding
         </div>
       ) : null}
 
-      {toast ? <div className="fixed bottom-16 left-1/2 z-[95] w-max max-w-[92vw] -translate-x-1/2 rounded-full bg-ink px-6 py-3 text-center text-[12.5px] text-bone shadow-hero">{toast}</div> : null}
+      {toast ? <div className="fixed bottom-16 left-1/2 z-[95] w-max max-w-[92vw] -translate-x-1/2 rounded-[var(--radius)] bg-ink px-6 py-3 text-center text-[12.5px] text-bone">{toast}</div> : null}
     </>
   );
 }

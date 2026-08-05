@@ -54,7 +54,7 @@ export default async function SeatingPage({
               key={e.id}
               href={{ pathname: `/wedding/${id}/seating`, query: { event: e.id } }}
               className={cx(
-                "rounded-full px-3 py-1 text-[12.5px] transition",
+                "rounded-[var(--radius)] px-3 py-1 text-[12.5px] transition",
                 e.id === event.id ? "bg-ink text-bone" : "border border-hairline text-muted hover:border-ink hover:text-ink",
               )}
             >

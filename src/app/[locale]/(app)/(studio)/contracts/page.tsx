@@ -38,7 +38,7 @@ export default async function StudioContractsPage({ params }: { params: Promise<
             <p className="py-4 text-center font-accent text-[15px] text-muted">{tc("acrossEmpty")}</p>
           ) : (
             <>
-              <Row className="-mx-2 rounded-xl px-2">
+              <Row className="-mx-2 rounded-[var(--radius)] px-2">
                 <RowMain
                   title={tc("signedCurrent", { count: summary.signedCurrent })}
                   detail={summary.weddings === 1 ? tc("acrossWeddingsOne") : tc("acrossWeddingsOther", { count: summary.weddings })}
@@ -51,7 +51,7 @@ export default async function StudioContractsPage({ params }: { params: Promise<
               ) : (
                 exceptions.map((r) => (
                   <Link key={r.id} href={`/wedding/${r.weddingId}/contracts/${r.id}`} className="block">
-                    <Row className="-mx-2 rounded-xl px-2 hover:bg-bone">
+                    <Row className="-mx-2 rounded-[var(--radius)] px-2 hover:bg-bone">
                       <RowMain
                         title={<span className="inline-flex items-center gap-2">{r.title}<span className="rounded bg-bone px-1.5 py-0.5 text-[10.5px] uppercase tracking-[0.08em] text-muted">{r.weddingName}</span></span>}
                         detail={<span className={r.tone === "wine" ? "text-wine" : undefined}>{exceptionDetail(tc, r)}</span>}

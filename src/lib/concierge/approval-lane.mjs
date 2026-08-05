@@ -74,7 +74,7 @@ export function validateAction(fn, args) {
   // every *_id arg must be a UUID the model fetched from a read tool (never a name or slug)
   for (const k of APPROVAL_FNS[fn].args) {
     if (k.endsWith("_id") && !UUID.test(String(a[k]))) {
-      return { ok: false, error: `${k} must be a real id (a UUID from a read tool), not a name or slug — call the matching read tool first to look it up` };
+      return { ok: false, error: `${k} must be a real id (a UUID from a read tool), not a name or slug; call the matching read tool first to look it up` };
     }
   }
   // typed non-id args

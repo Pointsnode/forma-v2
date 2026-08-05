@@ -12,7 +12,7 @@ export function GoalOverride({ weddingId, goalKey, current }: { weddingId: strin
   if (current) return <button onClick={() => set(null)} disabled={pending} className="text-[11.5px] text-muted hover:text-ink">{t("undoOverride")}</button>;
   return (
     <span className="flex gap-2">
-      <button onClick={() => set("manual_done")} disabled={pending} className="text-[11.5px] text-sage-ink hover:underline">{t("markDone")}</button>
+      <button onClick={() => set("manual_done")} disabled={pending} className="text-[11.5px] text-teal hover:underline">{t("markDone")}</button>
       <button onClick={() => set("dismissed")} disabled={pending} className="text-[11.5px] text-muted hover:text-ink">{t("dismiss")}</button>
     </span>
   );

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui";
 import { DESIGN_MEDIA_ACCEPT } from "@/lib/bucket-mime.mjs";
 import { addDesignBoard, addDesignItem } from "@/app/[locale]/(app)/wedding/[id]/ops-actions";
 
-const input = "rounded-lg bg-bone px-2.5 py-1.5 text-[13px] shadow-card outline-none";
+const input = "rounded-[var(--radius)] border border-hairline bg-bone px-2.5 py-1.5 text-[13px] outline-none";
 
 export function AddBoard({ weddingId }: { weddingId: string }) {
   const t = useTranslations("ops");

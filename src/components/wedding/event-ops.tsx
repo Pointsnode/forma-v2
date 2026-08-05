@@ -8,7 +8,7 @@ import {
   addMenu, addMenuOption, lockMenu,
 } from "@/app/[locale]/(app)/wedding/[id]/ops-actions";
 
-const input = "rounded-lg bg-bone px-2.5 py-1.5 text-[13px] text-ink shadow-card outline-none";
+const input = "rounded-[var(--radius)] border border-hairline bg-bone px-2.5 py-1.5 text-[13px] text-ink outline-none";
 
 export type ScheduleItemVM = { id: string; time: string | null; title: string; detail: string | null; done: boolean };
 export type MenuVM = { id: string; title: string; locked: boolean; options: { id: string; label: string; diet: string[]; count: number }[] };
@@ -45,7 +45,7 @@ export function ScheduleCard({ weddingId, eventId, items, live }: { weddingId: s
         <div key={it.id} className={cx("flex items-center gap-3 py-2.5 not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)]", it.done && "opacity-55")}>
           {live ? (
             <button onClick={() => run(() => checkScheduleItem(it.id, !it.done), () => t("error"))} disabled={pending}
-              className={cx("flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full text-[11px]", it.done ? "bg-sage text-ink" : "ring-1 ring-hairline")}>{it.done ? "✓" : ""}</button>
+              className={cx("flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[var(--radius)] text-[11px]", it.done ? "bg-teal text-ink" : "ring-1 ring-hairline")}>{it.done ? "✓" : ""}</button>
           ) : null}
           <span className="w-16 shrink-0 font-accent text-[15px] italic text-taupe">{it.time?.slice(0, 5) ?? ""}</span>
           <div className="min-w-0 flex-1"><p className={cx("text-[13.5px] text-ink", it.done && "line-through")}>{it.title}</p>{it.detail ? <p className="text-[12px] text-muted">{it.detail}</p> : null}</div>
@@ -79,7 +79,7 @@ export function MenusCard({ weddingId, eventId, menus }: { weddingId: string; ev
       </div>
       {menus.length === 0 && !addingMenu ? <p className="py-3 text-center font-accent text-[14px] text-muted">{t("noMenu")}</p> : null}
       {menus.map((m) => (
-        <div key={m.id} className="mb-3 rounded-xl bg-bone p-3">
+        <div key={m.id} className="mb-3 rounded-[var(--radius)] bg-bone p-3">
           <div className="mb-1.5 flex items-center gap-2">
             <p className="flex-1 font-display text-[15px] text-ink">{m.title}</p>
             {m.locked ? <Badge tone="sage">{t("locked")}</Badge> : null}

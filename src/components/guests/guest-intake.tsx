@@ -29,12 +29,12 @@ export function GuestIntake({ weddingId, existing }: { weddingId: string; existi
 
   if (!open) return <Button variant="ghost" onClick={() => setOpen(true)}>+ {t("addGuests")}</Button>;
   return (
-    <div className="flex flex-col gap-3 rounded-2xl bg-paper p-4 shadow-card">
+    <div className="flex flex-col gap-3 rounded-[var(--radius)] bg-bone p-4">
       <p className="font-display text-[16px] text-ink">{t("intakeTitle")}</p>
       <label className="flex flex-col gap-1">
         <span className="text-[12px] text-muted">{t("pasteLabel")}</span>
         <textarea value={text} onChange={(e) => setText(e.target.value)} rows={6} placeholder={t("pastePlaceholder")}
-          className="w-full rounded-xl bg-bone px-3 py-2 font-mono text-[13px] text-ink shadow-card outline-none focus:shadow-lift" />
+          className="w-full rounded-[var(--radius)] bg-bone px-3 py-2 font-mono text-[13px] text-ink outline-none" />
       </label>
       {text.trim() ? (
         <p className="font-accent text-[14.5px] text-muted">

@@ -45,7 +45,7 @@ export function DiscoveryButton({ url, label }: { url: string; label: string }) 
     <button
       type="button"
       onClick={() => window.Calendly?.initPopupWidget({ url })}
-      className="inline-flex items-center justify-center rounded-full border border-ink px-5 py-3 text-[14px] font-medium text-ink transition-colors hover:bg-ink hover:text-bone"
+      className="inline-flex items-center justify-center rounded-[var(--radius)] border border-ink px-5 py-3 text-[14px] font-medium text-ink transition-colors hover:bg-ink hover:text-bone"
     >
       {label}
     </button>

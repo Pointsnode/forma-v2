@@ -6,7 +6,7 @@ import { Button } from "@/components/ui";
 import { CONTRACT_KINDS, type ContractKind } from "@/lib/contract-enums";
 import { createContract } from "@/app/[locale]/(app)/wedding/[id]/contract-actions";
 
-const inputCls = "w-full rounded-xl bg-bone px-3.5 py-2.5 text-[14px] text-ink shadow-card outline-none focus:shadow-lift";
+const inputCls = "w-full rounded-[var(--radius)] bg-bone px-3.5 py-2.5 text-[14px] text-ink outline-none";
 
 export function NewContract({ weddingId, templates }: { weddingId: string; templates: { id: string; name: string; kind: string }[] }) {
   const t = useTranslations("contract");
@@ -28,7 +28,7 @@ export function NewContract({ weddingId, templates }: { weddingId: string; templ
 
   if (!open) return <Button variant="ghost" onClick={() => setOpen(true)}>+ {t("newContract")}</Button>;
   return (
-    <div className="flex flex-col gap-3 rounded-2xl bg-paper p-4 shadow-card">
+    <div className="flex flex-col gap-3 rounded-[var(--radius)] bg-bone p-4">
       <p className="font-display text-[16px] text-ink">{t("newContract")}</p>
       <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("pickTemplate")}</span>
         <select value={templateId} onChange={(e) => setTemplateId(e.target.value)} className={inputCls}>

@@ -8,7 +8,7 @@ import { seatLabel } from "@/lib/seat-geometry.mjs";
 import { updateGuest, deleteGuest } from "@/app/[locale]/(app)/wedding/[id]/guest-actions";
 import type { GuestRow, SeatCell } from "@/lib/guests";
 
-const inputCls = "rounded-lg bg-bone px-2.5 py-1.5 text-[13px] text-ink shadow-card outline-none focus:shadow-lift";
+const inputCls = "rounded-[var(--radius)] bg-bone px-2.5 py-1.5 text-[13px] text-ink outline-none";
 
 // §F the "Seated at" cell: a seated guest reads "{table}, seat {n}"; an unseated attendee is a
 // "Seat…" deep-link that lands in the plan with them already picked up; a non-attendee is a dash.
@@ -33,7 +33,7 @@ function Row({ weddingId, g, canDelete, seat }: { weddingId: string; g: GuestRow
 
   if (editing) {
     return (
-      <div className="flex flex-col gap-2 rounded-xl bg-paper p-3 shadow-card">
+      <div className="flex flex-col gap-2 rounded-[var(--radius)] bg-bone p-3">
         <div className="grid grid-cols-2 gap-2">
           <input value={f.full_name} onChange={(e) => setF({ ...f, full_name: e.target.value })} placeholder={t("fullName")} className={inputCls} />
           <input value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} placeholder={t("email")} className={inputCls} />
@@ -55,8 +55,8 @@ function Row({ weddingId, g, canDelete, seat }: { weddingId: string; g: GuestRow
       </div>
       <SeatedAt weddingId={weddingId} guestId={g.id} cell={seat} />
       {g.side !== "none" ? <Pill tone="sand">{g.side === "both" ? t("sideBoth") : g.side === "a" ? t("sideA") : t("sideB")}</Pill> : null}
-      <button onClick={() => setEditing(true)} className="shrink-0 rounded-full px-2.5 py-1 text-[12.5px] text-muted hover:text-ink">{t("edit")}</button>
-      {canDelete ? <button disabled={pending} onClick={() => start(async () => { await deleteGuest(g.id); })} className="shrink-0 rounded-full px-2.5 py-1 text-[12.5px] text-muted hover:text-wine">✕</button> : null}
+      <button onClick={() => setEditing(true)} className="shrink-0 rounded-[var(--radius)] px-2.5 py-1 text-[12.5px] text-muted hover:text-ink">{t("edit")}</button>
+      {canDelete ? <button disabled={pending} onClick={() => start(async () => { await deleteGuest(g.id); })} className="shrink-0 rounded-[var(--radius)] px-2.5 py-1 text-[12.5px] text-muted hover:text-wine">✕</button> : null}
     </div>
   );
 }
@@ -74,7 +74,7 @@ export function AllGuests({ weddingId, guests, canDelete, seatCells }: { wedding
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("search")} className="flex-1 rounded-xl bg-bone px-3 py-2 text-[14px] text-ink shadow-card outline-none focus:shadow-lift" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("search")} className="flex-1 rounded-[var(--radius)] bg-bone px-3 py-2 text-[14px] text-ink outline-none" />
         <Button variant="ghost" onClick={() => setShow(false)}>{t("hideAll")}</Button>
       </div>
       {filtered.length === 0 ? <p className="py-3 text-center font-accent text-[15px] text-muted">{t("noGuests")}</p> :

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui";
 import { signIn, signUp, requestReset, setPassword, type AuthState } from "./actions";
 
 const input =
-  "w-full rounded-xl bg-bone px-3.5 py-2.5 text-[14px] text-ink shadow-card outline-none placeholder:text-muted focus:shadow-lift";
+  "w-full rounded-[var(--radius)] bg-bone px-3.5 py-2.5 text-[14px] text-ink outline-none placeholder:text-muted";
 
 function Field({ name, type, label, autoComplete }: { name: string; type: string; label: string; autoComplete?: string }) {
   return (
@@ -43,7 +43,7 @@ export function SignInForm({ next }: { next?: string }) {
 export function SignUpForm({ next }: { next?: string }) {
   const t = useTranslations("auth");
   const [state, action, pending] = useActionState<AuthState, FormData>(signUp, null);
-  if (state?.sent) return <p className="text-[14px] text-sage-ink">{t("confirmSent")}</p>;
+  if (state?.sent) return <p className="text-[14px] text-teal">{t("confirmSent")}</p>;
   return (
     <form action={action} className="flex flex-col gap-4">
       {next ? <input type="hidden" name="next" value={next} /> : null}
@@ -60,7 +60,7 @@ export function SignUpForm({ next }: { next?: string }) {
 export function ResetForm() {
   const t = useTranslations("auth");
   const [state, action, pending] = useActionState<AuthState, FormData>(requestReset, null);
-  if (state?.sent) return <p className="text-[14px] text-sage-ink">{t("resetSent")}</p>;
+  if (state?.sent) return <p className="text-[14px] text-teal">{t("resetSent")}</p>;
   return (
     <form action={action} className="flex flex-col gap-4">
       <Field name="email" type="email" label={t("email")} autoComplete="email" />

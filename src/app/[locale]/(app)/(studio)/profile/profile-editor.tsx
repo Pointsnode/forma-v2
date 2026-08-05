@@ -11,7 +11,7 @@ const imgUrl = (p?: string | null) => (!p ? null : /^https?:\/\//.test(p) ? p : 
 
 const SLUG_ERR: Record<string, string> = { FD010: "slugFormat", FD011: "slugTaken" };
 
-const INPUT = "w-full rounded-xl bg-bone px-3.5 py-2.5 text-[14px] text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-sand";
+const INPUT = "w-full rounded-[var(--radius)] bg-bone px-3.5 py-2.5 text-[14px] text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-champagne";
 
 export function ProfileEditor({
   initialSlug,
@@ -161,7 +161,7 @@ export function ProfileEditor({
           </p>
         </div>
         <div className="flex items-center gap-2.5">
-          {msg ? <span className={cx("text-[13px]", msg.tone === "ok" ? "text-sage-ink" : "text-wine")}>{msg.text}</span> : null}
+          {msg ? <span className={cx("text-[13px]", msg.tone === "ok" ? "text-teal" : "text-wine")}>{msg.text}</span> : null}
           <Button variant="ghost" onClick={onSave} disabled={pending}>
             {t("save")}
           </Button>
@@ -185,7 +185,7 @@ export function ProfileEditor({
           <ul className="grid gap-1.5 sm:grid-cols-2">
             {checks.map((c) => (
               <li key={c.key} className="flex items-center gap-2 text-[13.5px]">
-                <span className={cx("inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px]", c.ok ? "bg-sage text-bone" : "bg-sand-soft text-taupe")}>
+                <span className={cx("inline-flex h-4 w-4 items-center justify-center rounded-[var(--radius)] text-[10px]", c.ok ? "bg-teal text-bone" : "bg-bone text-taupe")}>
                   {c.ok ? "✓" : "·"}
                 </span>
                 <span className={c.ok ? "text-ink" : "text-muted"}>{t(`check_${c.key}`)}</span>
@@ -221,7 +221,7 @@ export function ProfileEditor({
 
         <p className="mb-1.5 text-[12px] font-medium uppercase tracking-[0.14em] text-taupe">{t("hero")}</p>
         <div className="mb-4 flex items-end gap-3">
-          <div className="h-28 w-44 overflow-hidden rounded-xl bg-sand-soft">
+          <div className="h-28 w-44 overflow-hidden rounded-[var(--radius)] bg-bone">
             {imgUrl(hero) ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={imgUrl(hero)!} alt="" className="h-full w-full object-cover" />
@@ -235,13 +235,13 @@ export function ProfileEditor({
         <p className="mb-1.5 text-[12px] font-medium uppercase tracking-[0.14em] text-taupe">{t("gallery")}</p>
         <div className="flex flex-wrap gap-2.5">
           {gallery.map((g, i) => (
-            <div key={g} className="group relative h-24 w-24 overflow-hidden rounded-lg bg-sand-soft">
+            <div key={g} className="group relative h-24 w-24 overflow-hidden rounded-[var(--radius)] bg-bone">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={imgUrl(g)!} alt="" className="h-full w-full object-cover" />
               <button
                 type="button"
                 onClick={() => setGallery((gs) => gs.filter((_, j) => j !== i))}
-                className="absolute right-1 top-1 rounded-full bg-ink/70 px-1.5 text-[11px] text-bone opacity-0 transition-opacity group-hover:opacity-100"
+                className="absolute right-1 top-1 rounded-[var(--radius)] bg-ink/70 px-1.5 text-[11px] text-bone opacity-0 transition-opacity group-hover:opacity-100"
                 aria-label={t("remove")}
               >
                 ×
@@ -252,7 +252,7 @@ export function ProfileEditor({
             type="button"
             onClick={() => pickFile("gallery")}
             disabled={uploading !== null}
-            className="flex h-24 w-24 items-center justify-center rounded-lg bg-bone text-[13px] text-taupe hover:bg-sand-soft disabled:opacity-50"
+            className="flex h-24 w-24 items-center justify-center rounded-[var(--radius)] bg-bone text-[13px] text-taupe hover:bg-bone disabled:opacity-50"
           >
             {uploading === "gallery" ? t("uploading") : "+"}
           </button>
@@ -358,7 +358,7 @@ function BilingualField({
             <span className="mb-1 block text-[10.5px] uppercase tracking-[0.2em] text-muted">{loc}</span>
             <textarea
               rows={rows}
-              className="w-full resize-y rounded-xl bg-bone px-3.5 py-2.5 text-[14px] text-ink focus:outline-none focus:ring-1 focus:ring-sand"
+              className="w-full resize-y rounded-[var(--radius)] bg-bone px-3.5 py-2.5 text-[14px] text-ink focus:outline-none focus:ring-1 focus:ring-champagne"
               value={value[loc]}
               onChange={(e) => onChange({ ...value, [loc]: e.target.value })}
             />

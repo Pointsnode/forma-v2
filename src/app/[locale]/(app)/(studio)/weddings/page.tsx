@@ -41,7 +41,7 @@ export default async function WeddingsPage({ params }: { params: Promise<{ local
       />
 
       {error || weddings.length === 0 ? (
-        <div className="rounded-2xl bg-paper p-10 text-center shadow-card">
+        <div className="rounded-[var(--radius)] bg-bone p-10 text-center">
           <p className="font-accent text-[17px] text-muted">{t("empty")}</p>
         </div>
       ) : (
@@ -72,7 +72,7 @@ export default async function WeddingsPage({ params }: { params: Promise<{ local
                       <BentoBig size={16}>{countdownLabel(w.date_start, w.phase, tw) || tp(w.phase)}</BentoBig>
                     )
                   }
-                  className="transition-shadow group-hover:shadow-lift"
+                  className="transition-shadow"
                 >
                   <p className="flex items-center gap-2 font-display text-[17px] text-ink">
                     {w.couple_display} <PhaseDots phase={w.phase} />

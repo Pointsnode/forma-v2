@@ -21,7 +21,7 @@ function EngagementCard({ e, weddingId }: { e: EngagementVM; weddingId: string }
   const tv = useTranslations("vendors");
   return (
     <Link href={`/wedding/${weddingId}/vendors/${e.id}`} className="block">
-      <div className="rounded-2xl bg-paper p-4 shadow-card transition-shadow hover:shadow-lift">
+      <div className="rounded-[var(--radius)] bg-bone p-4 transition-shadow">
         <div className="flex items-start gap-2">
           <div className="min-w-0 flex-1">
             <p className="font-display text-[16px] text-ink">{e.vendorName}</p>

@@ -13,7 +13,7 @@ export function RsvpControls({ weddingId, deadline, open }: { weddingId: string;
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <span className={cx("h-2 w-2 rounded-full", open ? "bg-sage" : "bg-hairline")} />
+        <span className={cx("h-2 w-2 rounded-[var(--radius)]", open ? "bg-teal" : "bg-hairline")} />
         <span className="text-[14px] text-ink">{open ? t("rsvpIsOpen") : t("rsvpIsClosed")}</span>
         <Button className="ml-auto" variant={open ? "ghost" : "solid"} disabled={pending}
           onClick={() => start(async () => { await setRsvpOpen(weddingId, !open); })}>
@@ -23,7 +23,7 @@ export function RsvpControls({ weddingId, deadline, open }: { weddingId: string;
       <label className="flex items-center gap-2">
         <span className="text-[13px] text-muted">{t("deadline")}</span>
         <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
-          className="rounded-xl bg-bone px-3 py-2 text-[14px] text-ink shadow-card outline-none" />
+          className="rounded-[var(--radius)] bg-bone px-3 py-2 text-[14px] text-ink outline-none" />
         <Button variant="ghost" disabled={pending} onClick={() => start(async () => { await setRsvpDeadline(weddingId, date || null); })}>
           {t("setDeadline")}
         </Button>

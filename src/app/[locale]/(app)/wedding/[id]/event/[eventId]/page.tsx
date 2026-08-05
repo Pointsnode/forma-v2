@@ -144,9 +144,9 @@ export default async function EventPage({
               <Heading className="mb-2 text-[18px]">{te("slice")}</Heading>
               {budgetLines.map((l) => (
                 <div key={l.id} className="flex items-center gap-3 py-2 not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)]">
-                  <div className="min-w-0 flex-1"><p className="text-[13.5px] text-ink">{l.title}</p>{l.vendor ? <span className="mr-1 mt-[3px] inline-block rounded-full bg-sand-soft px-[9px] py-[2px] text-[10.5px] text-taupe">{l.vendor}</span> : null}</div>
+                  <div className="min-w-0 flex-1"><p className="text-[13.5px] text-ink">{l.title}</p>{l.vendor ? <span className="mr-1 mt-[3px] inline-block rounded-[var(--radius)] bg-bone px-[9px] py-[2px] text-[10.5px] text-taupe">{l.vendor}</span> : null}</div>
                   <span className="font-medium text-[13.5px] text-ink">{formatMoney(l.amount, lang)}</span>
-                  <span className="rounded-full bg-sand-soft px-2.5 py-[3px] text-[11px] text-taupe">{tm(`status_${l.status}`)}</span>
+                  <span className="rounded-[var(--radius)] bg-bone px-2.5 py-[3px] text-[11px] text-taupe">{tm(`status_${l.status}`)}</span>
                 </div>
               ))}
             </Card>

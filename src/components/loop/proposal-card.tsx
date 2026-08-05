@@ -37,9 +37,9 @@ export function ProposalCard({ weddingId, p }: { weddingId: string; p: ViewPropo
   }
 
   return (
-    <div className="rounded-2xl bg-paper p-4 shadow-card transition-shadow hover:shadow-lift">
+    <div className="rounded-[var(--radius)] bg-bone p-4 transition-shadow">
       <button onClick={() => setOpen((o) => !o)} className="flex w-full items-start gap-3 text-left">
-        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sand-soft font-accent text-[15px] text-taupe">
+        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius)] bg-bone font-accent text-[15px] text-taupe">
           {initials(p.title)}
         </span>
         <span className="min-w-0 flex-1">
@@ -47,9 +47,9 @@ export function ProposalCard({ weddingId, p }: { weddingId: string; p: ViewPropo
           {meta ? <span className="block font-accent text-[13px] text-muted">{meta}</span> : null}
         </span>
         <span className="flex shrink-0 items-center gap-2">
-          <span className={cx("rounded-full px-2.5 py-1 text-[11.5px]", statusClass(p.status))}>{t(`status.${p.status}`)}</span>
+          <span className={cx("rounded-[var(--radius)] px-2.5 py-1 text-[11.5px]", statusClass(p.status))}>{t(`status.${p.status}`)}</span>
           {p.court !== "none" ? (
-            <span className={cx("flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-semibold", courtClass(p.court))} title={p.court === "planner" ? tc("planner") : tc("couple")}>
+            <span className={cx("flex h-6 w-6 items-center justify-center rounded-[var(--radius)] text-[9px] font-semibold", courtClass(p.court))} title={p.court === "planner" ? tc("planner") : tc("couple")}>
               {p.court === "planner" ? "GM" : "P·C"}
             </span>
           ) : null}
@@ -62,10 +62,10 @@ export function ProposalCard({ weddingId, p }: { weddingId: string; p: ViewPropo
           <div className="flex flex-col gap-2.5">
             {p.messages.map((m) => (
               <div key={m.id} className="flex gap-2.5">
-                <span className={cx("flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9px] font-semibold", m.isCouple ? "bg-wine text-bone" : "bg-sand text-ink")}>
+                <span className={cx("flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius)] text-[9px] font-semibold", m.isCouple ? "bg-wine text-bone" : "bg-champagne text-ink")}>
                   {m.authorInitials}
                 </span>
-                <div className="rounded-xl bg-bone px-3 py-2 text-[13px] text-ink">
+                <div className="rounded-[var(--radius)] bg-bone px-3 py-2 text-[13px] text-ink">
                   <div className="mb-0.5 text-[11px] font-semibold text-taupe">{m.authorName}</div>
                   {m.body}
                 </div>
@@ -80,7 +80,7 @@ export function ProposalCard({ weddingId, p }: { weddingId: string; p: ViewPropo
                 onChange={(e) => setMsg(e.target.value)}
                 rows={2}
                 placeholder={t("composer")}
-                className="w-full rounded-xl bg-bone px-3 py-2 text-[13.5px] text-ink shadow-card outline-none focus:shadow-lift"
+                className="w-full rounded-[var(--radius)] bg-bone px-3 py-2 text-[13.5px] text-ink outline-none"
               />
               <div className="flex flex-wrap items-center gap-2">
                 <Button

@@ -61,10 +61,10 @@ export default async function ProfilePage({ params }: Props) {
             alt={p.name}
             initials={initials}
             priority
-            className="aspect-[16/10] w-full rounded-[18px] shadow-hero sm:aspect-[21/9]"
+            className="aspect-[16/10] w-full rounded-[var(--radius)] sm:aspect-[21/9]"
             sizes="100vw"
           />
-          <div className="pointer-events-none absolute inset-0 rounded-[18px] bg-[linear-gradient(to_top,rgba(18,18,18,0.55),rgba(18,18,18,0.05)_45%,transparent)]" />
+          <div className="pointer-events-none absolute inset-0 rounded-[var(--radius)] bg-[linear-gradient(to_top,rgba(18,18,18,0.55),rgba(18,18,18,0.05)_45%,transparent)]" />
           <div className="absolute inset-x-0 bottom-0 p-6 sm:p-9">
             <h1 className="font-display text-[clamp(30px,5.5vw,56px)] font-medium leading-[1.03] text-bone drop-shadow">{p.name}</h1>
             {tagline ? <p className="mt-2 max-w-2xl font-accent text-[clamp(17px,2.4vw,22px)] italic text-bone/90">{tagline}</p> : null}
@@ -94,9 +94,9 @@ export default async function ProfilePage({ params }: Props) {
                   <PhotoFrame
                     key={i}
                     path={g}
-                    alt={`${p.name} — ${i + 1}`}
+                    alt={`${p.name}, ${i + 1}`}
                     initials={initials}
-                    className="aspect-square w-full rounded-[10px]"
+                    className="aspect-square w-full rounded-[var(--radius)]"
                     sizes="(max-width: 640px) 50vw, 33vw"
                   />
                 ))}
