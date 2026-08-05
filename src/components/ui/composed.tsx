@@ -4,7 +4,7 @@ import { cx } from "./cn";
 // ── Stat strip — the composed .stats row: paper surface, hairline-divided cells,
 // big Playfair numeral over a small-caps label, optional sub. Wraps on narrow.
 export function StatRow({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cx("flex flex-wrap overflow-hidden rounded-2xl bg-paper shadow-card", className)}>{children}</div>;
+  return <div className={cx("flex flex-wrap overflow-hidden rounded-[var(--radius)] border border-hairline bg-bone", className)}>{children}</div>;
 }
 
 export function Stat({ value, label, sub, valueClassName }: { value: ReactNode; label: ReactNode; sub?: ReactNode; valueClassName?: string }) {
@@ -50,7 +50,7 @@ export function BentoCard({
 }) {
   const heroStyle: CSSProperties = { background: tone, height: heroHeight };
   return (
-    <div className={cx("flex flex-col overflow-hidden rounded-2xl bg-paper shadow-card", wide && "md:col-span-2", className)}>
+    <div className={cx("flex flex-col overflow-hidden rounded-[var(--radius)] border border-hairline bg-bone", wide && "md:col-span-2", className)}>
       <div className="flex items-end justify-between p-3.5 text-[rgba(255,253,249,0.95)]" style={heroStyle}>
         <span className="font-accent text-[14px] italic leading-tight">{heroLeft}</span>
         {heroRight}
@@ -73,7 +73,7 @@ export function BentoFoot({ children }: { children: ReactNode }) {
 // ── Gate card — the dark §9 predicate checklist. ──────────────────────────────
 export function GateCard({ title, sub, children, className }: { title: ReactNode; sub?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <div className={cx("rounded-2xl bg-ink p-6 text-bone", className)}>
+    <div className={cx("rounded-[var(--radius)] bg-ink p-6 text-bone", className)}>
       <h3 className="font-display text-[19px] text-bone">{title}</h3>
       {sub ? <p className="mb-3.5 mt-0.5 text-[12.5px] text-[#B8AFA2]">{sub}</p> : <div className="mb-3.5" />}
       <div>{children}</div>
@@ -96,9 +96,9 @@ export function GateRow({ done, title, detail }: { done: boolean; title: ReactNo
 /** Sage check (done) / hairline dot (todo) — the prototype's .check. */
 export function Check({ ok }: { ok: boolean }) {
   return ok ? (
-    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sage text-[11px] text-ink">✓</span>
+    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[var(--radius)] bg-teal text-[11px] text-bone">✓</span>
   ) : (
-    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] text-[#948C7F] ring-1 ring-hairline-dark">·</span>
+    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[var(--radius)] text-[11px] text-[#948C7F] border border-hairline-dark">·</span>
   );
 }
 

@@ -1,16 +1,14 @@
-// Solid brand hero tones — no gradients, drawn from the prototype's palette:
-// taupe · umber · wine · deep sage · maroon · ink.
-const ROTATE = ["#8A7355", "#6B5A41", "#5C2B35", "#4E5C47", "#3A1A20", "#1E1E1E"];
+// Edition One: the hero-tone rotation is collapsed. Hero surfaces are flat charcoal and
+// identity comes from content + photography, not a colored ground. Both functions are
+// DEPRECATED and return charcoal so existing call sites compile; remove call-site
+// dependence as pages are reshaped in the later milestones.
 
-// Stable per-id pick (switcher swatches) — deterministic across renders.
-export function heroTone(id: string): string {
-  let h = 0;
-  for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  return ROTATE[h % ROTATE.length];
+/** @deprecated hero surfaces are charcoal; returns #111111. */
+export function heroTone(_id: string): string {
+  return "#111111";
 }
 
-// Index rotation (bento grids) — guarantees visible variety across a set, so a
-// row of cards never repeats the same tone. This is the fix for the maroon repeat.
-export function heroToneAt(i: number): string {
-  return ROTATE[((i % ROTATE.length) + ROTATE.length) % ROTATE.length];
+/** @deprecated hero surfaces are charcoal; returns #111111. */
+export function heroToneAt(_i: number): string {
+  return "#111111";
 }

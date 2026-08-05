@@ -35,9 +35,8 @@ export function TopBar({
 
   return (
     <div className="sticky top-0 z-50 flex h-[62px] items-center gap-7 bg-ink px-8 text-bone">
-      <Link href="/" className="leading-none">
-        <span className="font-display text-[26px] tracking-[0.04em] text-bone">{t("name")}</span>
-        <span className="mt-[-3px] block text-[7.5px] uppercase tracking-[0.42em] text-[#B8AFA2]">{t("tagline")}</span>
+      <Link href="/" className="font-display text-[20px] leading-none text-bone" aria-label={t("name")}>
+        <i>f</i>orma
       </Link>
 
       {workspaceName ? (
@@ -56,7 +55,7 @@ export function TopBar({
       <div className="relative">
         <button
           onClick={() => setOpen((v) => !v)}
-          className="flex items-center gap-2.5 rounded-full bg-[#1E1E1E] px-4 py-2 text-[12.5px] text-bone"
+          className="flex items-center gap-2.5 rounded-[var(--radius)] bg-[#1E1E1E] px-4 py-2 text-[12.5px] text-bone"
         >
           <span>{label}</span>
           <span className="text-[9px] text-[#948C7F]">▼</span>
@@ -64,7 +63,7 @@ export function TopBar({
         {open ? (
           <>
             <button className="fixed inset-0 z-10 cursor-default" aria-hidden onClick={() => setOpen(false)} />
-            <div className="absolute right-0 top-[46px] z-20 min-w-[300px] overflow-hidden rounded-2xl bg-paper text-ink shadow-hero">
+            <div className="absolute right-0 top-[46px] z-20 min-w-[300px] overflow-hidden rounded-[var(--radius)] border border-hairline bg-bone text-ink">
               {/* session-aware: the studio entry exists only for a workspace member */}
               {workspaceName ? (
                 <Link
@@ -72,7 +71,7 @@ export function TopBar({
                   onClick={() => setOpen(false)}
                   className="flex items-center gap-3 px-4 py-3 text-[12.5px] not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)] hover:bg-bone"
                 >
-                  <span className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-ink text-[9px] font-semibold text-bone">{monogram}</span>
+                  <span className="flex h-[26px] w-[26px] items-center justify-center rounded-[var(--radius)] bg-ink text-[9px] font-semibold text-bone">{monogram}</span>
                   <span>
                     <span className="block font-medium">{ts("switcherStudio")}</span>
                     <span className="block text-[11px] text-muted">{ts("switcherStudioHint")}</span>
@@ -89,7 +88,7 @@ export function TopBar({
                     active?.id === w.id && "bg-bone",
                   )}
                 >
-                  <span className="flex h-[26px] w-[26px] items-center justify-center rounded-full text-[9px] font-semibold text-bone" style={{ background: w.tone }}>{w.initials}</span>
+                  <span className="flex h-[26px] w-[26px] items-center justify-center rounded-[var(--radius)] text-[9px] font-semibold text-bone" style={{ background: w.tone }}>{w.initials}</span>
                   <span>
                     <span className="block font-medium">{w.name}</span>
                     <span className="block text-[11px] text-muted">{w.meta}</span>
@@ -107,14 +106,14 @@ export function TopBar({
       <div className="relative">
         <button
           onClick={() => setMenuOpen((v) => !v)}
-          className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-sand text-[12px] font-semibold text-ink"
+          className="flex h-[34px] w-[34px] items-center justify-center rounded-[var(--radius)] border border-hairline-dark font-display text-[13px] text-bone"
         >
           {monogram}
         </button>
         {menuOpen ? (
           <>
             <button className="fixed inset-0 z-10 cursor-default" aria-hidden onClick={() => setMenuOpen(false)} />
-            <div className="absolute right-0 top-[46px] z-20 min-w-[200px] overflow-hidden rounded-2xl bg-paper text-ink shadow-hero">
+            <div className="absolute right-0 top-[46px] z-20 min-w-[200px] overflow-hidden rounded-[var(--radius)] border border-hairline bg-bone text-ink">
               {workspaceName ? (
                 <>
                   <MenuLink href="/team" label={ts("team")} onNavigate={() => setMenuOpen(false)} />
