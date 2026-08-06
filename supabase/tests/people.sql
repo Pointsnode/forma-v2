@@ -210,7 +210,10 @@ begin
       'rsvp_lookup','rsvp_submit','touchpoint_open',
       'load_contract_as','fill_contract_fields_as','sign_contract_as','decline_contract_as',
       'menu_lookup','menu_submit',
-      'submit_inquiry'
+      'submit_inquiry',
+      -- L2 (0026): the tokenized quote surface — read + accept (the intent). Modeled on
+      -- rsvp_lookup; reads only what the public page renders, no table grants. Matrix → 12.
+      'quote_lookup','quote_accept'
     );
   if leaked is not null then
     raise exception 'TEST FAIL: anon can execute non-RSVP function(s): %', leaked;

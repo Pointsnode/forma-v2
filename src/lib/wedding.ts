@@ -147,10 +147,10 @@ export function formatDateRange(
   return `${fmt(start, !sameYear)} – ${fmt(end, true)}`;
 }
 
-export function formatMoney(amount: string | number | null, locale: string): string | null {
+export function formatMoney(amount: string | number | null, locale: string, currency = "USD"): string | null {
   if (amount == null || Number(amount) === 0) return null;
   const l = intlTag(locale);
-  return new Intl.NumberFormat(l, { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Number(amount));
+  return new Intl.NumberFormat(l, { style: "currency", currency, maximumFractionDigits: 0 }).format(Number(amount));
 }
 
 export function formatTime(t: string | null, locale: string): string | null {

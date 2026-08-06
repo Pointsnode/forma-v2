@@ -4,7 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { loadWeddingContext } from "@/lib/load-wedding";
 import { WeddingShell } from "@/components/wedding/wedding-shell";
 import { DocUpload } from "@/components/wedding/doc-upload";
-import { Card, SectionTitle, Row, RowMain, Icon } from "@/components/ui";
+import { Card, SectionTitle, Row, RowMain, Icon, Chip } from "@/components/ui";
+import { Link } from "@/i18n/navigation";
 import { QuickAddTask } from "@/components/tasks/quick-add";
 
 // M13: vendor quote PDFs are filed under the wedding prefix in wedding-docs (NOT
@@ -23,6 +24,11 @@ export default async function DocumentsTab({ params }: { params: Promise<{ local
   const { data: docRows } = await supabase.from("documents").select("id, title, source, storage_path, contract_id, event_id").eq("wedding_id", id).order("created_at", { ascending: false });
   const docs = (docRows ?? []) as { id: string; title: string; source: string; storage_path: string | null; contract_id: string | null; event_id: string | null }[];
   const eventLabel = new Map(events.map((e) => [e.id, e.label]));
+
+  // L2: quotes linked to this wedding (client_quotes; couples get nothing via RLS).
+  const tq = await getTranslations("quotes");
+  const { data: qRows } = await supabase.from("client_quotes").select("id, number, title, status").eq("wedding_id", id).order("number", { ascending: false });
+  const quotes = (qRows ?? []) as { id: string; number: number; title: string | null; status: string }[];
 
   // signed URLs per bucket
   const urls = new Map<string, string>();
@@ -58,6 +64,19 @@ export default async function DocumentsTab({ params }: { params: Promise<{ local
           })
         )}
       </Card>
+
+      {quotes.length ? (
+        <Card className="mt-4">
+          <SectionTitle title={tq("tab")} className="mt-0" />
+          {quotes.map((qr) => (
+            <Link key={qr.id} href={`/quotes/${qr.id}`} className="-mx-2 flex items-center gap-3 rounded-[var(--radius)] px-2 py-2 hover:bg-surface-card">
+              <span className="tabular-nums text-[12px] text-text-meta">№ {qr.number}</span>
+              <span className="min-w-0 flex-1 truncate text-[14px] text-text-primary">{qr.title || tq("untitled")}</span>
+              <Chip tone={qr.status === "accepted" ? "settled" : qr.status === "sent" ? "attention" : "pending"}>{tq(qr.status === "accepted" ? "statusAccepted" : qr.status === "sent" ? "statusSent" : qr.status === "withdrawn" ? "statusWithdrawn" : "statusDraft")}</Chip>
+            </Link>
+          ))}
+        </Card>
+      ) : null}
     </WeddingShell>
   );
 }

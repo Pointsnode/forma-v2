@@ -2,10 +2,11 @@
 
 import { useState, useTransition, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { Chip, Button, DomainStar, cx } from "@/components/ui";
 import { LANES, LOST_REASONS, SOURCES } from "@/lib/leads.mjs";
 import { updateLead, addNote, setNextStep, setConsult, moveStage, markLost, convertLead } from "../leads-actions";
+import { createQuoteForLead } from "../../quotes/quote-actions";
 
 export type LeadFull = {
   id: string; couple_display: string; email: string | null; phone: string | null; locale: string | null;
@@ -31,6 +32,7 @@ function Frow({ k, v }: { k: string; v: ReactNode }) {
 
 export function LeadSheet({ lead, events }: { lead: LeadFull; events: ThreadEvent[] }) {
   const t = useTranslations("leads");
+  const router = useRouter();
   const [panel, setPanel] = useState<"facts" | "note" | "next" | "consult" | "lost" | null>(null);
   const [pending, start] = useTransition();
   const open = lead.stage !== "won" && lead.stage !== "lost";
@@ -99,10 +101,11 @@ export function LeadSheet({ lead, events }: { lead: LeadFull; events: ThreadEven
             </div>
           )}
 
-          {/* Actions (Write / Quote / Book the consult are OMITTED in L1 per the ruling) */}
+          {/* Actions. Quote is now REAL (L2); Write / Book the consult stay omitted (L3). */}
           {panel === null ? (
             <div className="mt-5 flex flex-wrap gap-2">
               <Button variant="ghost" onClick={() => setPanel("facts")}>{t("editFacts")}</Button>
+              <Button variant="ghost" disabled={pending} onClick={() => start(async () => { const r = await createQuoteForLead(lead.id); if (r.ok && r.id) router.push(`/quotes/${r.id}`); })}>{t("quote")}</Button>
               <Button variant="ghost" onClick={() => setPanel("note")}>{t("addNote")}</Button>
               <Button variant="ghost" onClick={() => setPanel("next")}>{t("setNextStep")}</Button>
               <Button variant="ghost" onClick={() => setPanel("consult")}>{t("setConsult")}</Button>
