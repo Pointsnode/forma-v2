@@ -107,8 +107,8 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
     <div>
       <TouchLastSeen />
 
-      {/* Hero band — charcoal, full-bleed, continuous with the top bar + section nav. */}
-      <section className="relative left-1/2 w-screen -translate-x-1/2 bg-ink text-bone">
+      {/* Hero band — charcoal, full-bleed, flush under the section nav (one dark chrome). */}
+      <section className="relative left-1/2 -mt-8 w-screen -translate-x-1/2 bg-ink text-bone">
         <div className="mx-auto max-w-[1240px] px-8 py-9 md:px-10">
           <div className="flex flex-wrap items-baseline justify-between gap-x-5 gap-y-1">
             <div>

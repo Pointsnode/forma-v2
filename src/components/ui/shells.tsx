@@ -22,7 +22,7 @@ export function PanelHead({ star, title, meta }: { star?: ReactNode; title: Reac
 // room follows below. One per page; secondary section headers stay bone (SectionTitle).
 export function StudioTitleBand({ kicker, title, accent, action, className }: { kicker?: ReactNode; title: ReactNode; accent?: ReactNode; action?: ReactNode; className?: string }) {
   return (
-    <section className={cx("relative left-1/2 mb-7 w-screen -translate-x-1/2 bg-ink text-bone", className)}>
+    <section className={cx("relative left-1/2 -mt-8 mb-7 w-screen -translate-x-1/2 bg-ink text-bone", className)}>
       <div className="mx-auto flex max-w-[1240px] items-end justify-between gap-4 px-8 py-7 md:px-10">
         <div>
           {kicker ? <p className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.24em] text-champagne">{kicker}</p> : null}
@@ -36,13 +36,17 @@ export function StudioTitleBand({ kicker, title, accent, action, className }: { 
 }
 
 export function PanelRow({ children, href, cols, className }: { children: ReactNode; href?: string; cols?: string; className?: string }) {
+  // The last-row exception must sit on the element that actually varies within the Panel:
+  // an unlinked row IS the direct child (last:), a linked row's inner div is always the
+  // only child of its Link, so the Link carries it (last:[&>div]). This keeps a hairline
+  // between every row and none under the last, in both linked and unlinked lists.
   const inner = (
     <div style={cols ? { gridTemplateColumns: cols } : undefined}
-      className={cx("grid items-center gap-3.5 border-b border-hairline px-[18px] py-3 text-[13px] last:border-b-0", className)}>
+      className={cx("grid items-center gap-3.5 border-b border-hairline px-[18px] py-3 text-[13px]", !href && "last:border-b-0", className)}>
       {children}
     </div>
   );
-  return href ? <Link href={href} className="block transition-colors hover:bg-[rgba(17,17,17,0.03)]">{inner}</Link> : inner;
+  return href ? <Link href={href} className="block transition-colors last:[&>div]:border-b-0 hover:bg-[rgba(17,17,17,0.03)]">{inner}</Link> : inner;
 }
 
 // ── DomainHeadCard — the ONE sanctioned domain field (color-roles law): a domain may tint

@@ -36,7 +36,7 @@ export default async function WeddingsPage({ params }: { params: Promise<{ local
       <StudioTitleBand
         title={t("weddings")}
         accent={t("weddingsHint")}
-        action={<Link href="/weddings/new"><Button>{t("createWedding")}</Button></Link>}
+        action={<Link href="/weddings/new"><Button variant="primary">{t("createWedding")}</Button></Link>}
         className="mt-1"
       />
 
