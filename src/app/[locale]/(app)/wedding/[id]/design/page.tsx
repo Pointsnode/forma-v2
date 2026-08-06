@@ -1,24 +1,50 @@
 import { notFound } from "next/navigation";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale, getLocale } from "next-intl/server";
+import { Link, redirect } from "@/i18n/navigation";
+import { routing } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { loadWeddingContext } from "@/lib/load-wedding";
 import { WeddingShell } from "@/components/wedding/wedding-shell";
 import { AddBoard, AddItem } from "@/components/wedding/design-controls";
-import { Card, SectionTitle, heroToneAt } from "@/components/ui";
+import { PaletteRow, DrawSwatches, GuideCategory, SetCoverButton, PinControl } from "@/components/wedding/design-palette";
+import { Card, Panel, PanelHead, Chip, DomainStar, StudioTitleBand } from "@/components/ui";
+
+type Item = { id: string; title: string; note: string | null; storage_path: string | null; sort: number };
+type Board = { id: string; title: string; category: string | null; cover_item_id: string | null; budget_category: string | null; engagement_id: string | null; design_items: Item[] };
 
 export default async function DesignTab({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;
-  setRequestLocale(locale);
   const supabase = await createClient();
   const ctx = await loadWeddingContext(supabase, id);
   if (!ctx || ctx.role === "none") notFound();
   const { wedding, events, role } = ctx;
-  const t = await getTranslations("ops");
-  // day_of can't see design (RLS billing-member); couples can (read-write)
+  // §3/#37 — a couple sees the design tab in the WEDDING's language.
+  if (role === "member" && wedding.locale && wedding.locale !== locale && (routing.locales as readonly string[]).includes(wedding.locale)) {
+    redirect({ href: `/wedding/${id}/design`, locale: wedding.locale });
+  }
+  setRequestLocale(locale);
+  const [t, td] = [await getTranslations("ops"), await getTranslations("design")];
+  await getLocale();
   const canEdit = role === "staff" || role === "member";
+  const isStaff = role === "staff";
 
-  const { data: boardRows } = await supabase.from("design_boards").select("id, title, design_items(id, title, note, storage_path, event_id)").eq("wedding_id", id).order("sort");
-  const boards = (boardRows ?? []) as unknown as { id: string; title: string; design_items: { id: string; title: string; note: string | null; storage_path: string | null; event_id: string | null }[] }[];
+  const [{ data: boardRows }, { data: swatchRows }, { data: engRows }, { data: catRows }] = await Promise.all([
+    supabase.from("design_boards").select("id, title, category, cover_item_id, budget_category, engagement_id, design_items(id, title, note, storage_path, sort)").eq("wedding_id", id).order("sort"),
+    supabase.from("design_palette_swatches").select("id, hex, name").eq("wedding_id", id).order("sort").order("created_at"),
+    isStaff ? supabase.from("wedding_vendors").select("id, vendors(name)").eq("wedding_id", id) : Promise.resolve({ data: [] }),
+    isStaff ? supabase.from("ledger_lines").select("category").eq("wedding_id", id).not("category", "is", null) : Promise.resolve({ data: [] }),
+  ]);
+  const boards = ((boardRows ?? []) as unknown as Board[]).map((b) => ({ ...b, design_items: [...b.design_items].sort((a, c) => a.sort - c.sort) }));
+  const wedgeSwatches = (swatchRows ?? []) as { id: string; hex: string; name: string | null }[];
+  const engagements = ((engRows ?? []) as unknown as { id: string; vendors: { name: string } | null }[]).map((e) => ({ id: e.id, name: e.vendors?.name ?? "·" }));
+  const categories = [...new Set(((catRows ?? []) as { category: string }[]).map((r) => r.category))].filter(Boolean);
+
+  // The studio palette (staff only), scoped to this wedding's workspace.
+  let studioSwatches: { id: string; hex: string }[] = [];
+  if (isStaff && wedding.workspace_id) {
+    const { data } = await supabase.from("workspace_palette_swatches").select("id, hex").eq("workspace_id", wedding.workspace_id).order("sort").order("created_at").limit(40);
+    studioSwatches = (data ?? []) as { id: string; hex: string }[];
+  }
 
   const urls = new Map<string, string>();
   await Promise.all(boards.flatMap((b) => b.design_items).filter((i) => i.storage_path).map(async (i) => {
@@ -28,38 +54,72 @@ export default async function DesignTab({ params }: { params: Promise<{ locale: 
 
   return (
     <WeddingShell wedding={wedding} events={events} role={role} active="design">
-      <SectionTitle title={t("design")} accent={t("designHint")} action={canEdit ? <AddBoard weddingId={id} /> : undefined} className="mt-0" />
+      <StudioTitleBand kicker={td("guides")} title={t("design")} accent={td("guidesHint")} action={canEdit ? <AddBoard weddingId={id} /> : undefined} />
+
+      <PaletteRow weddingId={id} wedding={wedgeSwatches} studio={studioSwatches} canManage={canEdit} canKeep={isStaff} />
+
       {boards.length === 0 ? (
         <Card><p className="py-6 text-center font-accent text-[15px] text-muted">{t("noBoards")}</p></Card>
       ) : (
         <div className="flex flex-col gap-5">
-          {boards.map((b, bi) => (
-            <Card key={b.id}>
-              <div className="mb-3 flex items-baseline justify-between">
-                <h3 className="font-display text-[19px] text-ink">{b.title} <span className="ml-1 text-[12px] font-normal text-muted">{t("pinCount", { count: b.design_items.length })}</span></h3>
-                {canEdit ? <AddItem boardId={b.id} weddingId={id} /> : null}
-              </div>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {b.design_items.map((it, ii) => {
-                  const url = urls.get(it.id);
-                  return (
-                    <div key={it.id} className="overflow-hidden rounded-[var(--radius)] bg-bone">
-                      <div className="relative flex h-24 items-end p-2 text-[rgba(255,253,249,0.95)]" style={{ background: heroToneAt(bi + ii) }}>
-                        {url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={url} alt={it.title} className="absolute inset-0 h-24 w-full object-cover" />
-                        ) : null}
-                      </div>
-                      <div className="p-2.5">
-                        <p className="font-display text-[14px] text-ink">{it.title}</p>
-                        {it.note ? <p className="text-[11.5px] text-muted">{it.note}</p> : null}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </Card>
-          ))}
+          {boards.map((b) => {
+            const cover = b.cover_item_id ? urls.get(b.cover_item_id) : undefined;
+            return (
+              <Panel key={b.id}>
+                <PanelHead
+                  star={<DomainStar fill="#8A7557" size={11} />}
+                  title={
+                    <span className="flex items-center gap-3">
+                      {b.title}
+                      {isStaff ? <GuideCategory boardId={b.id} weddingId={id} value={b.category} />
+                        : b.category ? <span className="text-[10px] uppercase tracking-[0.16em] text-taupe">{b.category}</span> : null}
+                    </span>
+                  }
+                  meta={
+                    <span className="flex items-center gap-2.5">
+                      {isStaff ? <PinControl boardId={b.id} weddingId={id} categories={categories} engagements={engagements} budgetCategory={b.budget_category} engagementId={b.engagement_id} />
+                        : b.budget_category ? <Link href={`/wedding/${id}/budget`}><Chip tone="pending">{td("pinnedBudget", { name: b.budget_category })}</Chip></Link>
+                        : b.engagement_id ? <Link href={`/wedding/${id}/vendors/${b.engagement_id}`}><Chip tone="pending">{engagements.find((e) => e.id === b.engagement_id)?.name ?? td("pinnedVendor", { name: "·" })}</Chip></Link>
+                        : null}
+                      <span>{t("pinCount", { count: b.design_items.length })}</span>
+                      {canEdit ? <AddItem boardId={b.id} weddingId={id} /> : null}
+                    </span>
+                  }
+                />
+                <div className="p-[18px]">
+                  {cover ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={cover} alt="" className="mb-3 h-40 w-full rounded-[var(--radius)] object-cover" />
+                  ) : null}
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {b.design_items.map((it) => {
+                      const url = urls.get(it.id);
+                      return (
+                        <div key={it.id} className="overflow-hidden rounded-[var(--radius)] border border-hairline bg-bone">
+                          <div className="relative h-24 bg-bone">
+                            {url ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={url} alt={it.title} className="absolute inset-0 h-24 w-full object-cover" />
+                            ) : null}
+                          </div>
+                          <div className="p-2.5">
+                            <p className="font-display text-[14px] text-ink">{it.title}</p>
+                            {it.note ? <p className="text-[11.5px] text-muted">{it.note}</p> : null}
+                            {url ? (
+                              <div className="mt-1.5 flex items-center justify-between gap-2">
+                                <DrawSwatches weddingId={id} url={url} itemId={it.id} />
+                                {isStaff ? <SetCoverButton boardId={b.id} weddingId={id} itemId={it.id} isCover={b.cover_item_id === it.id} /> : null}
+                              </div>
+                            ) : null}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </Panel>
+            );
+          })}
         </div>
       )}
     </WeddingShell>
