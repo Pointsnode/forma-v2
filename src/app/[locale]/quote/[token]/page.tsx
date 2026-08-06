@@ -54,7 +54,7 @@ export default async function QuotePage({ params }: { params: Promise<{ locale: 
       <div className="mx-auto max-w-[720px] overflow-hidden rounded-[var(--radius)] border border-[#E4DFD3] bg-[#F5F2EB]">
         {/* Charcoal head */}
         <div className="bg-[#111111] px-6 py-9 text-center">
-          <DomainStar fill="#D7C3A5" size={18} />
+          <div className="flex justify-center"><DomainStar fill="#D7C3A5" size={18} /></div>
           <p className="mt-3 text-[10px] font-medium uppercase tracking-[0.24em] text-[#D7C3A5]">{t("aQuoteFrom")}</p>
           <p className="mt-1.5 font-display text-[30px] text-[#F5F2EB]">{p.studio_name ?? t("theStudio")}</p>
           <p className="mt-2.5 text-[10px] uppercase tracking-[0.2em] text-[#D7C3A5]">{[t("headNumber", { n: q.number }), p.prepared_for ? t("headPreparedFor", { name: p.prepared_for }) : null].filter(Boolean).join(" · ")}</p>
@@ -109,7 +109,7 @@ export default async function QuotePage({ params }: { params: Promise<{ locale: 
 
         {/* Signed footer */}
         <div className="bg-[#111111] px-6 py-6 text-center">
-          <DomainStar fill="#D7C3A5" size={12} />
+          <div className="flex justify-center"><DomainStar fill="#D7C3A5" size={12} /></div>
           <div className="mt-1.5"><Wordmark size={17} className="!text-[#F5F2EB]" /></div>
           {p.studio_name ? <p className="mt-2 text-[9px] uppercase tracking-[0.2em] text-[#D7C3A5]">{t("preparedBy", { name: p.studio_name })}</p> : null}
         </div>
