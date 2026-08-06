@@ -1562,9 +1562,9 @@
     "managePlanBtn": "Gestionar plan",
     "startSubscription": "Iniciar suscripción",
     "subErr": "No se pudo conectar con Stripe, inténtalo de nuevo.",
-    "appearance": "Appearance",
-    "appearanceHint": "Bone is the brand default. Default follows your device; Night is the dark register.",
-    "appearance_default": "Default",
+    "appearance": "Apariencia",
+    "appearanceHint": "Bone es el registro de la casa. Automático sigue tu dispositivo; Night es el registro oscuro.",
+    "appearance_default": "Automático",
     "appearance_bone": "Bone",
     "appearance_night": "Night"
   },
