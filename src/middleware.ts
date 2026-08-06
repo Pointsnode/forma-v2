@@ -19,8 +19,10 @@ export async function middleware(request: NextRequest) {
   // 2. Refresh the Supabase session onto that response.
   const user = await updateSession(request, response);
   // 3. Protect the app shell: unauthenticated users off public routes -> sign-in.
-  const prefix = request.nextUrl.pathname.match(/^\/(en|es)(?=\/|$)/)?.[0] ?? "";
-  const path = request.nextUrl.pathname.replace(/^\/(en|es)(?=\/|$)/, "") || "/";
+  // Locale prefix regex built from the routing set, so all four (en·es·fr·it) are stripped.
+  const localeRe = new RegExp(`^/(${routing.locales.join("|")})(?=/|$)`);
+  const prefix = request.nextUrl.pathname.match(localeRe)?.[0] ?? "";
+  const path = request.nextUrl.pathname.replace(localeRe, "") || "/";
 
   // Carry the rotated sb-* auth cookies updateSession wrote onto `response` across a
   // fresh redirect — a redirect for a SIGNED-IN user that drops them discards a token
@@ -69,16 +71,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
-  // §B3 — app-only locale honouring. A SIGNED-IN user whose saved locale is Spanish
-  // (NEXT_LOCALE=es) hitting an unprefixed (default-locale) path is sent to the /es
-  // equivalent, so the Settings language choice survives reloads and deep-links without
-  // typing /es. Gated on `user`, so the signed-out marketing landing keeps its own EN/ES
-  // toggle and is never redirected (we deliberately do NOT enable next-intl's global
-  // localeDetection, which would also govern the landing). No loop: an /es path already
-  // has `prefix` set and is skipped; 'en' is the unprefixed default so only 'es' redirects.
-  if (user && !prefix && request.cookies.get("NEXT_LOCALE")?.value === "es") {
+  // §B3 — app-only locale honouring. A SIGNED-IN user whose saved locale is a non-default
+  // one (NEXT_LOCALE=es|fr|it) hitting an unprefixed (default-locale) path is sent to the
+  // /{locale} equivalent, so the Settings language choice survives reloads and deep-links
+  // without typing the prefix. Gated on `user`, so the signed-out marketing landing keeps
+  // its own toggle and is never redirected (we deliberately do NOT enable next-intl's
+  // global localeDetection). No loop: a prefixed path already has `prefix` set and is
+  // skipped; 'en' is the unprefixed default so only es/fr/it redirect.
+  const saved = request.cookies.get("NEXT_LOCALE")?.value;
+  if (user && !prefix && saved && saved !== routing.defaultLocale && (routing.locales as readonly string[]).includes(saved)) {
     const url = request.nextUrl.clone();
-    url.pathname = request.nextUrl.pathname === "/" ? "/es" : `/es${request.nextUrl.pathname}`;
+    url.pathname = request.nextUrl.pathname === "/" ? `/${saved}` : `/${saved}${request.nextUrl.pathname}`;
     // Signed-in hot path — must carry the rotated auth cookies (see withSession above).
     return withSession(url);
   }

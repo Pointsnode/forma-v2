@@ -29,7 +29,7 @@ export async function fileContractArtifact(admin: SupabaseClient, contractId: st
 
   const html = `<!doctype html><meta charset="utf-8"><title>${esc(c.title)}</title>
   <div style="font-family:Georgia,serif;color:#121212;max-width:720px;margin:40px auto;padding:0 24px">
-    <div style="font-size:22px;letter-spacing:.04em">forma</div>
+    <div style="font-size:22px;letter-spacing:.04em"><span style="font-style:italic">f</span>orma</div>
     <h1 style="font-family:'Playfair Display',Georgia,serif;font-size:26px">${esc(c.title)}</h1>
     <p style="color:#8A867E;font-size:12px">Completed ${c.completed_at ? new Date(c.completed_at).toISOString() : ""} · values frozen at signature</p>
     <p style="white-space:pre-wrap;line-height:1.7;font-size:14px">${esc(body)}</p>

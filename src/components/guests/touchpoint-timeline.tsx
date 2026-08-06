@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { intlTag } from "@/lib/intl";
 import { useLocale, useTranslations } from "next-intl";
 import { cx } from "@/components/ui";
 import { skipTouchpoint } from "@/app/[locale]/(app)/wedding/[id]/guest-actions";
@@ -17,7 +18,7 @@ export function TouchpointTimeline({
   const t = useTranslations("touchpoints");
   const locale = useLocale();
   const [pending, start] = useTransition();
-  const fmt = (d: string) => new Intl.DateTimeFormat(locale === "es" ? "es-ES" : "en-US", { month: "short", day: "numeric" }).format(new Date(`${d}T12:00:00Z`));
+  const fmt = (d: string) => new Intl.DateTimeFormat(intlTag(locale), { month: "short", day: "numeric" }).format(new Date(`${d}T12:00:00Z`));
 
   if (touchpoints.length === 0) return <p className="font-accent text-[14.5px] text-muted">{t("none")}</p>;
 

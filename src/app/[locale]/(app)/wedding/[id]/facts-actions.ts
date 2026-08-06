@@ -26,6 +26,9 @@ export async function updateWeddingFacts(weddingId: string, form: FormData): Pro
   };
   const kindRaw = String(form.get("kind") ?? "");
   const kind = kindRaw === "city" || kindRaw === "destination" ? kindRaw : null;
+  // The wedding's language (§3). "" / anything invalid → null = fall back to today's default.
+  const localeRaw = String(form.get("locale") ?? "");
+  const locale = ["en", "es", "fr", "it"].includes(localeRaw) ? localeRaw : null;
 
   const { error } = await supabase
     .from("weddings")
@@ -35,6 +38,7 @@ export async function updateWeddingFacts(weddingId: string, form: FormData): Pro
       location_city: txt("location_city"),
       location_country: txt("location_country"),
       kind,
+      locale,
     })
     .eq("id", weddingId);
   if (error) {

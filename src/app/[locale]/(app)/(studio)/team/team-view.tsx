@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { localePrefix } from "@/lib/intl";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Card, SectionTitle, Stat, StatRow, Row, RowMain, Monogram, Button, cx } from "@/components/ui";
@@ -192,7 +193,7 @@ function PendingList({ pending, locale }: { pending: PendingInvite[]; locale: st
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   if (pending.length === 0) return null;
-  const linkFor = (token: string) => `${typeof window !== "undefined" ? window.location.origin : ""}${locale === "es" ? "/es" : ""}/join/team/${token}`;
+  const linkFor = (token: string) => `${typeof window !== "undefined" ? window.location.origin : ""}${localePrefix(locale)}/join/team/${token}`;
   return (
     <Card>
       <SectionTitle title={t("pendingTitle")} accent={t("pendingHint")} />

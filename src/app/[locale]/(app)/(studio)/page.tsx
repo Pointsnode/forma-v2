@@ -1,4 +1,5 @@
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
+import { intlTag } from "@/lib/intl";
 import { Link, redirect } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -74,7 +75,7 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
   const oldest = chase[0];
   // §B4 — the greeting date reads "today" in the account's timezone preference.
   const prefs = await loadDatePrefs(supabase, lang);
-  const today = new Intl.DateTimeFormat(lang === "es" ? "es-ES" : "en-US", { weekday: "long", month: "long", day: "numeric", timeZone: prefs.tz }).format(new Date());
+  const today = new Intl.DateTimeFormat(intlTag(lang), { weekday: "long", month: "long", day: "numeric", timeZone: prefs.tz }).format(new Date());
 
   // Money radar / urgent (§12) — from the view, RLS-scoped to the viewer's weddings.
   const tmoney = await getTranslations("money");
@@ -85,7 +86,7 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
   // The calendar's whisper — the soonest meeting in the next 7 days (exceptions-first).
   const soon = await loadNextMeeting(supabase);
   const soonWhen = soon
-    ? new Intl.DateTimeFormat(lang === "es" ? "es-ES" : "en-US", { weekday: "short", hour: "numeric", minute: "2-digit", timeZone: soon.timezone }).format(new Date(soon.startAt))
+    ? new Intl.DateTimeFormat(intlTag(lang), { weekday: "short", hour: "numeric", minute: "2-digit", timeZone: soon.timezone }).format(new Date(soon.startAt))
     : null;
 
   return (

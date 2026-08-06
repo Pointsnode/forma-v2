@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
+import { redirect } from "@/i18n/navigation";
+import { routing } from "@/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { loadWeddingContext } from "@/lib/load-wedding";
 import { loadProposals, loadCoupleIds, loadMembers, loadPendingInvites, toView, isTerminal } from "@/lib/loop";
@@ -25,6 +27,12 @@ export default async function WeddingFloor({ params }: { params: Promise<{ local
   const ctx = await loadWeddingContext(supabase, id);
   if (!ctx || ctx.role === "none") notFound();
   const { wedding, events, role } = ctx;
+  // §3 — the couple portal follows the WEDDING's language, not the couple's own locale.
+  // A couple (member lens) on a mismatched locale prefix is redirected to the wedding's.
+  // Staff (planner) keep following their own profiles.locale, so this is member-only.
+  if (role === "member" && wedding.locale && wedding.locale !== locale && (routing.locales as readonly string[]).includes(wedding.locale)) {
+    redirect({ href: `/wedding/${id}`, locale: wedding.locale });
+  }
   const lang = await getLocale();
 
   const [{ proposals, people }, coupleIds] = await Promise.all([loadProposals(supabase, id), loadCoupleIds(supabase, id)]);
@@ -62,6 +70,7 @@ export default async function WeddingFloor({ params }: { params: Promise<{ local
             city: wedding.location_city ?? "",
             country: wedding.location_country ?? "",
             kind: (wedding.kind ?? "") as "city" | "destination" | "",
+            locale: wedding.locale ?? "",
           }}
         />
       </div>

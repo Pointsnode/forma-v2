@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { localePrefix } from "@/lib/intl";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendBatch } from "@/lib/email/resend";
 import { rsvpEmail } from "@/lib/email/rsvp-email";
@@ -41,18 +42,21 @@ async function run(req: NextRequest) {
     const { data: sends } = await admin.rpc("build_touchpoint_sends", { p_touchpoint: tp.id });
     const rows = (sends ?? []) as { guest_id: string; email: string; full_name: string; rsvp_code: string; token: string }[];
 
-    // wedding + locale for the email copy
-    const { data: wd } = await admin.from("weddings").select("couple_display, workspace_id").eq("id", tp.wedding_id).maybeSingle();
-    let locale: "en" | "es" = "en";
-    if (wd?.workspace_id) {
+    // §3/§5 — guest email copy follows the WEDDING's language, falling back to the
+    // workspace creator's locale (then 'en') when wedding.locale is null: today's
+    // behaviour unchanged for null. (FR/IT bodies gracefully fall back to EN until the
+    // email catalog namespace lands — see the PR's known gap.)
+    const { data: wd } = await admin.from("weddings").select("couple_display, workspace_id, locale").eq("id", tp.wedding_id).maybeSingle();
+    let locale: string = wd?.locale ?? "en";
+    if (!wd?.locale && wd?.workspace_id) {
       const { data: ws } = await admin.from("workspaces").select("created_by").eq("id", wd.workspace_id).maybeSingle();
       if (ws?.created_by) {
         const { data: prof } = await admin.from("profiles").select("locale").eq("id", ws.created_by).maybeSingle();
-        if (prof?.locale === "es") locale = "es";
+        if (prof?.locale) locale = prof.locale;
       }
     }
     const couple = wd?.couple_display ?? "your wedding";
-    const prefix = `${base}${locale === "es" ? "/es" : ""}`;
+    const prefix = `${base}${localePrefix(locale)}`;
 
     // Per-kind email. menu_collect → tokenized /menu link; day_of_schedule → a
     // read-only itinerary (events + times + venue + the guest's seat).

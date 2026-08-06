@@ -1,5 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "@/i18n/navigation";
+import { routing } from "@/i18n/routing";
 import { RsvpForm } from "./rsvp-form";
 import { formatDateRange } from "@/lib/wedding";
 import { Wordmark } from "@/components/ui";
@@ -29,11 +31,19 @@ export default async function RsvpPage({
 }) {
   const { locale, code } = await params;
   const { s: sendToken } = await searchParams;
-  setRequestLocale(locale);
-  const t = await getTranslations("rsvp");
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("rsvp_lookup", { code });
+  // The RSVP page speaks the WEDDING's language, not the visitor's: if the URL locale
+  // differs from the wedding's, redirect to the wedding-locale path, then render in it.
+  if (data) {
+    const wl = (data as LookupPayload).locale;
+    if (wl && wl !== locale && (routing.locales as readonly string[]).includes(wl)) {
+      redirect({ href: sendToken ? `/rsvp/${code}?s=${sendToken}` : `/rsvp/${code}`, locale: wl });
+    }
+  }
+  setRequestLocale(locale);
+  const t = await getTranslations("rsvp");
 
   if (error || !data) {
     return (

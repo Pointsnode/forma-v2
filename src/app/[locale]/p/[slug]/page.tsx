@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { intlTag } from "@/lib/intl";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
@@ -46,7 +47,7 @@ export default async function ProfilePage({ params }: Props) {
   const gallery = (prof.gallery ?? []).filter(Boolean);
   const services = prof.services ?? [];
   const discovery = prof.discovery_calls_enabled && prof.booking_url ? prof.booking_url : null;
-  const nf = new Intl.NumberFormat(locale === "es" ? "es-MX" : "en-US");
+  const nf = new Intl.NumberFormat(intlTag(locale));
 
   return (
     <div className="min-h-screen bg-bone">

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getPlannerSlugs, slugifyRegion } from "@/lib/directory";
 import { localeUrl } from "@/lib/seo";
+import { routing } from "@/i18n/routing";
 
 // Built per request from the live published set — never prerendered against a
 // stale snapshot (and so the build never needs the service-role key or network).
@@ -28,10 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "weekly",
     priority: path === "/" ? 1 : path === "/planners" ? 0.9 : 0.8,
     alternates: {
-      languages: {
-        en: localeUrl("en", path),
-        es: localeUrl("es", path),
-      },
+      languages: Object.fromEntries(routing.locales.map((l) => [l, localeUrl(l, path)])),
     },
   }));
 }

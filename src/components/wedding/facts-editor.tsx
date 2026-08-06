@@ -14,12 +14,22 @@ export type FactsInitial = {
   city: string;
   country: string;
   kind: "city" | "destination" | "";
+  locale: string; // the wedding's language ("" = fall back)
 };
+
+// Endonyms — each language in its own name, locale-invariant (no catalog key needed).
+const LANGS: { value: string; label: string }[] = [
+  { value: "en", label: "English" },
+  { value: "es", label: "Español" },
+  { value: "fr", label: "Français" },
+  { value: "it", label: "Italiano" },
+];
 
 // Staff-only edit of the wedding's foundational facts (budget · guests · location
 // · kind) — an overlay sheet opened from the stat strip. Feeds the 2→3 predicates.
 export function FactsEditor({ weddingId, initial }: { weddingId: string; initial: FactsInitial }) {
   const t = useTranslations("wedding");
+  const ts = useTranslations("settings");
   const [open, setOpen] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -70,6 +80,14 @@ export function FactsEditor({ weddingId, initial }: { weddingId: string; initial
               <option value="">·</option>
               <option value="city">{t("create.kindCity")}</option>
               <option value="destination">{t("create.kindDestination")}</option>
+            </select>
+
+            {/* §3 — the wedding's own language (couple/guest surfaces follow it). Quiet,
+                staff-editable; "·" = fall back to the workspace default (today's behaviour). */}
+            <label className={mlbl}>{ts("langTitle")}</label>
+            <select name="locale" defaultValue={initial.locale} className={cx(input, "mt-1.5")}>
+              <option value="">·</option>
+              {LANGS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
             </select>
 
             {err ? <p className="mt-2 text-[13px] text-wine">{err}</p> : null}

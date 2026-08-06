@@ -39,7 +39,10 @@ export async function phase1InviteEmails(admin: SupabaseClient, weddingId: strin
     .is("emailed_at", null)
     .not("email", "is", null);
   const rows = (data ?? []) as { id: string; token: string; email: string }[];
-  const es = locale === "es";
+  // §3/§5 — the couple's portal-ready email follows the WEDDING's language (fallback to the
+  // passed locale, then en). FR/IT bodies gracefully fall back to EN until the email catalog.
+  const { data: w } = await admin.from("weddings").select("locale").eq("id", weddingId).maybeSingle();
+  const es = ((w?.locale as string | null) ?? locale) === "es";
   const emails: Email[] = [];
   for (const inv of rows) {
     const url = `${baseUrl}/join/${inv.token.trim()}`;
