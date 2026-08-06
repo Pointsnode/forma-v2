@@ -11,10 +11,10 @@ export default async function NewWeddingPage({ params }: { params: Promise<{ loc
 
   return (
     <div className="mx-auto max-w-lg">
-      <Link href="/weddings" className="mb-4 inline-block text-[13px] text-muted hover:text-ink">← {ts("weddings")}</Link>
+      <Link href="/weddings" className="mb-4 inline-block text-[13px] text-text-meta hover:text-text-primary">← {ts("weddings")}</Link>
       <Card>
         <Heading>{t("title")}</Heading>
-        <p className="mb-5 mt-1 font-accent text-[16px] text-muted">{t("hint")}</p>
+        <p className="mb-5 mt-1 font-accent text-[16px] text-text-meta">{t("hint")}</p>
         <CreateWeddingForm />
       </Card>
     </div>

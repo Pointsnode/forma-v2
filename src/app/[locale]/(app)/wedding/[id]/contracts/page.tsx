@@ -31,17 +31,17 @@ export default async function ContractsTab({ params }: { params: Promise<{ local
       {role === "staff" ? <div className="mb-3"><NewContract weddingId={id} templates={templates as { id: string; name: string; kind: string }[]} /></div> : null}
       <Card>
         {contracts.length === 0 ? (
-          <p className="py-6 text-center font-accent text-[15px] text-muted">{tc("empty")}</p>
+          <p className="py-6 text-center font-accent text-[15px] text-text-meta">{tc("empty")}</p>
         ) : (
           contracts.map((c) => (
             <Link key={c.id} href={`/wedding/${id}/contracts/${c.id}`} className="block">
-              <Row className="-mx-2 rounded-[var(--radius)] px-2 hover:bg-bone">
+              <Row className="-mx-2 rounded-[var(--radius)] px-2 hover:bg-surface-card">
                 <Icon>{c.title.trim()[0]?.toUpperCase() ?? "C"}</Icon>
                 <RowMain
                   title={c.title}
                   detail={
                     c.blockingTitle
-                      ? <span className="text-wine">{tc("heldOn", { title: c.blockingTitle })}</span>
+                      ? <span className="text-[color:var(--color-text-danger)]">{tc("heldOn", { title: c.blockingTitle })}</span>
                       : tc(`kind_${c.kind}`)
                   }
                 />

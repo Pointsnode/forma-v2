@@ -62,7 +62,7 @@ export default async function EngagementRoom({ params }: { params: Promise<{ loc
   return (
     <WeddingShell wedding={wedding} events={events} role={role === "staff" ? "staff" : "member"} active="vendors" showNav={false}>
       <div className="mb-4">
-        <Link href={`/wedding/${id}/vendors`} className="text-[12.5px] text-muted hover:text-ink">← {tb("backToVendors")}</Link>
+        <Link href={`/wedding/${id}/vendors`} className="text-[12.5px] text-text-meta hover:text-text-primary">← {tb("backToVendors")}</Link>
       </div>
       <EngagementLedgerView vm={vm} isStaff={role === "staff"} />
     </WeddingShell>

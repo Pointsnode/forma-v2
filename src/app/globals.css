@@ -35,6 +35,12 @@
   --color-text-body: var(--color-graphite);    /* body copy */
   --color-text-meta: var(--color-ash);         /* meta / labels / captions */
   --color-hairline-token: var(--color-hairline); /* the hairline that flips to bone-alpha */
+  --color-button-edge: transparent;            /* dark buttons: no edge on bone (byte-for-byte
+                                                  today), a bone-alpha edge on night so a
+                                                  charcoal fill never vanishes into the room */
+  --color-text-danger: var(--color-wine);      /* error/danger TEXT: wine on bone (the house
+                                                  red), primary bone on night — the contrast
+                                                  law forbids wine text on a dark ground */
 
   /* Retired identities (sand/sand-soft, sage/sage-soft/sage-ink, wine-soft, maroon) were
      aliased here during the foundation, then every call site was migrated to its Edition
@@ -59,16 +65,81 @@
 /* ── Night register. Token-level inversion, same seven accent colors, same geometry —
    only the semantic surface/type tokens flip. Values from the night reference: room
    #161513, raised card #1C1A18, chrome #0D0C0B, type to bone, meta #8F887B, bone-alpha
-   hairlines. NOTE: no user route sets data-theme; only /styleguide?theme=night opts in.
-   The Appearance setting (Default/Bone/Night) ships in the Night milestone. */
+   hairlines.
+
+   ONE source of truth for the night values: the --night-* variables below. Both the
+   explicit [data-theme="night"] preference and the device-driven [data-theme="default"]
+   (prefers-color-scheme: dark) resolve through the SAME seven variables — the mapping is
+   duplicated (two `--color-x: var(--night-x)` lists) but the VALUES live in one place, so
+   the two themes can never drift by hand. Appearance = Bone (or unset) never sets a
+   data-theme attribute, so it stays byte-for-byte today's render. Signed-in surfaces only;
+   the server never puts the attribute on public/marketing routes. */
+:root {
+  --night-surface-page: #161513;
+  --night-surface-card: #1C1A18;
+  --night-surface-chrome: #0D0C0B;
+  --night-text-primary: #F5F2EB;
+  --night-text-body: #C9C3B8;
+  --night-text-meta: #8F887B;
+  --night-hairline: rgba(245, 242, 235, 0.12);
+}
 [data-theme="night"] {
-  --color-surface-page: #161513;
-  --color-surface-card: #1C1A18;
-  --color-surface-chrome: #0D0C0B;
-  --color-text-primary: #F5F2EB;
-  --color-text-body: #C9C3B8;
-  --color-text-meta: #8F887B;
-  --color-hairline-token: rgba(245, 242, 235, 0.12);
+  --color-surface-page: var(--night-surface-page);
+  --color-surface-card: var(--night-surface-card);
+  --color-surface-chrome: var(--night-surface-chrome);
+  --color-text-primary: var(--night-text-primary);
+  --color-text-body: var(--night-text-body);
+  --color-text-meta: var(--night-text-meta);
+  --color-hairline-token: var(--night-hairline);
+  --color-button-edge: var(--night-hairline);
+  --color-text-danger: var(--night-text-primary);
+}
+/* Default = follow the device. CSS-only, no pre-paint script: the same seven night
+   variables apply only when the OS is in dark mode. In light mode nothing matches and
+   the @theme bone defaults stand. */
+@media (prefers-color-scheme: dark) {
+  [data-theme="default"] {
+    --color-surface-page: var(--night-surface-page);
+    --color-surface-card: var(--night-surface-card);
+    --color-surface-chrome: var(--night-surface-chrome);
+    --color-text-primary: var(--night-text-primary);
+    --color-text-body: var(--night-text-body);
+    --color-text-meta: var(--night-text-meta);
+    --color-hairline-token: var(--night-hairline);
+    --color-button-edge: var(--night-hairline);
+    --color-text-danger: var(--night-text-primary);
+  }
+}
+
+/* Bone reset: an explicit re-declaration of the day values so a surface can force bone even
+   inside a night ancestor. Used by print/export views (which are documents for paper, never
+   dark) — they wrap their content in data-theme="bone". */
+[data-theme="bone"] {
+  --color-surface-page: var(--color-bone);
+  --color-surface-card: var(--color-bone);
+  --color-surface-chrome: var(--color-ink);
+  --color-text-primary: var(--color-ink);
+  --color-text-body: var(--color-graphite);
+  --color-text-meta: var(--color-ash);
+  --color-hairline-token: var(--color-hairline);
+  --color-button-edge: transparent;
+  --color-text-danger: var(--color-wine);
+}
+
+/* Print is ALWAYS bone (house law): whatever the signed-in theme, the printed page resets to
+   the day values so ink lands on paper, never a dark ground. */
+@media print {
+  :root, [data-theme="night"], [data-theme="default"], [data-theme="bone"] {
+    --color-surface-page: var(--color-bone);
+    --color-surface-card: var(--color-bone);
+    --color-surface-chrome: var(--color-ink);
+    --color-text-primary: var(--color-ink);
+    --color-text-body: var(--color-graphite);
+    --color-text-meta: var(--color-ash);
+    --color-hairline-token: var(--color-hairline);
+    --color-button-edge: transparent;
+    --color-text-danger: var(--color-wine);
+  }
 }
 
 html, body { height: 100%; }

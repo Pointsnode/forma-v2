@@ -35,7 +35,7 @@ export function TopBar({
   const label = active ? active.name : ts("allWeddings");
 
   return (
-    <div className="sticky top-0 z-50 flex h-[62px] items-center gap-7 bg-ink px-8 text-bone">
+    <div className="sticky top-0 z-50 flex h-[62px] items-center gap-7 bg-surface-chrome px-8 text-bone">
       <Link href="/" aria-label={t("name")}>
         <Wordmark size={20} className="!text-bone" />
       </Link>
@@ -64,18 +64,18 @@ export function TopBar({
         {open ? (
           <>
             <button className="fixed inset-0 z-10 cursor-default" aria-hidden onClick={() => setOpen(false)} />
-            <div className="absolute right-0 top-[46px] z-20 min-w-[300px] overflow-hidden rounded-[var(--radius)] border border-hairline bg-bone text-ink">
+            <div className="absolute right-0 top-[46px] z-20 min-w-[300px] overflow-hidden rounded-[var(--radius)] border border-hairline-token bg-surface-card text-text-primary">
               {/* session-aware: the studio entry exists only for a workspace member */}
               {workspaceName ? (
                 <Link
                   href="/"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 text-[12.5px] not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)] hover:bg-bone"
+                  className="flex items-center gap-3 px-4 py-3 text-[12.5px] not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline-token)] hover:bg-surface-page"
                 >
-                  <span className="flex h-[26px] w-[26px] items-center justify-center rounded-[var(--radius)] bg-ink text-[9px] font-semibold text-bone">{monogram}</span>
+                  <span className="flex h-[26px] w-[26px] items-center justify-center rounded-[var(--radius)] bg-surface-chrome text-[9px] font-semibold text-bone">{monogram}</span>
                   <span>
                     <span className="block font-medium">{ts("switcherStudio")}</span>
-                    <span className="block text-[11px] text-muted">{ts("switcherStudioHint")}</span>
+                    <span className="block text-[11px] text-text-meta">{ts("switcherStudioHint")}</span>
                   </span>
                 </Link>
               ) : null}
@@ -85,14 +85,14 @@ export function TopBar({
                   href={`/wedding/${w.id}`}
                   onClick={() => setOpen(false)}
                   className={cx(
-                    "flex items-center gap-3 px-4 py-3 text-[12.5px] not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)] hover:bg-bone",
-                    active?.id === w.id && "bg-bone",
+                    "flex items-center gap-3 px-4 py-3 text-[12.5px] not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline-token)] hover:bg-surface-page",
+                    active?.id === w.id && "bg-surface-page",
                   )}
                 >
                   <span className="flex h-[26px] w-[26px] items-center justify-center rounded-[var(--radius)] text-[9px] font-semibold text-bone" style={{ background: w.tone }}>{w.initials}</span>
                   <span>
                     <span className="block font-medium">{w.name}</span>
-                    <span className="block text-[11px] text-muted">{w.meta}</span>
+                    <span className="block text-[11px] text-text-meta">{w.meta}</span>
                   </span>
                 </Link>
               ))}
@@ -114,7 +114,7 @@ export function TopBar({
         {menuOpen ? (
           <>
             <button className="fixed inset-0 z-10 cursor-default" aria-hidden onClick={() => setMenuOpen(false)} />
-            <div className="absolute right-0 top-[46px] z-20 min-w-[200px] overflow-hidden rounded-[var(--radius)] border border-hairline bg-bone text-ink">
+            <div className="absolute right-0 top-[46px] z-20 min-w-[200px] overflow-hidden rounded-[var(--radius)] border border-hairline-token bg-surface-card text-text-primary">
               {workspaceName ? (
                 <>
                   <MenuLink href="/team" label={ts("team")} onNavigate={() => setMenuOpen(false)} />
@@ -123,9 +123,9 @@ export function TopBar({
                 </>
               ) : null}
               <MenuLink href="/settings" label={t("settings")} onNavigate={() => setMenuOpen(false)} />
-              <div className="[box-shadow:inset_0_-1px_0_var(--color-hairline)]" />
+              <div className="[box-shadow:inset_0_-1px_0_var(--color-hairline-token)]" />
               <form action={signOut}>
-                <button type="submit" className="w-full px-4 py-3 text-left text-[12.5px] text-muted hover:bg-bone hover:text-ink">
+                <button type="submit" className="w-full px-4 py-3 text-left text-[12.5px] text-text-meta hover:bg-surface-page hover:text-text-primary">
                   {t("signOut")}
                 </button>
               </form>
@@ -143,7 +143,7 @@ function MenuLink({ href, label, onNavigate }: { href: string; label: string; on
     <Link
       href={href}
       onClick={onNavigate}
-      className="block px-4 py-3 text-[12.5px] not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)] hover:bg-bone"
+      className="block px-4 py-3 text-[12.5px] not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline-token)] hover:bg-surface-page"
     >
       {label}
     </Link>

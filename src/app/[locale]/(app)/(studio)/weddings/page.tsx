@@ -40,8 +40,8 @@ export default async function WeddingsPage({ params }: { params: Promise<{ local
       />
 
       {error || weddings.length === 0 ? (
-        <div className="rounded-[var(--radius)] bg-bone p-10 text-center">
-          <p className="font-accent text-[17px] text-muted">{t("empty")}</p>
+        <div className="rounded-[var(--radius)] bg-surface-card p-10 text-center">
+          <p className="font-accent text-[17px] text-text-meta">{t("empty")}</p>
         </div>
       ) : (
         <Bento>
@@ -73,13 +73,13 @@ export default async function WeddingsPage({ params }: { params: Promise<{ local
                   }
                   className="transition-shadow"
                 >
-                  <p className="flex items-center gap-2 font-display text-[17px] text-ink">
+                  <p className="flex items-center gap-2 font-display text-[17px] text-text-primary">
                     {w.couple_display} <PhaseDots phase={w.phase} />
                   </p>
-                  <p className="mt-1 text-[12px] text-muted">{meta}</p>
+                  <p className="mt-1 text-[12px] text-text-meta">{meta}</p>
                   <BentoFoot>
                     <Badge tone={phaseTone(w.phase)}>{phaseLabel(w.phase, tp)}</Badge>
-                    <span className="ml-auto text-[11.5px] tracking-[0.03em] text-wine group-hover:underline group-hover:underline-offset-2">{tw("openWedding")} →</span>
+                    <span className="ml-auto text-[11.5px] tracking-[0.03em] text-[color:var(--color-text-danger)] group-hover:underline group-hover:underline-offset-2">{tw("openWedding")} →</span>
                   </BentoFoot>
                 </BentoCard>
               </Link>

@@ -8,7 +8,7 @@ import {
   addMenu, addMenuOption, lockMenu,
 } from "@/app/[locale]/(app)/wedding/[id]/ops-actions";
 
-const input = "rounded-[var(--radius)] border border-hairline bg-bone px-2.5 py-1.5 text-[13px] text-ink outline-none";
+const input = "rounded-[var(--radius)] border border-hairline-token bg-surface-card px-2.5 py-1.5 text-[13px] text-text-primary outline-none";
 
 export type ScheduleItemVM = { id: string; time: string | null; title: string; detail: string | null; done: boolean };
 export type MenuVM = { id: string; title: string; locked: boolean; options: { id: string; label: string; diet: string[]; count: number }[] };
@@ -29,28 +29,28 @@ export function ScheduleCard({ weddingId, eventId, items, live }: { weddingId: s
     <Card>
       <div className="mb-1 flex items-baseline justify-between">
         <Heading className="flex items-center gap-2 text-[18px]"><DomainStar domain="time" size={12} />{t("schedule")}</Heading>
-        <button onClick={() => setAdding((v) => !v)} className="text-[12.5px] text-muted hover:text-ink">+ {t("addItem")}</button>
+        <button onClick={() => setAdding((v) => !v)} className="text-[12.5px] text-text-meta hover:text-text-primary">+ {t("addItem")}</button>
       </div>
-      <p className="mb-2 text-[12.5px] text-muted">{live ? t("scheduleLive") : t("scheduleDraft")}</p>
-      {items.length === 0 ? <p className="py-3 text-center font-accent text-[14px] text-muted">{t("noSchedule")}</p> : null}
+      <p className="mb-2 text-[12.5px] text-text-meta">{live ? t("scheduleLive") : t("scheduleDraft")}</p>
+      {items.length === 0 ? <p className="py-3 text-center font-accent text-[14px] text-text-meta">{t("noSchedule")}</p> : null}
       {items.map((it) => editing === it.id ? (
         <form key={it.id} action={(fd) => { run(() => updateScheduleItem(it.id, fd), () => t("error")); setEditing(null); }} className="flex flex-wrap items-end gap-2 py-2.5">
           <input name="time" type="time" defaultValue={it.time?.slice(0, 5) ?? ""} className={input} />
           <input name="title" required defaultValue={it.title} className={cx(input, "w-48")} />
           <input name="detail" defaultValue={it.detail ?? ""} placeholder={t("itemNote")} className={input} />
           <Button type="submit" disabled={pending}>{t("save")}</Button>
-          <button type="button" onClick={() => setEditing(null)} className="text-[12px] text-muted">{t("cancel")}</button>
+          <button type="button" onClick={() => setEditing(null)} className="text-[12px] text-text-meta">{t("cancel")}</button>
         </form>
       ) : (
         <div key={it.id} className={cx("flex items-center gap-3 py-2.5 not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)]", it.done && "opacity-55")}>
           {live ? (
             <button onClick={() => run(() => checkScheduleItem(it.id, !it.done), () => t("error"))} disabled={pending}
-              className={cx("flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[var(--radius)] text-[11px]", it.done ? "bg-teal text-ink" : "ring-1 ring-hairline")}>{it.done ? "✓" : ""}</button>
+              className={cx("flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[var(--radius)] text-[11px]", it.done ? "bg-teal text-text-primary" : "ring-1 ring-hairline")}>{it.done ? "✓" : ""}</button>
           ) : null}
           <span className="w-16 shrink-0 font-accent text-[15px] italic text-taupe">{it.time?.slice(0, 5) ?? ""}</span>
-          <div className="min-w-0 flex-1"><p className={cx("text-[13.5px] text-ink", it.done && "line-through")}>{it.title}</p>{it.detail ? <p className="text-[12px] text-muted">{it.detail}</p> : null}</div>
-          <button onClick={() => setEditing(it.id)} className="shrink-0 text-[12px] text-muted hover:text-ink">{t("edit")}</button>
-          <button onClick={() => run(() => deleteScheduleItem(it.id), () => t("error"))} disabled={pending} className="shrink-0 text-[12px] text-muted hover:text-wine">×</button>
+          <div className="min-w-0 flex-1"><p className={cx("text-[13.5px] text-text-primary", it.done && "line-through")}>{it.title}</p>{it.detail ? <p className="text-[12px] text-text-meta">{it.detail}</p> : null}</div>
+          <button onClick={() => setEditing(it.id)} className="shrink-0 text-[12px] text-text-meta hover:text-text-primary">{t("edit")}</button>
+          <button onClick={() => run(() => deleteScheduleItem(it.id), () => t("error"))} disabled={pending} className="shrink-0 text-[12px] text-text-meta hover:text-[color:var(--color-text-danger)]">×</button>
         </div>
       ))}
       {adding ? (
@@ -75,20 +75,20 @@ export function MenusCard({ weddingId, eventId, menus }: { weddingId: string; ev
     <Card>
       <div className="mb-2 flex items-baseline justify-between">
         <Heading className="text-[18px]">{t("menus")}</Heading>
-        <button onClick={() => setAddingMenu((v) => !v)} className="text-[12.5px] text-muted hover:text-ink">+ {t("addMenu")}</button>
+        <button onClick={() => setAddingMenu((v) => !v)} className="text-[12.5px] text-text-meta hover:text-text-primary">+ {t("addMenu")}</button>
       </div>
-      {menus.length === 0 && !addingMenu ? <p className="py-3 text-center font-accent text-[14px] text-muted">{t("noMenu")}</p> : null}
+      {menus.length === 0 && !addingMenu ? <p className="py-3 text-center font-accent text-[14px] text-text-meta">{t("noMenu")}</p> : null}
       {menus.map((m) => (
-        <div key={m.id} className="mb-3 rounded-[var(--radius)] bg-bone p-3">
+        <div key={m.id} className="mb-3 rounded-[var(--radius)] bg-surface-card p-3">
           <div className="mb-1.5 flex items-center gap-2">
-            <p className="flex-1 font-display text-[15px] text-ink">{m.title}</p>
+            <p className="flex-1 font-display text-[15px] text-text-primary">{m.title}</p>
             {m.locked ? <Badge tone="sage">{t("locked")}</Badge> : null}
-            <button onClick={() => run(() => lockMenu(m.id, !m.locked), () => t("error"))} disabled={pending} className="text-[12px] text-muted hover:text-ink">{m.locked ? t("unlock") : t("lock")}</button>
-            <button onClick={() => setAddingOpt(addingOpt === m.id ? null : m.id)} className="text-[12px] text-muted hover:text-ink">+ {t("option")}</button>
+            <button onClick={() => run(() => lockMenu(m.id, !m.locked), () => t("error"))} disabled={pending} className="text-[12px] text-text-meta hover:text-text-primary">{m.locked ? t("unlock") : t("lock")}</button>
+            <button onClick={() => setAddingOpt(addingOpt === m.id ? null : m.id)} className="text-[12px] text-text-meta hover:text-text-primary">+ {t("option")}</button>
           </div>
           {m.options.map((o) => (
             <div key={o.id} className="flex items-center gap-2 py-1 text-[13px]">
-              <span className="flex-1 text-ink">{o.label}{o.diet.map((d) => <Tag key={d}>{d}</Tag>)}</span>
+              <span className="flex-1 text-text-primary">{o.label}{o.diet.map((d) => <Tag key={d}>{d}</Tag>)}</span>
               <span className="font-accent text-[13px] text-taupe">{t("chosenCount", { count: o.count })}</span>
             </div>
           ))}

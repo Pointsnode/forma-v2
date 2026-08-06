@@ -16,7 +16,7 @@ export type RosterMember = {
 };
 export type PendingInvite = { id: string; email: string; grants: string[]; title: string | null; token: string; expiresAt: string };
 
-const INPUT = "w-full rounded-[var(--radius)] bg-bone px-3.5 py-2.5 text-[14px] text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-champagne";
+const INPUT = "w-full rounded-[var(--radius)] bg-surface-card px-3.5 py-2.5 text-[14px] text-text-primary placeholder:text-text-meta focus:outline-none focus:ring-1 focus:ring-champagne";
 
 function money(n: number) { return `$${n.toLocaleString("en-US")}`; }
 function nameInitials(name: string) {
@@ -41,7 +41,7 @@ function BoxGrid({ value, onChange, disabled }: { value: string[]; onChange: (g:
         {PRESETS.map((p) => (
           <button key={p.key} type="button" disabled={disabled}
             onClick={() => onChange([...p.grants])}
-            className="rounded-[var(--radius)] border border-hairline px-3 py-1 text-[12px] text-muted hover:border-ink hover:text-ink disabled:opacity-50">
+            className="rounded-[var(--radius)] border border-hairline-token px-3 py-1 text-[12px] text-text-meta hover:border-[color:var(--color-text-primary)] hover:text-text-primary disabled:opacity-50">
             {t(`preset.${p.key}`)}
           </button>
         ))}
@@ -55,7 +55,7 @@ function BoxGrid({ value, onChange, disabled }: { value: string[]; onChange: (g:
               aria-pressed={on}
               className={cx(
                 "rounded-[var(--radius)] px-3 py-1 text-[12px] transition",
-                on ? "bg-ink text-bone" : "border border-hairline text-muted hover:border-ink hover:text-ink",
+                on ? "bg-surface-chrome text-bone" : "border border-hairline-token text-text-meta hover:border-[color:var(--color-text-primary)] hover:text-text-primary",
                 locked ? "cursor-default" : "cursor-pointer",
               )}>
               {t(`box.${k}`)}
@@ -69,12 +69,12 @@ function BoxGrid({ value, onChange, disabled }: { value: string[]; onChange: (g:
 
 function BoxChips({ grants }: { grants: string[] }) {
   const t = useTranslations("team");
-  if (grants.includes("admin")) return <span className="rounded-[var(--radius)] bg-ink px-2.5 py-0.5 text-[11.5px] text-bone">{t("box.admin")}</span>;
-  if (grants.length === 0) return <span className="text-[12px] text-muted">{t("noBoxes")}</span>;
+  if (grants.includes("admin")) return <span className="rounded-[var(--radius)] bg-surface-chrome px-2.5 py-0.5 text-[11.5px] text-bone">{t("box.admin")}</span>;
+  if (grants.length === 0) return <span className="text-[12px] text-text-meta">{t("noBoxes")}</span>;
   return (
     <span className="flex flex-wrap gap-1">
       {CLEARANCE_BOXES.filter((k) => grants.includes(k)).map((k) => (
-        <span key={k} className="rounded-[var(--radius)] bg-bone px-2.5 py-0.5 text-[11.5px] text-ink">{t(`box.${k}`)}</span>
+        <span key={k} className="rounded-[var(--radius)] bg-surface-card px-2.5 py-0.5 text-[11.5px] text-text-primary">{t(`box.${k}`)}</span>
       ))}
     </span>
   );
@@ -110,8 +110,8 @@ function MemberRow({ member, isAdmin }: { member: RosterMember; isAdmin: boolean
       <div className="flex items-center gap-3 py-3">
         <Monogram initials={nameInitials(member.name)} size={40} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[14px] font-medium text-ink">{member.name}{member.title ? <span className="ml-2 font-accent text-[13px] italic text-muted">{member.title}</span> : null}</p>
-          <p className="truncate text-[12.5px] text-muted">{member.email}</p>
+          <p className="truncate text-[14px] font-medium text-text-primary">{member.name}{member.title ? <span className="ml-2 font-accent text-[13px] italic text-text-meta">{member.title}</span> : null}</p>
+          <p className="truncate text-[12.5px] text-text-meta">{member.email}</p>
         </div>
         <div className="hidden md:block"><BoxChips grants={member.grants} /></div>
         {isAdmin ? (
@@ -122,16 +122,16 @@ function MemberRow({ member, isAdmin }: { member: RosterMember; isAdmin: boolean
       </div>
       <div className="pb-3 md:hidden"><BoxChips grants={member.grants} /></div>
       {editing && isAdmin ? (
-        <div className="mb-3 flex flex-col gap-3 rounded-[var(--radius)] bg-bone/60 p-4">
+        <div className="mb-3 flex flex-col gap-3 rounded-[var(--radius)] bg-surface-card/60 p-4">
           <label className="flex flex-col gap-1.5">
-            <span className="text-[12px] text-muted">{t("titleLabel")}</span>
+            <span className="text-[12px] text-text-meta">{t("titleLabel")}</span>
             <input className={INPUT} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("titlePlaceholder")} />
           </label>
           <BoxGrid value={grants} onChange={setGrants} disabled={pending} />
-          {err ? <p className="text-[13px] text-wine">{err}</p> : null}
+          {err ? <p className="text-[13px] text-[color:var(--color-text-danger)]">{err}</p> : null}
           <div className="flex items-center gap-2">
             <Button onClick={save} disabled={pending}>{t("saveClearances")}</Button>
-            <Button variant="ghost" onClick={remove} disabled={pending} className="text-wine">{t("removeMember")}</Button>
+            <Button variant="ghost" onClick={remove} disabled={pending} className="text-[color:var(--color-text-danger)]">{t("removeMember")}</Button>
           </div>
         </div>
       ) : null}
@@ -167,16 +167,16 @@ function InviteForm() {
       <div className="mt-4 flex flex-col gap-3">
         <div className="grid gap-3 md:grid-cols-2">
           <label className="flex flex-col gap-1.5">
-            <span className="text-[12px] text-muted">{t("emailLabel")}</span>
+            <span className="text-[12px] text-text-meta">{t("emailLabel")}</span>
             <input className={INPUT} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@studio.com" />
           </label>
           <label className="flex flex-col gap-1.5">
-            <span className="text-[12px] text-muted">{t("titleLabel")}</span>
+            <span className="text-[12px] text-text-meta">{t("titleLabel")}</span>
             <input className={INPUT} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("titlePlaceholder")} />
           </label>
         </div>
         <BoxGrid value={grants} onChange={setGrants} disabled={pending} />
-        {err ? <p className="text-[13px] text-wine">{err}</p> : null}
+        {err ? <p className="text-[13px] text-[color:var(--color-text-danger)]">{err}</p> : null}
         <div>
           <Button onClick={submit} disabled={pending || !email.trim()}>{t("sendInvite")}</Button>
         </div>
@@ -207,13 +207,13 @@ function PendingList({ pending, locale }: { pending: PendingInvite[]; locale: st
             <Button variant="ghost" className="text-[12px]" onClick={() => { navigator.clipboard.writeText(linkFor(inv.token)); setCopiedId(inv.id); }}>
               {copiedId === inv.id ? t("copied") : t("copyLink")}
             </Button>
-            <Button variant="ghost" className="text-[12px] text-wine" disabled={busy}
+            <Button variant="ghost" className="text-[12px] text-[color:var(--color-text-danger)]" disabled={busy}
               onClick={() => { setErr(null); start(async () => { const r = await revokeInvite(inv.id); if (r.ok) router.refresh(); else setErr(formaErrorMessage(r, te)); }); }}>
               {t("revoke")}
             </Button>
           </Row>
         ))}
-        {err ? <p className="mt-2 text-[13px] text-wine">{err}</p> : null}
+        {err ? <p className="mt-2 text-[13px] text-[color:var(--color-text-danger)]">{err}</p> : null}
       </div>
     </Card>
   );
@@ -226,21 +226,21 @@ function SeatPanel({ accounts, conciergeSeats }: { accounts: number; conciergeSe
     <Card>
       <SectionTitle title={t("seatTitle")} accent={t("seatHint")} />
       <div className="mt-4 flex flex-col gap-2 text-[14px]">
-        <div className="flex items-center justify-between"><span className="text-muted">{t("lineAdmin")}</span><span className="text-ink">{money(PRICE_ADMIN)}</span></div>
+        <div className="flex items-center justify-between"><span className="text-text-meta">{t("lineAdmin")}</span><span className="text-text-primary">{money(PRICE_ADMIN)}</span></div>
         {bill.additional > 0 ? (
-          <div className="flex items-center justify-between"><span className="text-muted">{t("lineAdditional", { count: bill.additional, price: money(PRICE_ADDITIONAL) })}</span><span className="text-ink">{money(PRICE_ADDITIONAL * bill.additional)}</span></div>
+          <div className="flex items-center justify-between"><span className="text-text-meta">{t("lineAdditional", { count: bill.additional, price: money(PRICE_ADDITIONAL) })}</span><span className="text-text-primary">{money(PRICE_ADDITIONAL * bill.additional)}</span></div>
         ) : null}
         {bill.conciergeSeats > 0 ? (
-          <div className="flex items-center justify-between"><span className="text-muted">{t("lineConcierge", { count: bill.conciergeSeats, price: money(PRICE_CONCIERGE) })}</span><span className="text-ink">{money(PRICE_CONCIERGE * bill.conciergeSeats)}</span></div>
+          <div className="flex items-center justify-between"><span className="text-text-meta">{t("lineConcierge", { count: bill.conciergeSeats, price: money(PRICE_CONCIERGE) })}</span><span className="text-text-primary">{money(PRICE_CONCIERGE * bill.conciergeSeats)}</span></div>
         ) : null}
         <div className="mt-1 flex items-center justify-between [box-shadow:inset_0_1px_0_var(--color-hairline)] pt-3">
-          <span className="font-medium text-ink">{t("lineTotal")}</span>
-          <span className="font-display text-[20px] text-ink">{money(bill.total)}<span className="text-[13px] text-muted">{t("perMonth")}</span></span>
+          <span className="font-medium text-text-primary">{t("lineTotal")}</span>
+          <span className="font-display text-[20px] text-text-primary">{money(bill.total)}<span className="text-[13px] text-text-meta">{t("perMonth")}</span></span>
         </div>
       </div>
-      <p className="mt-4 font-accent text-[13px] italic text-muted">{t("billingNote")}</p>
+      <p className="mt-4 font-accent text-[13px] italic text-text-meta">{t("billingNote")}</p>
       {/* §F period-boundary reconciliation: seat changes here never write to Stripe mid-cycle. */}
-      <p className="mt-1 text-[11.5px] text-muted">{t("nextPeriodNote")}</p>
+      <p className="mt-1 text-[11.5px] text-text-meta">{t("nextPeriodNote")}</p>
     </Card>
   );
 }
@@ -262,31 +262,31 @@ function ConciergeSettings({ roster, concierge, isAdmin }: { roster: RosterMembe
       <div className="mt-4 flex flex-col gap-5">
         <div>
           <div className="mb-1 flex items-center justify-between text-[13px]">
-            <span className="text-muted">{t("usageLabel")}</span>
-            <span className="text-ink">{concierge.used.toLocaleString("en-US")} / {concierge.cap.toLocaleString("en-US")} {t("tokens")}</span>
+            <span className="text-text-meta">{t("usageLabel")}</span>
+            <span className="text-text-primary">{concierge.used.toLocaleString("en-US")} / {concierge.cap.toLocaleString("en-US")} {t("tokens")}</span>
           </div>
-          <div className="h-2 overflow-hidden rounded-[var(--radius)] bg-bone"><div className="h-full rounded-[var(--radius)] bg-ink" style={{ width: `${pct}%` }} /></div>
+          <div className="h-2 overflow-hidden rounded-[var(--radius)] bg-surface-card"><div className="h-full rounded-[var(--radius)] bg-surface-chrome" style={{ width: `${pct}%` }} /></div>
         </div>
         {isAdmin ? (
           <div className="flex flex-col gap-1.5">
-            <span className="text-[12px] text-muted">{t("capLabel")}</span>
+            <span className="text-[12px] text-text-meta">{t("capLabel")}</span>
             <div className="flex items-center gap-2">
               <input className={cx(INPUT, "max-w-[220px]")} inputMode="numeric" value={cap} onChange={(e) => setCap(e.target.value.replace(/[^0-9]/g, ""))} />
               <Button disabled={pending} onClick={() => { setErr(null); setSaved(false); start(async () => { const r = await setConciergeCap(Number(cap || "0")); if (r.ok) { setSaved(true); router.refresh(); } else setErr(formaErrorMessage(r, te)); }); }}>
                 {saved ? t("saved") : t("saveCap")}
               </Button>
             </div>
-            {err ? <p className="text-[13px] text-wine">{err}</p> : null}
+            {err ? <p className="text-[13px] text-[color:var(--color-text-danger)]">{err}</p> : null}
           </div>
         ) : null}
         <div>
-          <p className="mb-2 text-[12px] text-muted">{t("whoConcierge")}</p>
+          <p className="mb-2 text-[12px] text-text-meta">{t("whoConcierge")}</p>
           {withConcierge.length === 0 ? (
-            <p className="text-[13px] text-muted">{t("noneConcierge")}</p>
+            <p className="text-[13px] text-text-meta">{t("noneConcierge")}</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {withConcierge.map((m) => (
-                <span key={m.userId} className="flex items-center gap-2 rounded-[var(--radius)] bg-bone px-3 py-1 text-[12.5px] text-ink">
+                <span key={m.userId} className="flex items-center gap-2 rounded-[var(--radius)] bg-surface-card px-3 py-1 text-[12.5px] text-text-primary">
                   <Monogram initials={nameInitials(m.name)} size={20} />{m.name}
                 </span>
               ))}

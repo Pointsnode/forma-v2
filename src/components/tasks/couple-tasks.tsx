@@ -29,14 +29,14 @@ export function CoupleTasks({ tasks: tasks0 }: { tasks: CoupleTask[] }) {
       <SectionTitle title={t("yourTasks")} accent={t("yourTasksHint")} />
       <Card>
         {open.length === 0 ? (
-          <p className="py-3 text-center font-accent text-[15px] text-muted">{t("yourTasksEmpty")}</p>
+          <p className="py-3 text-center font-accent text-[15px] text-text-meta">{t("yourTasksEmpty")}</p>
         ) : open.map((task) => (
           <Row key={task.id}>
             <button onClick={() => done(task.id)} disabled={pending}
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[var(--radius)] border border-hairline text-[11px] text-muted hover:border-teal hover:text-teal"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[var(--radius)] border border-hairline-token text-[11px] text-text-meta hover:border-teal hover:text-teal"
               title={t("markDone")}>{""}</button>
             <RowMain title={<span className="flex items-center gap-1.5">{task.flagged ? <span aria-hidden className="h-2.5 w-2.5 rounded-[var(--radius)] bg-wine" title={t("flagged")} /> : null}{task.title}</span>} detail={task.note || (task.due_date ? t("dueOn", { date: task.due_date }) : undefined)} />
-            {task.due_date ? <span className="shrink-0 text-[11.5px] text-muted">{task.due_date.slice(5)}</span> : null}
+            {task.due_date ? <span className="shrink-0 text-[11.5px] text-text-meta">{task.due_date.slice(5)}</span> : null}
           </Row>
         ))}
       </Card>

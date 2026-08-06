@@ -49,7 +49,7 @@ export default async function TasksPage({ params }: { params: Promise<{ locale: 
           const moves = nextMoves.get(w.id) ?? [];
           if (w.phase === "closed" || moves.length === 0) return null;
           return (
-            <div key={w.id} className="flex flex-col overflow-hidden rounded-[var(--radius)] bg-bone">
+            <div key={w.id} className="flex flex-col overflow-hidden rounded-[var(--radius)] bg-surface-card">
               <div className="flex h-16 items-end justify-between p-3 text-[rgba(255,253,249,0.95)]" style={{ background: heroToneAt(i) }}>
                 <BentoBig size={16}>{w.couple_display}</BentoBig>
                 <span className="font-accent text-[13px] italic">{days != null ? (days >= 0 ? `${days} ${tw("days")}` : tw("daysAgo", { count: -days })) : ""}</span>
@@ -58,7 +58,7 @@ export default async function TasksPage({ params }: { params: Promise<{ locale: 
                 {moves.map((m) => (
                   <div key={m.key} className="flex items-start gap-2 py-1.5 not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)]">
                     <Check ok={false} />
-                    <div className="min-w-0"><p className="text-[13px] font-medium text-ink">{m.title}</p>{m.detail ? <p className="text-[11.5px] text-muted">{m.detail}</p> : null}</div>
+                    <div className="min-w-0"><p className="text-[13px] font-medium text-text-primary">{m.title}</p>{m.detail ? <p className="text-[11.5px] text-text-meta">{m.detail}</p> : null}</div>
                   </div>
                 ))}
               </div>

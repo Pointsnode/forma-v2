@@ -1561,7 +1561,12 @@
     "subStartHint": "Avvia l'abbonamento per far partire la fatturazione.",
     "managePlanBtn": "Gestisci l'abbonamento",
     "startSubscription": "Avvia l'abbonamento",
-    "subErr": "Impossibile raggiungere Stripe, riprova."
+    "subErr": "Impossibile raggiungere Stripe, riprova.",
+    "appearance": "Aspetto",
+    "appearanceHint": "Bone è il registro della casa. Automatico segue il tuo dispositivo; Night è il registro scuro.",
+    "appearance_default": "Automatico",
+    "appearance_bone": "Bone",
+    "appearance_night": "Night"
   },
   "design": {
     "guides": "Guide di stile",

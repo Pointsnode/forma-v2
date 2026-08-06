@@ -21,11 +21,11 @@ function EngagementCard({ e, weddingId }: { e: EngagementVM; weddingId: string }
   const tv = useTranslations("vendors");
   return (
     <Link href={`/wedding/${weddingId}/vendors/${e.id}`} className="block">
-      <div className="rounded-[var(--radius)] bg-bone p-4 transition-shadow">
+      <div className="rounded-[var(--radius)] bg-surface-card p-4 transition-shadow">
         <div className="flex items-start gap-2">
           <div className="min-w-0 flex-1">
-            <p className="font-display text-[16px] text-ink">{e.vendorName}</p>
-            <p className="font-accent text-[13px] text-muted">{tv(kindKey(e.vendorKind))}{e.eventLabels.length ? ` · ${e.eventLabels.join(", ")}` : ""}{e.estimate ? ` · ${e.estimate}` : ""}</p>
+            <p className="font-display text-[16px] text-text-primary">{e.vendorName}</p>
+            <p className="font-accent text-[13px] text-text-meta">{tv(kindKey(e.vendorKind))}{e.eventLabels.length ? ` · ${e.eventLabels.join(", ")}` : ""}{e.estimate ? ` · ${e.estimate}` : ""}</p>
             {e.quote ? <p className="mt-0.5 text-[12.5px] text-taupe">{t("latestQuote")}: {e.quote.amount ?? "·"}{e.quote.validUntil ? ` · ${e.quote.validUntil}` : ""}{e.quote.expired ? ` · ${t("validPast")}` : ""}</p> : null}
           </div>
           <Pill tone={e.status === "booked" ? "sage" : e.status === "declined" ? "wine" : "sand"}>{t(statusKey(e.status))}</Pill>
@@ -46,21 +46,21 @@ export function EngagementLanes({ engagements, weddingId }: { engagements: Engag
   const t = useTranslations("engagement");
   const [showClosed, setShowClosed] = useState(false);
   const closed = engagements.filter((e) => ["declined", "archived"].includes(e.status));
-  if (engagements.length === 0) return <p className="py-4 text-center font-accent text-[16px] text-muted">{t("noEngagements")}</p>;
+  if (engagements.length === 0) return <p className="py-4 text-center font-accent text-[16px] text-text-meta">{t("noEngagements")}</p>;
   return (
     <div className="flex flex-col gap-5">
       {LANES.map((lane) => {
         const items = engagements.filter((e) => lane.statuses.includes(e.status));
         return items.length ? (
           <section key={lane.key} className="flex flex-col gap-2">
-            <p className={cx("text-[11px] font-medium uppercase tracking-[0.16em] text-muted")}>{t(lane.key)}</p>
+            <p className={cx("text-[11px] font-medium uppercase tracking-[0.16em] text-text-meta")}>{t(lane.key)}</p>
             {items.map((e) => <EngagementCard key={e.id} e={e} weddingId={weddingId} />)}
           </section>
         ) : null;
       })}
       {closed.length ? (
         <div>
-          <button onClick={() => setShowClosed((v) => !v)} className="text-[12.5px] text-muted hover:text-ink">{t("laneClosed")} ({closed.length})</button>
+          <button onClick={() => setShowClosed((v) => !v)} className="text-[12.5px] text-text-meta hover:text-text-primary">{t("laneClosed")} ({closed.length})</button>
           {showClosed ? <div className="mt-2 flex flex-col gap-2">{closed.map((e) => <EngagementCard key={e.id} e={e} weddingId={weddingId} />)}</div> : null}
         </div>
       ) : null}

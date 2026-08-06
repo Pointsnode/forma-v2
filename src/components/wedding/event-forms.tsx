@@ -8,39 +8,39 @@ import { addEvent, updateEvent, deleteEvent, type EventState } from "@/app/[loca
 import { formatTime, type EventKind, type EventRow } from "@/lib/wedding";
 
 const KINDS: EventKind[] = ["ceremony", "reception", "dinner", "party", "ritual", "other"];
-const inputCls = "rounded-[var(--radius)] bg-bone px-3 py-2 text-[14px] text-ink outline-none";
+const inputCls = "rounded-[var(--radius)] bg-surface-card px-3 py-2 text-[14px] text-text-primary outline-none";
 
 function Fields({ e, t, defaultOrderIndex = 0 }: { e?: EventRow; t: (k: string) => string; defaultOrderIndex?: number }) {
   return (
     <div className="grid grid-cols-2 gap-3">
       <label className="col-span-2 flex flex-col gap-1">
-        <span className="text-[12px] text-muted">{t("label")}</span>
+        <span className="text-[12px] text-text-meta">{t("label")}</span>
         <input name="label" required maxLength={120} defaultValue={e?.label ?? ""} className={inputCls} />
       </label>
       <label className="flex flex-col gap-1">
-        <span className="text-[12px] text-muted">{t("kind")}</span>
+        <span className="text-[12px] text-text-meta">{t("kind")}</span>
         <select name="kind" defaultValue={e?.kind ?? "other"} className={inputCls}>
           {KINDS.map((k) => <option key={k} value={k}>{t(`kinds.${k}`)}</option>)}
         </select>
       </label>
       <label className="flex flex-col gap-1">
-        <span className="text-[12px] text-muted">{t("date")}</span>
+        <span className="text-[12px] text-text-meta">{t("date")}</span>
         <input type="date" name="event_date" defaultValue={e?.event_date ?? ""} className={inputCls} />
       </label>
       <label className="flex flex-col gap-1">
-        <span className="text-[12px] text-muted">{t("startTime")}</span>
+        <span className="text-[12px] text-text-meta">{t("startTime")}</span>
         <input type="time" name="start_time" defaultValue={e?.start_time?.slice(0, 5) ?? ""} className={inputCls} />
       </label>
       <label className="flex flex-col gap-1">
-        <span className="text-[12px] text-muted">{t("endTime")}</span>
+        <span className="text-[12px] text-text-meta">{t("endTime")}</span>
         <input type="time" name="end_time" defaultValue={e?.end_time?.slice(0, 5) ?? ""} className={inputCls} />
       </label>
       <label className="flex flex-col gap-1">
-        <span className="text-[12px] text-muted">{t("guestTarget")}</span>
+        <span className="text-[12px] text-text-meta">{t("guestTarget")}</span>
         <input name="guest_target" inputMode="numeric" defaultValue={e?.guest_target ?? ""} className={inputCls} />
       </label>
       <label className="flex flex-col gap-1">
-        <span className="text-[12px] text-muted">{t("orderIndex")}</span>
+        <span className="text-[12px] text-text-meta">{t("orderIndex")}</span>
         <input name="order_index" inputMode="numeric" defaultValue={e?.order_index ?? defaultOrderIndex} className={inputCls} />
       </label>
     </div>
@@ -55,10 +55,10 @@ export function AddEventForm({ weddingId, nextOrderIndex = 0 }: { weddingId: str
 
   if (!open) return <Button variant="ghost" onClick={() => setOpen(true)}>+ {t("add")}</Button>;
   return (
-    <form action={action} className="flex flex-col gap-3 rounded-[var(--radius)] bg-bone p-4">
-      <p className="font-display text-[16px] text-ink">{t("addTitle")}</p>
+    <form action={action} className="flex flex-col gap-3 rounded-[var(--radius)] bg-surface-card p-4">
+      <p className="font-display text-[16px] text-text-primary">{t("addTitle")}</p>
       <Fields t={t} defaultOrderIndex={nextOrderIndex} />
-      {state?.error ? <p className="text-[13px] text-wine">{t("error")}</p> : null}
+      {state?.error ? <p className="text-[13px] text-[color:var(--color-text-danger)]">{t("error")}</p> : null}
       <div className="flex gap-2">
         <Button type="submit" disabled={pending}>{t("save")}</Button>
         <Button type="button" variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
@@ -100,18 +100,18 @@ export function EventEditor({
 
   const times = [formatTime(event.start_time, locale), formatTime(event.end_time, locale)].filter(Boolean).join(" – ");
   const label = linkToPage && multi ? (
-    <Link href={`/wedding/${weddingId}/event/${event.id}`} className="font-display text-[16px] text-ink hover:text-taupe">
+    <Link href={`/wedding/${weddingId}/event/${event.id}`} className="font-display text-[16px] text-text-primary hover:text-taupe">
       {event.label}
     </Link>
   ) : (
-    <span className="font-display text-[16px] text-ink">{event.label}</span>
+    <span className="font-display text-[16px] text-text-primary">{event.label}</span>
   );
 
   if (editing) {
     return (
-      <form action={action} className="flex flex-col gap-3 rounded-[var(--radius)] bg-bone p-4">
+      <form action={action} className="flex flex-col gap-3 rounded-[var(--radius)] bg-surface-card p-4">
         <Fields e={event} t={t} />
-        {state?.error ? <p className="text-[13px] text-wine">{t("error")}</p> : null}
+        {state?.error ? <p className="text-[13px] text-[color:var(--color-text-danger)]">{t("error")}</p> : null}
         <div className="flex gap-2">
           <Button type="submit" disabled={pending}>{t("save")}</Button>
           <Button type="button" variant="ghost" onClick={() => setEditing(false)}>{t("cancel")}</Button>
@@ -127,16 +127,16 @@ export function EventEditor({
           {label}
           <Pill tone="sand">{t(`kinds.${event.kind}`)}</Pill>
         </div>
-        <p className="font-accent text-[14.5px] text-muted">
+        <p className="font-accent text-[14.5px] text-text-meta">
           {event.event_date ?? t("undated")}
           {times ? ` · ${times}` : ""}
           {event.guest_target ? ` · ${event.guest_target}` : ""}
         </p>
-        {err ? <p className="mt-1 text-[13px] text-wine">{err}</p> : null}
+        {err ? <p className="mt-1 text-[13px] text-[color:var(--color-text-danger)]">{err}</p> : null}
       </div>
       <div className="flex shrink-0 gap-1">
-        <button onClick={() => setEditing(true)} className="rounded-[var(--radius)] px-3 py-1 text-[13px] text-muted hover:text-ink">{t("edit")}</button>
-        <button onClick={onDelete} disabled={isPending} className={cx("rounded-[var(--radius)] px-3 py-1 text-[13px] hover:text-wine", isPending ? "text-muted" : "text-muted")}>{t("delete")}</button>
+        <button onClick={() => setEditing(true)} className="rounded-[var(--radius)] px-3 py-1 text-[13px] text-text-meta hover:text-text-primary">{t("edit")}</button>
+        <button onClick={onDelete} disabled={isPending} className={cx("rounded-[var(--radius)] px-3 py-1 text-[13px] hover:text-[color:var(--color-text-danger)]", isPending ? "text-text-meta" : "text-text-meta")}>{t("delete")}</button>
       </div>
     </div>
   );

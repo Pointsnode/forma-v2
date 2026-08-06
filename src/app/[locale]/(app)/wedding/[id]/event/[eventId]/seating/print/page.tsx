@@ -28,7 +28,7 @@ export default async function SeatingPrint({ params }: { params: Promise<{ local
   const escort = floor.tables.flatMap((tb) => tb.seats.map((s) => ({ ...s, tableName: tb.name }))).sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <div className="mx-auto max-w-[860px] bg-bone p-8 text-ink print:p-0">
+    <div data-theme="bone" className="mx-auto max-w-[860px] bg-bone p-8 text-ink print:p-0">
       <div className="mb-4 flex items-center justify-between print:hidden">
         <a href={`/wedding/${id}/event/${eventId}#seating`} className="text-[12.5px] text-muted hover:text-ink">← {t("backToEditor")}</a>
         <PrintButton />

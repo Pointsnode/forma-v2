@@ -29,7 +29,7 @@ export function AcceptTeamInvite({ token }: { token: string }) {
       >
         {t("joinAccept")}
       </Button>
-      {err ? <p className="text-[13px] text-wine">{err}</p> : null}
+      {err ? <p className="text-[13px] text-[color:var(--color-text-danger)]">{err}</p> : null}
     </div>
   );
 }

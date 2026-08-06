@@ -82,6 +82,22 @@ export async function setLocalePref(locale: string): Promise<Result> {
   return { ok: true };
 }
 
+// The Night appearance preference, mirroring setLocalePref: persist profiles.appearance and
+// write the `appearance` cookie (the no-flash path the (app) layout reads server-side). The
+// client refreshes after this resolves so the server re-renders with the new data-theme.
+const APPEARANCES = ["default", "bone", "night"] as const;
+export async function setAppearancePref(appearance: string): Promise<Result> {
+  if (!APPEARANCES.includes(appearance as (typeof APPEARANCES)[number])) return { error: "invalid" };
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) await supabase.from("profiles").update({ appearance }).eq("id", user.id);
+  const jar = await cookies();
+  jar.set("appearance", appearance, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
+  return { ok: true };
+}
+
 // ── §C account ─────────────────────────────────────────────────────────────────
 export async function saveDisplayName(name: string): Promise<Result> {
   const clean = z.string().trim().min(1).max(120).safeParse(name);

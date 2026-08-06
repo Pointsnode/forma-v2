@@ -8,7 +8,7 @@ import { createTask, type TaskInput } from "@/app/[locale]/(app)/wedding/[id]/ta
 type Opt = { id: string; name: string };
 type EventOpt = { id: string; label: string };
 export type PreLink = { kind: "proposal" | "contract" | "engagement" | "document"; id: string; label: string };
-const inputCls = "w-full rounded-[var(--radius)] bg-bone px-3.5 py-2.5 text-[14px] text-ink outline-none";
+const inputCls = "w-full rounded-[var(--radius)] bg-surface-card px-3.5 py-2.5 text-[14px] text-text-primary outline-none";
 
 // The "+ Task" quick-add. In the top bar it's the global creator; on an object card
 // it opens PRE-LINKED (§1E) — the subject link rides in as a removable chip, and the
@@ -66,7 +66,7 @@ export function QuickAddTask({ weddings, workspaceId, defaultWeddingId, defaultE
   }
 
   const trigger = variant === "inline"
-    ? <button onClick={() => setOpen(true)} className="text-[12px] text-wine hover:underline hover:underline-offset-2">+ {t("tab")}</button>
+    ? <button onClick={() => setOpen(true)} className="text-[12px] text-[color:var(--color-text-danger)] hover:underline hover:underline-offset-2">+ {t("tab")}</button>
     : <button onClick={() => setOpen(true)} className="rounded-[var(--radius)] border border-[rgba(247,244,238,0.25)] px-3 py-1.5 text-[12.5px] text-bone hover:bg-[rgba(247,244,238,0.1)]">+ {t("tab")}</button>;
 
   return (
@@ -75,28 +75,28 @@ export function QuickAddTask({ weddings, workspaceId, defaultWeddingId, defaultE
       {open ? (
         <div className="fixed inset-0 z-[95] flex items-center justify-center p-4">
           <button className="absolute inset-0 bg-[rgba(21,18,16,0.55)]" onClick={() => setOpen(false)} aria-label={t("close")} />
-          <div className="relative flex w-full max-w-[460px] flex-col gap-3 rounded-[var(--radius)] bg-bone p-6">
-            <p className="font-display text-[18px] text-ink">{t("newTask")}</p>
+          <div className="relative flex w-full max-w-[460px] flex-col gap-3 rounded-[var(--radius)] bg-surface-card p-6">
+            <p className="font-display text-[18px] text-text-primary">{t("newTask")}</p>
             {link ? (
-              <div className="flex items-center gap-2 rounded-[var(--radius)] bg-bone px-3 py-2">
-                <span className="text-[11px] uppercase tracking-[0.06em] text-muted">{t("linked")}</span>
-                <span className="min-w-0 flex-1 truncate text-[12.5px] text-ink">{link.label}</span>
-                <button onClick={() => setLink(null)} className="text-[12px] text-muted hover:text-wine" title={t("unlink")}>✕</button>
+              <div className="flex items-center gap-2 rounded-[var(--radius)] bg-surface-card px-3 py-2">
+                <span className="text-[11px] uppercase tracking-[0.06em] text-text-meta">{t("linked")}</span>
+                <span className="min-w-0 flex-1 truncate text-[12.5px] text-text-primary">{link.label}</span>
+                <button onClick={() => setLink(null)} className="text-[12px] text-text-meta hover:text-[color:var(--color-text-danger)]" title={t("unlink")}>✕</button>
               </div>
             ) : null}
-            <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("subject")}</span>
+            <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("subject")}</span>
               <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} className={inputCls} autoFocus /></label>
             <div className="grid grid-cols-2 gap-3">
               {lockedWedding ? null : (
-                <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("wedding")}</span>
+                <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("wedding")}</span>
                   <select value={weddingId} onChange={(e) => { setWeddingId(e.target.value); setEventId(""); }} className={inputCls}>
                     <option value="">{t("studioLevel")}</option>{weddings.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
                   </select></label>
               )}
-              <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("due")}</span>
+              <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("due")}</span>
                 <input type="date" value={due} onChange={(e) => setDue(e.target.value)} className={inputCls} /></label>
               {lockedWedding ? (
-                <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("assignee")}</span>
+                <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("assignee")}</span>
                   <select value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} className={inputCls}>
                     <option value="">{t("unassigned")}</option><option value="team">{t("assignTeam")}</option><option value="couple">{t("assignCouple")}</option><option value="vendor">{t("assignVendor")}</option>
                   </select></label>
@@ -104,12 +104,12 @@ export function QuickAddTask({ weddings, workspaceId, defaultWeddingId, defaultE
             </div>
             {!lockedWedding ? (
               <div className="grid grid-cols-2 gap-3">
-                <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("assignee")}</span>
+                <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("assignee")}</span>
                   <select value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} className={inputCls}>
                     <option value="">{t("unassigned")}</option><option value="team">{t("assignTeam")}</option>{weddingId ? <option value="couple">{t("assignCouple")}</option> : null}<option value="vendor">{t("assignVendor")}</option>
                   </select></label>
                 {weddingId && opts.events.length ? (
-                  <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("event")}</span>
+                  <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("event")}</span>
                     <select value={eventId} onChange={(e) => setEventId(e.target.value)} className={inputCls}>
                       <option value="">{t("noEvent")}</option>{opts.events.map((e) => <option key={e.id} value={e.id}>{e.label}</option>)}
                     </select></label>
@@ -117,19 +117,19 @@ export function QuickAddTask({ weddings, workspaceId, defaultWeddingId, defaultE
               </div>
             ) : null}
             {kind === "team" ? (
-              <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("teamMember")}</span>
+              <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("teamMember")}</span>
                 <select value={member} onChange={(e) => setMember(e.target.value)} className={inputCls}>{opts.members.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}</select></label>
             ) : null}
             {kind === "vendor" ? (
-              <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("vendor")}</span>
+              <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("vendor")}</span>
                 <select value={vendor} onChange={(e) => setVendor(e.target.value)} className={inputCls}>{opts.vendors.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}</select></label>
             ) : null}
-            <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("note")}</span>
+            <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("note")}</span>
               <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className={inputCls} /></label>
-            <label className="flex items-center gap-2 text-[13px] text-ink"><input type="checkbox" checked={flagged} onChange={(e) => setFlagged(e.target.checked)} /> <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[var(--radius)] bg-wine" />{t("markUrgent")}</span></label>
+            <label className="flex items-center gap-2 text-[13px] text-text-primary"><input type="checkbox" checked={flagged} onChange={(e) => setFlagged(e.target.checked)} /> <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[var(--radius)] bg-wine" />{t("markUrgent")}</span></label>
             <div className="flex gap-2">
-              <button onClick={save} disabled={busy || !title.trim()} className="rounded-[var(--radius)] bg-ink px-4 py-2 text-[13px] text-bone disabled:opacity-40">{t("save")}</button>
-              <button onClick={() => setOpen(false)} className="rounded-[var(--radius)] px-3 py-2 text-[13px] text-muted hover:text-ink">{t("cancel")}</button>
+              <button onClick={save} disabled={busy || !title.trim()} className="rounded-[var(--radius)] bg-surface-chrome px-4 py-2 text-[13px] text-bone disabled:opacity-40">{t("save")}</button>
+              <button onClick={() => setOpen(false)} className="rounded-[var(--radius)] px-3 py-2 text-[13px] text-text-meta hover:text-text-primary">{t("cancel")}</button>
             </div>
           </div>
         </div>

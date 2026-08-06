@@ -29,7 +29,7 @@ export function AcceptInvite({ token }: { token: string }) {
       <Button onClick={accept} disabled={pending} className="w-full">
         {pending ? t("accepting") : t("accept")}
       </Button>
-      {err ? <p className="text-[13.5px] text-wine">{err}</p> : null}
+      {err ? <p className="text-[13.5px] text-[color:var(--color-text-danger)]">{err}</p> : null}
     </div>
   );
 }

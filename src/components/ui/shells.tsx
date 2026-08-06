@@ -10,7 +10,7 @@ import { Monogram, Chip, DomainStar, Wordmark, type Domain } from "./primitives"
 // the catalogs ("Held with care") rather than "Held by {studio}".
 export function SignedFooter({ heldLabel }: { heldLabel: string }) {
   return (
-    <footer className="relative left-1/2 w-screen -translate-x-1/2 bg-ink px-6 py-12 text-center text-bone">
+    <footer className="relative left-1/2 w-screen -translate-x-1/2 bg-surface-chrome px-6 py-12 text-center text-bone">
       <div className="flex justify-center"><DomainStar fill="#D7C3A5" size={13} /></div>
       <div className="mt-2.5"><Wordmark size={19} className="!text-bone" /></div>
       <p className="mt-3 text-[10px] uppercase tracking-[0.2em] text-champagne">{heldLabel}</p>
@@ -22,13 +22,13 @@ export function SignedFooter({ heldLabel }: { heldLabel: string }) {
 // .rows): a bone card, a starred head (the domain star marks what it is; the body stays
 // bone), and hairline-divided rows. The row grid is caller-set via `cols`. ──
 export function Panel({ children, className, id }: { children: ReactNode; className?: string; id?: string }) {
-  return <div id={id} className={cx("overflow-hidden rounded-[var(--radius)] border border-hairline bg-bone", className)}>{children}</div>;
+  return <div id={id} className={cx("overflow-hidden rounded-[var(--radius)] border border-hairline-token bg-surface-card", className)}>{children}</div>;
 }
 export function PanelHead({ star, title, meta }: { star?: ReactNode; title: ReactNode; meta?: ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-hairline px-[18px] py-4">
-      <span className="flex items-center gap-2 font-display text-[18px] leading-none text-ink">{star}{title}</span>
-      {meta ? <span className="shrink-0 text-[11px] uppercase tracking-[0.14em] text-muted">{meta}</span> : null}
+    <div className="flex items-center justify-between gap-3 border-b border-hairline-token px-[18px] py-4">
+      <span className="flex items-center gap-2 font-display text-[18px] leading-none text-text-primary">{star}{title}</span>
+      {meta ? <span className="shrink-0 text-[11px] uppercase tracking-[0.14em] text-text-meta">{meta}</span> : null}
     </div>
   );
 }
@@ -37,7 +37,7 @@ export function PanelHead({ star, title, meta }: { star?: ReactNode; title: Reac
 // room follows below. One per page; secondary section headers stay bone (SectionTitle).
 export function StudioTitleBand({ kicker, title, accent, action, className }: { kicker?: ReactNode; title: ReactNode; accent?: ReactNode; action?: ReactNode; className?: string }) {
   return (
-    <section className={cx("relative left-1/2 -mt-8 mb-7 w-screen -translate-x-1/2 bg-ink text-bone", className)}>
+    <section className={cx("relative left-1/2 -mt-8 mb-7 w-screen -translate-x-1/2 bg-surface-chrome text-bone", className)}>
       <div className="mx-auto flex max-w-[1240px] items-end justify-between gap-4 px-8 py-7 md:px-10">
         <div>
           {kicker ? <p className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.24em] text-champagne">{kicker}</p> : null}
@@ -57,7 +57,7 @@ export function PanelRow({ children, href, cols, className }: { children: ReactN
   // between every row and none under the last, in both linked and unlinked lists.
   const inner = (
     <div style={cols ? { gridTemplateColumns: cols } : undefined}
-      className={cx("grid items-center gap-3.5 border-b border-hairline px-[18px] py-3 text-[13px]", !href && "last:border-b-0", className)}>
+      className={cx("grid items-center gap-3.5 border-b border-hairline-token px-[18px] py-3 text-[13px]", !href && "last:border-b-0", className)}>
       {children}
     </div>
   );
@@ -70,7 +70,7 @@ export function PanelRow({ children, href, cols, className }: { children: ReactN
 // tint the body, never two accents. money=teal, time=champagne (ink type), people=taupe. ──
 const STRIP: Record<Domain, { bg: string; on: string; star: string; border: string; meta: string }> = {
   money: { bg: "bg-teal", on: "text-bone", star: "#F5F2EB", border: "border-teal", meta: "text-bone/75" },
-  time: { bg: "bg-champagne", on: "text-ink", star: "#111111", border: "border-champagne", meta: "text-ink/60" },
+  time: { bg: "bg-champagne", on: "text-text-primary", star: "#111111", border: "border-champagne", meta: "text-text-primary/60" },
   people: { bg: "bg-taupe", on: "text-bone", star: "#F5F2EB", border: "border-taupe", meta: "text-bone/75" },
 };
 export function DomainHeadCard({ domain, title, meta, children, className, id }: {
@@ -105,7 +105,7 @@ export function HeroShell({
   facts?: ReactNode;
 }) {
   return (
-    <section className="bg-ink px-8 py-9 text-bone">
+    <section className="bg-surface-chrome px-8 py-9 text-bone">
       <div className="flex items-start gap-5">
         {monogram ? <Monogram initials={monogram} size={56} dark /> : null}
         <div className="min-w-0 flex-1">
@@ -121,7 +121,7 @@ export function HeroShell({
 /** Wedding-level nav bar shell — hairline underline, no container border. */
 export function WeddingNav({ items, className }: { items: ReactNode; className?: string }) {
   return (
-    <nav className={cx("flex items-center gap-7 pb-3 text-[14px] text-muted [box-shadow:inset_0_-1px_0_var(--color-hairline)]", className)}>
+    <nav className={cx("flex items-center gap-7 pb-3 text-[14px] text-text-meta [box-shadow:inset_0_-1px_0_var(--color-hairline-token)]", className)}>
       {items}
     </nav>
   );
@@ -133,7 +133,7 @@ export function EventBar({ chips, subnav }: { chips?: ReactNode; subnav?: ReactN
     <div className="flex flex-col gap-3">
       {chips ? <div className="flex items-center gap-2 overflow-x-auto">{chips}</div> : null}
       {subnav ? (
-        <nav className="flex items-center gap-6 pb-2 text-[13.5px] text-muted [box-shadow:inset_0_-1px_0_var(--color-hairline)]">
+        <nav className="flex items-center gap-6 pb-2 text-[13.5px] text-text-meta [box-shadow:inset_0_-1px_0_var(--color-hairline-token)]">
           {subnav}
         </nav>
       ) : null}

@@ -89,9 +89,9 @@ export default async function DesignTab({ params }: { params: Promise<{ locale: 
       <PaletteRow weddingId={id} wedding={wedgeSwatches} studio={studioSwatches} canManage={canEdit} canKeep={isStaff} />
 
       {boardErr ? (
-        <Card><p className="py-6 text-center font-accent text-[15px] text-wine">{t("uploadError")}</p></Card>
+        <Card><p className="py-6 text-center font-accent text-[15px] text-[color:var(--color-text-danger)]">{t("uploadError")}</p></Card>
       ) : boards.length === 0 ? (
-        <Card><p className="py-6 text-center font-accent text-[15px] text-muted">{t("noBoards")}</p></Card>
+        <Card><p className="py-6 text-center font-accent text-[15px] text-text-meta">{t("noBoards")}</p></Card>
       ) : (
         <div className="flex flex-col gap-5">
           {boards.map((b) => {
@@ -127,13 +127,13 @@ export default async function DesignTab({ params }: { params: Promise<{ locale: 
                     {b.design_items.map((it) => {
                       const url = urls.get(it.id);
                       return (
-                        <div key={it.id} className="overflow-hidden rounded-[var(--radius)] border border-hairline bg-bone">
+                        <div key={it.id} className="overflow-hidden rounded-[var(--radius)] border border-hairline-token bg-surface-card">
                           {url ? (
                             <CommentLightbox item={{ id: it.id, title: it.title, url }} comments={commentsByItem.get(it.id) ?? []} weddingId={id} />
-                          ) : <div className="h-24 bg-bone" />}
+                          ) : <div className="h-24 bg-surface-card" />}
                           <div className="p-2.5">
-                            <p className="font-display text-[14px] text-ink">{it.title}</p>
-                            {it.note ? <p className="text-[11.5px] text-muted">{it.note}</p> : null}
+                            <p className="font-display text-[14px] text-text-primary">{it.title}</p>
+                            {it.note ? <p className="text-[11.5px] text-text-meta">{it.note}</p> : null}
                             {url ? (
                               <div className="mt-1.5 flex items-center justify-between gap-2">
                                 <DrawSwatches weddingId={id} url={url} itemId={it.id} />

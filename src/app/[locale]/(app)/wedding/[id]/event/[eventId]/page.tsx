@@ -84,15 +84,15 @@ export default async function EventPage({
 
   return (
     <WeddingShell wedding={wedding} events={events} role={role} activeEventId={event.id} showNav={false}>
-      <nav className="mb-4 text-[12.5px] text-muted">
-        <Link href={`/wedding/${id}`} className="hover:text-ink hover:underline hover:underline-offset-2">{te("overview")}</Link>
+      <nav className="mb-4 text-[12.5px] text-text-meta">
+        <Link href={`/wedding/${id}`} className="hover:text-text-primary hover:underline hover:underline-offset-2">{te("overview")}</Link>
         <span className="mx-2 text-hairline">/</span>
-        <span className="font-display text-[15px] text-ink">{event.label}</span>
+        <span className="font-display text-[15px] text-text-primary">{event.label}</span>
       </nav>
       {/* event sub-nav (anchor-scroll) */}
-      <nav className="mb-5 flex gap-5 overflow-x-auto border-b border-hairline pb-2 text-[13px] text-muted">
+      <nav className="mb-5 flex gap-5 overflow-x-auto border-b border-hairline-token pb-2 text-[13px] text-text-meta">
         {[["venue", teng("venueSlice")], ["schedule", tops("schedule")], ["menus", tops("menus")], ["seating", tops("seating")], ["guests", tg("tab")], ["slice", te("slice")]].map(([anchor, label]) => (
-          <a key={anchor} href={`#${anchor}`} className="whitespace-nowrap hover:text-ink">{label}</a>
+          <a key={anchor} href={`#${anchor}`} className="whitespace-nowrap hover:text-text-primary">{label}</a>
         ))}
       </nav>
 
@@ -110,20 +110,20 @@ export default async function EventPage({
           <Heading className="mb-2 text-[18px]">{teng("venueSlice")}</Heading>
           {bookedVenue ? (
             <div>
-              <p className="font-display text-[16px] text-ink">{bookedVenue.v!.name}</p>
-              <p className="font-accent text-[14px] text-muted">{[bookedVenue.v!.contact_name, bookedVenue.v!.contact_email].filter(Boolean).join(" · ") || teng("bookedVenue")}</p>
+              <p className="font-display text-[16px] text-text-primary">{bookedVenue.v!.name}</p>
+              <p className="font-accent text-[14px] text-text-meta">{[bookedVenue.v!.contact_name, bookedVenue.v!.contact_email].filter(Boolean).join(" · ") || teng("bookedVenue")}</p>
             </div>
           ) : venues.length ? (
             <ul className="flex flex-col gap-1.5">
               {venues.map((r, i) => (
                 <li key={i} className="flex items-center justify-between text-[14px]">
-                  <span className="text-ink">{r.v!.name}</span>
-                  <span className="font-accent text-[13px] text-muted">{teng(`status${r.status.charAt(0).toUpperCase()}${r.status.slice(1)}`)}</span>
+                  <span className="text-text-primary">{r.v!.name}</span>
+                  <span className="font-accent text-[13px] text-text-meta">{teng(`status${r.status.charAt(0).toUpperCase()}${r.status.slice(1)}`)}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="font-accent text-[15px] text-muted">{teng("noVenueYet")}</p>
+            <p className="font-accent text-[15px] text-text-meta">{teng("noVenueYet")}</p>
           )}
         </Card>
 
@@ -144,9 +144,9 @@ export default async function EventPage({
               <Heading className="mb-2 text-[18px]">{te("slice")}</Heading>
               {budgetLines.map((l) => (
                 <div key={l.id} className="flex items-center gap-3 py-2 not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)]">
-                  <div className="min-w-0 flex-1"><p className="text-[13.5px] text-ink">{l.title}</p>{l.vendor ? <span className="mr-1 mt-[3px] inline-block rounded-[var(--radius)] bg-bone px-[9px] py-[2px] text-[10.5px] text-taupe">{l.vendor}</span> : null}</div>
-                  <span className="font-medium text-[13.5px] text-ink">{formatMoney(l.amount, lang)}</span>
-                  <span className="rounded-[var(--radius)] bg-bone px-2.5 py-[3px] text-[11px] text-taupe">{tm(`status_${l.status}`)}</span>
+                  <div className="min-w-0 flex-1"><p className="text-[13.5px] text-text-primary">{l.title}</p>{l.vendor ? <span className="mr-1 mt-[3px] inline-block rounded-[var(--radius)] bg-surface-card px-[9px] py-[2px] text-[10.5px] text-taupe">{l.vendor}</span> : null}</div>
+                  <span className="font-medium text-[13.5px] text-text-primary">{formatMoney(l.amount, lang)}</span>
+                  <span className="rounded-[var(--radius)] bg-surface-card px-2.5 py-[3px] text-[11px] text-taupe">{tm(`status_${l.status}`)}</span>
                 </div>
               ))}
             </Card>

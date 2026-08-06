@@ -31,9 +31,9 @@ export function MenuForm({ code, events }: { code: string; events: Ev[] }) {
   return (
     <div className="flex flex-col gap-4">
       {events.map((e) => (
-        <div key={e.event_id} className="rounded-[var(--radius)] bg-bone p-5">
+        <div key={e.event_id} className="rounded-[var(--radius)] bg-surface-card p-5">
           <div className="mb-2 flex items-baseline justify-between">
-            <p className="font-display text-[18px] text-ink">{e.label}</p>
+            <p className="font-display text-[18px] text-text-primary">{e.label}</p>
             {e.locked ? <span className="text-[12px] text-taupe">{t("locked")}</span> : null}
           </div>
           <div className="flex flex-col gap-2">
@@ -41,7 +41,7 @@ export function MenuForm({ code, events }: { code: string; events: Ev[] }) {
               const on = picks[e.event_id] === o.id;
               return (
                 <button key={o.id} type="button" disabled={e.locked} onClick={() => setPicks((p) => ({ ...p, [e.event_id]: on ? null : o.id }))}
-                  className={cx("flex items-center justify-between rounded-[var(--radius)] px-4 py-3 text-left text-[15px]", on ? "bg-teal text-bone" : "bg-bone text-ink", e.locked && "opacity-60")}>
+                  className={cx("flex items-center justify-between rounded-[var(--radius)] px-4 py-3 text-left text-[15px]", on ? "bg-teal text-bone" : "bg-surface-card text-text-primary", e.locked && "opacity-60")}>
                   <span>{o.label}</span>
                   {o.diet_tags.length ? <span className={cx("text-[12px]", on ? "text-champagne" : "text-taupe")}>{o.diet_tags.join(" · ")}</span> : null}
                 </button>
@@ -50,7 +50,7 @@ export function MenuForm({ code, events }: { code: string; events: Ev[] }) {
           </div>
         </div>
       ))}
-      {err ? <p className="text-[13px] text-wine">{err}</p> : null}
+      {err ? <p className="text-[13px] text-[color:var(--color-text-danger)]">{err}</p> : null}
       {openEvents.length ? <Button variant="primary" disabled={pending} onClick={submit}>{t("save")}</Button> : null}
     </div>
   );
@@ -58,9 +58,9 @@ export function MenuForm({ code, events }: { code: string; events: Ev[] }) {
 
 function Banner({ tone, title, body }: { tone?: "sage"; title: string; body: string }) {
   return (
-    <div className={cx("rounded-[var(--radius)] p-8 text-center", tone === "sage" ? "bg-bone text-teal" : "bg-bone")}>
-      <p className="font-display text-[22px] text-ink">{title}</p>
-      <p className="mt-1.5 font-accent text-[15px] text-muted">{body}</p>
+    <div className={cx("rounded-[var(--radius)] p-8 text-center", tone === "sage" ? "bg-surface-card text-teal" : "bg-surface-card")}>
+      <p className="font-display text-[22px] text-text-primary">{title}</p>
+      <p className="mt-1.5 font-accent text-[15px] text-text-meta">{body}</p>
     </div>
   );
 }

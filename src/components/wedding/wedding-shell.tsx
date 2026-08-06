@@ -104,8 +104,8 @@ export async function WeddingShell({
 
   return (
     <div>
-      {/* ── full-bleed ink masthead ─────────────────────────────────────────── */}
-      <div className="bg-ink text-bone">
+      {/* ── full-bleed chrome masthead (deepens under night) ─────────────────── */}
+      <div className="bg-surface-chrome text-bone">
         {role === "member" ? (
           // The couple invitation header (Edition One couple register): centered, bone star,
           // THE WEDDING OF, Playfair names, champagne meta. Real names/date/city; the days
@@ -172,7 +172,7 @@ export async function WeddingShell({
 
       {/* ── sticky wedding nav ──────────────────────────────────────────────── */}
       {showNav ? (
-        <div className="sticky top-[62px] z-40 bg-ink">
+        <div className="sticky top-[62px] z-40 bg-surface-chrome">
           <nav className="mx-auto flex max-w-[1240px] gap-7 overflow-x-auto px-8 md:px-10">
             {tabs.map((t) => (
               <Link
@@ -239,7 +239,7 @@ function Chip({
       href={href}
       className={cx(
         "flex shrink-0 flex-col rounded-[var(--radius)] border px-4 py-[7px] text-[12.5px] transition-colors",
-        active ? "border-transparent bg-bone text-ink" : "border-[rgba(245,242,235,0.16)] text-[rgba(245,242,235,0.65)] hover:text-bone",
+        active ? "border-transparent bg-surface-card text-text-primary" : "border-[rgba(245,242,235,0.16)] text-[rgba(245,242,235,0.65)] hover:text-bone",
       )}
     >
       <span>{children}</span>

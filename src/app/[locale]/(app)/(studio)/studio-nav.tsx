@@ -27,7 +27,7 @@ export function StudioNav() {
     { href: "/calendar", label: t("calendar") },
   ];
   return (
-    <nav className="sticky top-[62px] z-40 flex gap-7 overflow-x-auto bg-ink px-8 md:px-10">
+    <nav className="sticky top-[62px] z-40 flex gap-7 overflow-x-auto bg-surface-chrome px-8 md:px-10">
       {items.map((i) => {
         const active = i.href === "/" ? path === "/" : path.startsWith(i.href);
         return (

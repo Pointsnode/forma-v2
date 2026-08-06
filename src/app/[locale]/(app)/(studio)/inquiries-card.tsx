@@ -50,28 +50,28 @@ export function InquiriesCard({ inquiries }: { inquiries: InquiryItem[] }) {
       <div className="flex items-center justify-between">
         <Heading className="text-[19px]">{t("inquiries")}</Heading>
         {list.some((i) => i.isNew) ? (
-          <span className="rounded-[var(--radius)] bg-bone px-2.5 py-[3px] text-[11px] font-medium text-wine">{t("inquiriesNew", { count: list.filter((i) => i.isNew).length })}</span>
+          <span className="rounded-[var(--radius)] bg-surface-card px-2.5 py-[3px] text-[11px] font-medium text-[color:var(--color-text-danger)]">{t("inquiriesNew", { count: list.filter((i) => i.isNew).length })}</span>
         ) : null}
       </div>
-      <p className="mb-3 mt-0.5 text-[12.5px] text-muted">{t("inquiriesHint")}</p>
+      <p className="mb-3 mt-0.5 text-[12.5px] text-text-meta">{t("inquiriesHint")}</p>
       {list.length === 0 ? (
-        <p className="py-4 text-center font-accent text-[15px] text-muted">{t("inquiriesEmpty")}</p>
+        <p className="py-4 text-center font-accent text-[15px] text-text-meta">{t("inquiriesEmpty")}</p>
       ) : (
         list.map((inq) => (
           <button key={inq.id} onClick={() => { setErr(null); setOpen(inq); }} className="block w-full text-left">
-            <div className="-mx-2 flex items-center gap-3 rounded-[var(--radius)] px-2 py-2 hover:bg-bone">
+            <div className="-mx-2 flex items-center gap-3 rounded-[var(--radius)] px-2 py-2 hover:bg-surface-card">
               <Monogram initials={initials(inq)} size={28} />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[14px] font-medium text-ink">
+                <p className="truncate text-[14px] font-medium text-text-primary">
                   {inq.name}
-                  {inq.partnerName ? <span className="text-muted"> &amp; {inq.partnerName}</span> : null}
+                  {inq.partnerName ? <span className="text-text-meta"> &amp; {inq.partnerName}</span> : null}
                 </p>
-                <p className="truncate text-[12.5px] text-muted">{inq.message}</p>
+                <p className="truncate text-[12.5px] text-text-meta">{inq.message}</p>
               </div>
               <span
                 className={cx(
                   "shrink-0 rounded-[var(--radius)] px-2.5 py-[3px] text-[11px] font-medium",
-                  inq.isNew ? "bg-bone text-wine" : "bg-bone text-taupe",
+                  inq.isNew ? "bg-surface-card text-[color:var(--color-text-danger)]" : "bg-surface-card text-taupe",
                 )}
               >
                 {inq.isNew ? t("statusNew") : t("statusReplied")}
@@ -82,28 +82,28 @@ export function InquiriesCard({ inquiries }: { inquiries: InquiryItem[] }) {
       )}
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/30 p-0 sm:items-center sm:p-6" onClick={() => setOpen(null)}>
-          <div className="w-full max-w-md rounded-t-2xl bg-bone p-6 sm:rounded-[var(--radius)]" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-surface-chrome/30 p-0 sm:items-center sm:p-6" onClick={() => setOpen(null)}>
+          <div className="w-full max-w-md rounded-t-2xl bg-surface-card p-6 sm:rounded-[var(--radius)]" onClick={(e) => e.stopPropagation()}>
             <div className="mb-3 flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-display text-[22px] text-ink">
+                <h3 className="font-display text-[22px] text-text-primary">
                   {open.name}
                   {open.partnerName ? <span className="text-taupe"> &amp; {open.partnerName}</span> : null}
                 </h3>
-                <p className="mt-0.5 text-[12.5px] text-muted">
+                <p className="mt-0.5 text-[12.5px] text-text-meta">
                   {open.email}
                   {open.phone ? ` · ${open.phone}` : ""}
                   {open.weddingDate ? ` · ${open.weddingDate}` : ""}
                 </p>
               </div>
-              <button onClick={() => setOpen(null)} className="text-[18px] text-muted hover:text-ink" aria-label={t("close")}>×</button>
+              <button onClick={() => setOpen(null)} className="text-[18px] text-text-meta hover:text-text-primary" aria-label={t("close")}>×</button>
             </div>
-            <p className="mb-5 whitespace-pre-wrap rounded-[var(--radius)] bg-bone p-4 font-accent text-[16px] leading-relaxed text-ink-soft">{open.message}</p>
-            {err ? <p className="mb-3 text-[13px] text-wine">{err}</p> : null}
+            <p className="mb-5 whitespace-pre-wrap rounded-[var(--radius)] bg-surface-card p-4 font-accent text-[16px] leading-relaxed text-text-primary-soft">{open.message}</p>
+            {err ? <p className="mb-3 text-[13px] text-[color:var(--color-text-danger)]">{err}</p> : null}
             <div className="flex flex-wrap items-center gap-2.5">
               <Button onClick={() => convert(open)} disabled={pending}>{t("convert")}</Button>
               <Button variant="ghost" onClick={() => reply(open)} disabled={pending}>{t("reply")}</Button>
-              <button onClick={() => archive(open)} disabled={pending} className="ml-auto text-[13px] text-muted hover:text-wine disabled:opacity-50">
+              <button onClick={() => archive(open)} disabled={pending} className="ml-auto text-[13px] text-text-meta hover:text-[color:var(--color-text-danger)] disabled:opacity-50">
                 {t("archive")}
               </button>
             </div>

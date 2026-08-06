@@ -40,10 +40,10 @@ export default async function BudgetTab({ params }: { params: Promise<{ locale: 
   return (
     <WeddingShell wedding={wedding} events={events} role={role} active="budget">
       {/* Summary strip — teal (money) domain stars, committed teal bar, paid charcoal bar. */}
-      <div className="mb-6 grid gap-4 border-b border-hairline pb-6 sm:grid-cols-3">
+      <div className="mb-6 grid gap-4 border-b border-hairline-token pb-6 sm:grid-cols-3">
         <SummaryCol star label={tm("budget")} value={fmt(rollup.budget_total)} />
         <SummaryCol star label={tm("committed")} value={fmt(rollup.committed)} bar={{ pct: pct(committed), fill: "bg-teal" }} />
-        <SummaryCol star label={tm("paid")} value={fmt(rollup.paid)} bar={{ pct: pct(paid), fill: "bg-ink" }} />
+        <SummaryCol star label={tm("paid")} value={fmt(rollup.paid)} bar={{ pct: pct(paid), fill: "bg-surface-chrome" }} />
       </div>
 
       <div className="grid gap-[18px] lg:grid-cols-[1.6fr_1fr]">
@@ -55,7 +55,7 @@ export default async function BudgetTab({ params }: { params: Promise<{ locale: 
               meta={lines.length ? tm("lineCount", { count: lines.length }) : undefined}
             />
             {lines.length === 0 ? (
-              <p className="px-[18px] py-8 text-center font-accent text-[15px] text-muted">{tm("empty")}</p>
+              <p className="px-[18px] py-8 text-center font-accent text-[15px] text-text-meta">{tm("empty")}</p>
             ) : (
               <>
                 {lines.map((l) => {
@@ -63,13 +63,13 @@ export default async function BudgetTab({ params }: { params: Promise<{ locale: 
                   return (
                     <PanelRow key={l.id} cols="1fr auto auto auto">
                       <span className="min-w-0">
-                        <span className="text-ink">{l.title}</span>
+                        <span className="text-text-primary">{l.title}</span>
                         <span className="ml-2 inline-flex flex-wrap items-center gap-1.5 align-middle">
                           {traceFor(l).map((tr, i) => <Tag key={i}>{tr.kind === "quote" ? tm("traceQuote") : tr.label}</Tag>)}
                           {l.due_date ? <span className="text-[12px] text-taupe">· {formatDate(l.due_date, prefs)}</span> : null}
                         </span>
                       </span>
-                      <span className="whitespace-nowrap tabular-nums font-medium text-[13.5px] text-ink">{fmt(l.amount)}</span>
+                      <span className="whitespace-nowrap tabular-nums font-medium text-[13.5px] text-text-primary">{fmt(l.amount)}</span>
                       {od > 0
                         ? <Chip tone="urgent">{tm("overdue", { n: od })}</Chip>
                         : <Badge tone={STATUS_TONE[l.status] ?? "sand"}>{tm(`status_${l.status}`)}</Badge>}
@@ -80,7 +80,7 @@ export default async function BudgetTab({ params }: { params: Promise<{ locale: 
                   );
                 })}
                 {/* Charcoal total row — bone text + champagne delta ($X under / $X over). */}
-                <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3.5 bg-ink px-[18px] py-3 text-[13px] text-bone">
+                <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3.5 bg-surface-chrome px-[18px] py-3 text-[13px] text-bone">
                   <span className="font-medium">{tm("totalLabel")}</span>
                   <span className="whitespace-nowrap tabular-nums font-medium">{fmt(lineSum)}</span>
                   {budget > 0 ? (
@@ -105,12 +105,12 @@ export default async function BudgetTab({ params }: { params: Promise<{ locale: 
 
         {slices.length ? (
           <Card className="self-start">
-            <h3 className="mb-1 font-display text-[19px] text-ink">{tm("bySlice")}</h3>
-            <p className="mb-2 text-[12.5px] text-muted">{tm("bySliceHint")}</p>
+            <h3 className="mb-1 font-display text-[19px] text-text-primary">{tm("bySlice")}</h3>
+            <p className="mb-2 text-[12.5px] text-text-meta">{tm("bySliceHint")}</p>
             {slices.map((s) => (
               <Row key={s.event_id}>
                 <RowMain title={eventLabel.get(s.event_id) ?? te("undated")} />
-                <span className="font-medium text-[13.5px] text-ink">{fmt(s.total)}</span>
+                <span className="font-medium text-[13.5px] text-text-primary">{fmt(s.total)}</span>
               </Row>
             ))}
           </Card>
@@ -123,12 +123,12 @@ export default async function BudgetTab({ params }: { params: Promise<{ locale: 
 function SummaryCol({ label, value, bar }: { star?: boolean; label: string; value: string; bar?: { pct: number; fill: string } }) {
   return (
     <div>
-      <p className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.24em] text-muted">
+      <p className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.24em] text-text-meta">
         <DomainStar domain="money" size={10} />{label}
       </p>
-      <p className="mt-1 font-display text-[30px] leading-none text-ink tabular-nums">{value}</p>
+      <p className="mt-1 font-display text-[30px] leading-none text-text-primary tabular-nums">{value}</p>
       {bar ? (
-        <div className="mt-2.5 h-[3px] max-w-[220px] rounded-[2px] bg-hairline">
+        <div className="mt-2.5 h-[3px] max-w-[220px] rounded-[2px] bg-[color:var(--color-hairline-token)]">
           <div className={`h-[3px] rounded-[2px] ${bar.fill}`} style={{ width: `${bar.pct}%` }} />
         </div>
       ) : null}

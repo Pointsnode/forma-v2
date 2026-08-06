@@ -49,13 +49,35 @@ export default async function StyleguidePage({ params, searchParams }: { params:
   const { locale } = await params;
   const { theme } = await searchParams;
   setRequestLocale(locale);
+  // Three states, matching the Appearance preference: bone (default render, no attribute),
+  // night (the dark register), and default (follows the device via prefers-color-scheme).
+  const attr = theme === "night" ? "night" : theme === "default" ? "default" : undefined;
   const night = theme === "night";
+  const THEMES: { key: string; label: string }[] = [
+    { key: "bone", label: "Bone" },
+    { key: "default", label: "Default" },
+    { key: "night", label: "Night" },
+  ];
 
   return (
-    <main {...(night ? { "data-theme": "night" } : {})} className="min-h-screen bg-surface-page">
+    <main {...(attr ? { "data-theme": attr } : {})} className="min-h-screen bg-surface-page">
       <div className="mx-auto max-w-5xl px-6 py-12">
         <p className="font-display text-[30px] tracking-tight text-text-primary">Edition One</p>
-        <p className="mb-10 font-accent text-[18px] text-text-meta">One corner, one grammar{night ? " · Night register" : ""}. Append <span className="font-sans">?theme=night</span> to preview Night.</p>
+        <p className="mb-4 font-accent text-[18px] text-text-meta">One corner, one grammar{night ? " · Night register" : ""}. The three appearance states:</p>
+        <div className="mb-10 flex flex-wrap gap-2">
+          {THEMES.map((th) => {
+            const on = (th.key === "bone" && !attr) || th.key === attr;
+            return (
+              <a
+                key={th.key}
+                href={`?theme=${th.key}`}
+                className={`rounded-[var(--radius)] border px-4 py-1.5 text-[13px] ${on ? "border-transparent bg-surface-chrome text-bone" : "border-hairline-token bg-surface-card text-text-primary hover:bg-champagne"}`}
+              >
+                {th.label}
+              </a>
+            );
+          })}
+        </div>
 
         <div className="flex flex-col gap-12">
         {/* Top bar */}

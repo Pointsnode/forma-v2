@@ -33,12 +33,12 @@ export default async function BudgetPrint({ params }: { params: Promise<{ locale
   const delta = budget - lineSum;
 
   return (
-    <div className="min-h-screen bg-bone px-8 py-10 text-ink print:px-0 print:py-0">
+    <div data-theme="bone" className="min-h-screen bg-surface-card px-8 py-10 text-text-primary print:px-0 print:py-0">
       <div className="mx-auto max-w-[760px]">
         <div className="mb-6 flex items-start justify-between">
           <div>
             <p className="text-[10px] font-medium uppercase tracking-[0.24em] text-taupe">{tm("title")}</p>
-            <h1 className="mt-1 font-display text-[32px] leading-none text-ink">{wedding.couple_display}</h1>
+            <h1 className="mt-1 font-display text-[32px] leading-none text-text-primary">{wedding.couple_display}</h1>
             {range ? <p className="mt-1.5 font-accent text-[16px] italic text-taupe">{range}</p> : null}
           </div>
           <div className="flex flex-col items-end gap-3">
@@ -47,11 +47,11 @@ export default async function BudgetPrint({ params }: { params: Promise<{ locale
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 border-y border-hairline py-4">
+        <div className="grid grid-cols-3 gap-4 border-y border-hairline-token py-4">
           {([["budget", rollup.budget_total], ["committed", rollup.committed], ["paid", rollup.paid]] as const).map(([k, v]) => (
             <div key={k}>
-              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted">{tm(k)}</p>
-              <p className="mt-1 font-display text-[24px] leading-none text-ink tabular-nums">{fmt(v)}</p>
+              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-text-meta">{tm(k)}</p>
+              <p className="mt-1 font-display text-[24px] leading-none text-text-primary tabular-nums">{fmt(v)}</p>
             </div>
           ))}
         </div>
@@ -59,17 +59,17 @@ export default async function BudgetPrint({ params }: { params: Promise<{ locale
         <table className="mt-6 w-full text-[13px]">
           <tbody>
             {lines.map((l) => (
-              <tr key={l.id} className="border-b border-hairline">
+              <tr key={l.id} className="border-b border-hairline-token">
                 <td className="py-2.5 pr-4">
-                  <span className="text-ink">{l.title}</span>
+                  <span className="text-text-primary">{l.title}</span>
                   {(() => { const tr = traceFor(l)[0]; return tr ? <span className="ml-2 text-[12px] text-taupe">{tr.kind === "quote" ? tm("traceQuote") : tr.label}</span> : null; })()}
-                  {l.due_date ? <span className="ml-2 text-[12px] text-muted">· {formatDate(l.due_date, prefs)}</span> : null}
+                  {l.due_date ? <span className="ml-2 text-[12px] text-text-meta">· {formatDate(l.due_date, prefs)}</span> : null}
                 </td>
-                <td className="whitespace-nowrap py-2.5 text-right tabular-nums text-ink">{fmt(l.amount)}</td>
-                <td className="whitespace-nowrap py-2.5 pl-4 text-right text-[11px] uppercase tracking-[0.1em] text-muted">{tm(`status_${l.status}`)}</td>
+                <td className="whitespace-nowrap py-2.5 text-right tabular-nums text-text-primary">{fmt(l.amount)}</td>
+                <td className="whitespace-nowrap py-2.5 pl-4 text-right text-[11px] uppercase tracking-[0.1em] text-text-meta">{tm(`status_${l.status}`)}</td>
               </tr>
             ))}
-            <tr className="bg-ink text-bone">
+            <tr className="bg-surface-chrome text-bone">
               <td className="py-3 pl-3 font-medium">{tm("totalLabel")}</td>
               <td className="whitespace-nowrap py-3 text-right tabular-nums font-medium">{fmt(lineSum)}</td>
               <td className="whitespace-nowrap py-3 pr-3 text-right text-[11px] text-champagne">

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { cookies } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { currentWorkspace } from "@/lib/workspace";
@@ -31,13 +32,21 @@ export default async function AppLayout({
   let switcher: SwitcherWedding[] = [];
   let workspaceId: string | null = null;
   let concierge: { weddings: { id: string; name: string }[]; usage: { used: number; cap: number }; pending: number } | null = null;
+  // §3 Appearance resolution (signed-in surfaces only — public/marketing routes are NOT in
+  // this group, so they never receive the attribute and stay bone). The cookie is the
+  // no-flash path (written on save + seeded on sign-in, mirroring NEXT_LOCALE); the profile
+  // is the fallback. bone/null → no attribute (byte-for-byte today's render); night → the
+  // dark register; default → follow the device via the prefers-color-scheme block in globals.
+  let themeAttr: "night" | "default" | null = null;
 
   if (user) {
     const [{ data: prof }, wsId, { data: weds }] = await Promise.all([
-      supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle(),
+      supabase.from("profiles").select("display_name, appearance").eq("id", user.id).maybeSingle(),
       currentWorkspace(supabase),
       supabase.from("weddings").select("id, couple_display, phase, date_start").order("date_start", { ascending: true, nullsFirst: false }),
     ]);
+    const appearance = (await cookies()).get("appearance")?.value ?? (prof?.appearance as string | null) ?? null;
+    themeAttr = appearance === "night" ? "night" : appearance === "default" ? "default" : null;
     plannerName = (prof?.display_name as string | null) ?? user.email ?? "";
     monogram = plannerMonogram(plannerName);
     workspaceId = wsId;
@@ -63,7 +72,7 @@ export default async function AppLayout({
   }
 
   return (
-    <div>
+    <div {...(themeAttr ? { "data-theme": themeAttr } : {})} className={themeAttr ? "min-h-screen bg-surface-page text-text-primary" : undefined}>
       {user ? <TopBar workspaceName={workspaceName} weddings={switcher} monogram={monogram} workspaceId={workspaceId} /> : null}
       <main>{children}</main>
       {user && concierge && workspaceId ? (

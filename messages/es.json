@@ -1561,7 +1561,12 @@
     "subStartHint": "Inicia tu suscripción para comenzar la facturación.",
     "managePlanBtn": "Gestionar plan",
     "startSubscription": "Iniciar suscripción",
-    "subErr": "No se pudo conectar con Stripe, inténtalo de nuevo."
+    "subErr": "No se pudo conectar con Stripe, inténtalo de nuevo.",
+    "appearance": "Apariencia",
+    "appearanceHint": "Bone es el registro de la casa. Automático sigue tu dispositivo; Night es el registro oscuro.",
+    "appearance_default": "Automático",
+    "appearance_bone": "Bone",
+    "appearance_night": "Night"
   },
   "design": {
     "guides": "Guías de estilo",

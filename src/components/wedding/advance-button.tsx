@@ -17,7 +17,7 @@ export function AdvanceButton({ weddingId, label }: { weddingId: string; label: 
       <Button disabled={pending} onClick={() => { setErr(null); start(async () => { const r = await advancePhase(weddingId); if (r?.error) setErr(t("error")); }); }}>
         {label}
       </Button>
-      {err ? <p className="text-[13px] text-wine">{err}</p> : null}
+      {err ? <p className="text-[13px] text-[color:var(--color-text-danger)]">{err}</p> : null}
     </div>
   );
 }
