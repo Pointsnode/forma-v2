@@ -4,7 +4,7 @@ import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { RsvpForm } from "./rsvp-form";
 import { formatDateRange } from "@/lib/wedding";
-import { Wordmark, SignedFooter } from "@/components/ui";
+import { Wordmark, SignedFooter, DomainStar } from "@/components/ui";
 
 type LookupPayload = {
   guest: { full_name: string; plus_one_allowed: boolean; plus_one_name: string | null; dietary: string | null };
@@ -45,7 +45,8 @@ export default async function RsvpPage({
   }
   setRequestLocale(locale);
   const t = await getTranslations("rsvp");
-  const held = (await getTranslations("couple"))("held");
+  const tcp = await getTranslations("couple");
+  const held = tcp("held");
 
   if (error || !data) {
     return (
@@ -61,8 +62,10 @@ export default async function RsvpPage({
   return (
     <Shell held={held}>
       <div className="mb-6">
-        <Wordmark size={15} className="mb-1 block" />
-        <h1 className="font-display text-[30px] leading-tight text-ink">{payload.wedding.couple_display}</h1>
+        <Wordmark size={15} className="mb-3 block" />
+        <DomainStar fill="#111111" size={16} />
+        <p className="mt-1.5 text-[10px] uppercase tracking-[0.2em] text-taupe">{tcp("theWeddingOf")}</p>
+        <h1 className="mt-1 font-display text-[30px] leading-tight text-ink">{payload.wedding.couple_display}</h1>
         <p className="mt-1 font-accent text-[16px] text-taupe">
           {[range, payload.wedding.location_city].filter(Boolean).join(" · ")}
         </p>
