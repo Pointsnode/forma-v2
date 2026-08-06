@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { extractSwatches } from "@/lib/palette-extract.mjs";
+import { Chip } from "@/components/ui";
 import {
   addWeddingSwatch, removeWeddingSwatch, keepSwatchForStudio, pinGuide, updateGuide,
   addComment, editComment, deleteComment,
@@ -150,7 +151,7 @@ export function PinControl({ boardId, weddingId, categories, engagements, budget
 // The lightbox: an enlarged image + its per-image comment thread (planner + couple). A new
 // planner comment emails the couple (server-side). Edit/delete your own.
 export function CommentLightbox({ item, comments, weddingId }: {
-  item: { id: string; title: string; url: string }; comments: LightboxComment[]; weddingId: string;
+  item: { id: string; title: string; url: string; concept?: string }; comments: LightboxComment[]; weddingId: string;
 }) {
   const t = useTranslations("design");
   const [open, setOpen] = useState(false);
@@ -174,7 +175,10 @@ export function CommentLightbox({ item, comments, weddingId }: {
             </div>
             <div className="flex w-full flex-col md:w-[320px]">
               <div className="flex items-center justify-between border-b border-hairline-token px-4 py-3">
-                <p className="font-display text-[16px] text-text-primary">{item.title}</p>
+                <span className="flex items-center gap-2">
+                  <p className="font-display text-[16px] text-text-primary">{item.title}</p>
+                  {item.concept ? <Chip tone="pending">{item.concept}</Chip> : null}
+                </span>
                 <button onClick={() => setOpen(false)} aria-label={t("cancel")} className="text-[13px] text-text-meta hover:text-text-primary">✕</button>
               </div>
               <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3">

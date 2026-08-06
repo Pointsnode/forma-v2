@@ -9,8 +9,14 @@ import { AddBoard, AddItem } from "@/components/wedding/design-controls";
 import { PaletteRow, DrawSwatches, GuideCategory, SetCoverButton, PinControl, CommentLightbox, type LightboxComment } from "@/components/wedding/design-palette";
 import { intlTag } from "@/lib/intl";
 import { Card, Panel, PanelHead, Chip, Button, DomainStar, StudioTitleBand } from "@/components/ui";
+import { hasOpenAIKey, RENDERS_PER_WEDDING, RENDERS_PER_DAY } from "@/lib/render/scene";
+import { SetSceneButton } from "@/components/wedding/design-render-button";
 
-type Item = { id: string; title: string; note: string | null; storage_path: string | null; sort: number };
+// The gpt-image-2 render runs 15-60s; the "Set the scene" action posts to this route, so it
+// needs headroom above the platform default.
+export const maxDuration = 120;
+
+type Item = { id: string; title: string; note: string | null; storage_path: string | null; sort: number; origin: string | null };
 type Board = { id: string; title: string; category: string | null; cover_item_id: string | null; budget_category: string | null; engagement_id: string | null; design_items: Item[] };
 
 export default async function DesignTab({ params }: { params: Promise<{ locale: string; id: string }> }) {
@@ -32,7 +38,7 @@ export default async function DesignTab({ params }: { params: Promise<{ locale: 
   const [{ data: boardRows, error: boardErr }, { data: swatchRows }, { data: engRows }, { data: catRows }] = await Promise.all([
     // design_items!design_items_board_fk disambiguates the board→items relationship (the
     // cover_item_id FK adds a second design_boards↔design_items link).
-    supabase.from("design_boards").select("id, title, category, cover_item_id, budget_category, engagement_id, design_items!design_items_board_fk(id, title, note, storage_path, sort)").eq("wedding_id", id).order("sort"),
+    supabase.from("design_boards").select("id, title, category, cover_item_id, budget_category, engagement_id, design_items!design_items_board_fk(id, title, note, storage_path, sort, origin)").eq("wedding_id", id).order("sort"),
     supabase.from("design_palette_swatches").select("id, hex, name").eq("wedding_id", id).order("sort").order("created_at"),
     isStaff ? supabase.from("wedding_vendors").select("id, vendors(name)").eq("wedding_id", id) : Promise.resolve({ data: [] }),
     isStaff ? supabase.from("ledger_lines").select("category").eq("wedding_id", id).not("category", "is", null) : Promise.resolve({ data: [] }),
@@ -50,6 +56,27 @@ export default async function DesignTab({ params }: { params: Promise<{ locale: 
   if (isStaff && wedding.workspace_id) {
     const { data } = await supabase.from("workspace_palette_swatches").select("id, hex").eq("workspace_id", wedding.workspace_id).order("sort").order("created_at").limit(40);
     studioSwatches = (data ?? []) as { id: string; hex: string }[];
+  }
+
+  // "Set the scene" gating: the button mounts only for staff when the key is present. Its two
+  // cost guards are plain counts of origin='render' items — per wedding (from the loaded boards)
+  // and per studio per day (a workspace-wide count of today's renders, UTC).
+  const keyPresent = isStaff && hasOpenAIKey();
+  let rendersLeft = RENDERS_PER_WEDDING;
+  let dayRemaining = RENDERS_PER_DAY;
+  if (keyPresent) {
+    const weddingRenders = boards.reduce((n, b) => n + b.design_items.filter((i) => i.origin === "render").length, 0);
+    rendersLeft = Math.max(0, RENDERS_PER_WEDDING - weddingRenders);
+    if (wedding.workspace_id) {
+      const dayStart = new Date();
+      dayStart.setUTCHours(0, 0, 0, 0);
+      const { data: wids } = await supabase.from("weddings").select("id").eq("workspace_id", wedding.workspace_id);
+      const ids = ((wids ?? []) as { id: string }[]).map((w) => w.id);
+      if (ids.length) {
+        const { count: dCount } = await supabase.from("design_items").select("id", { count: "exact", head: true }).in("wedding_id", ids).eq("origin", "render").gte("created_at", dayStart.toISOString());
+        dayRemaining = Math.max(0, RENDERS_PER_DAY - (dCount ?? 0));
+      }
+    }
   }
 
   const urls = new Map<string, string>();
@@ -86,6 +113,8 @@ export default async function DesignTab({ params }: { params: Promise<{ locale: 
         ) : null}
       </div>
 
+      {keyPresent ? <p className="mb-5 -mt-2 font-accent text-[13px] italic text-text-meta">{td("renderHint")}</p> : null}
+
       <PaletteRow weddingId={id} wedding={wedgeSwatches} studio={studioSwatches} canManage={canEdit} canKeep={isStaff} />
 
       {boardErr ? (
@@ -115,6 +144,9 @@ export default async function DesignTab({ params }: { params: Promise<{ locale: 
                         : null}
                       <span>{t("pinCount", { count: b.design_items.length })}</span>
                       {canEdit ? <AddItem boardId={b.id} weddingId={id} /> : null}
+                      {keyPresent && b.design_items.some((i) => i.storage_path) ? (
+                        <SetSceneButton boardId={b.id} weddingId={id} rendersLeft={rendersLeft} dayRemaining={dayRemaining} />
+                      ) : null}
                     </span>
                   }
                 />
@@ -129,10 +161,13 @@ export default async function DesignTab({ params }: { params: Promise<{ locale: 
                       return (
                         <div key={it.id} className="overflow-hidden rounded-[var(--radius)] border border-hairline-token bg-surface-card">
                           {url ? (
-                            <CommentLightbox item={{ id: it.id, title: it.title, url }} comments={commentsByItem.get(it.id) ?? []} weddingId={id} />
+                            <CommentLightbox item={{ id: it.id, title: it.title, url, concept: it.origin === "render" ? td("renderChip") : undefined }} comments={commentsByItem.get(it.id) ?? []} weddingId={id} />
                           ) : <div className="h-24 bg-surface-card" />}
                           <div className="p-2.5">
-                            <p className="font-display text-[14px] text-text-primary">{it.title}</p>
+                            <div className="flex items-center gap-1.5">
+                              <p className="font-display text-[14px] text-text-primary">{it.title}</p>
+                              {it.origin === "render" ? <Chip tone="pending">{td("renderChip")}</Chip> : null}
+                            </div>
                             {it.note ? <p className="text-[11.5px] text-text-meta">{it.note}</p> : null}
                             {url ? (
                               <div className="mt-1.5 flex items-center justify-between gap-2">
