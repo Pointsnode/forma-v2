@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { cx } from "@/components/ui/cn";
+import { Wordmark, SignedMark } from "@/components/ui";
 import { publicImageUrl, pick, type DirectoryCard } from "@/lib/directory-shared";
 import type { Locale } from "@/i18n/routing";
 
@@ -18,7 +19,7 @@ export async function PublicHeader() {
   return (
     <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-7">
       <Link href="/planners" className="leading-none">
-        <span className="font-display text-[24px] tracking-[0.04em] text-ink">forma</span>
+        <Wordmark size={24} />
       </Link>
       <span className="text-[10px] uppercase tracking-[0.34em] text-taupe">{t("heroKicker")}</span>
     </header>
@@ -30,7 +31,7 @@ export function PublicFooter({ note }: { note: string }) {
     <footer className="mx-auto max-w-6xl px-6 py-16 text-center">
       <div className="mx-auto mb-4 h-px w-16 bg-hairline" />
       <p className="font-accent text-[16px] italic text-taupe">{note}</p>
-      <p className="mt-2 font-display text-[20px] tracking-[0.04em] text-ink">forma</p>
+      <div className="mt-3 flex justify-center"><SignedMark /></div>
     </footer>
   );
 }
