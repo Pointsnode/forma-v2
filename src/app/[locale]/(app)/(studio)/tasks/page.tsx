@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { currentWorkspace } from "@/lib/workspace";
-import { SectionTitle, BentoBig, Check, heroToneAt } from "@/components/ui";
+import { SectionTitle, StudioTitleBand, BentoBig, Check, heroToneAt } from "@/components/ui";
 import { countdownDays, initials, type WeddingRow, type EventRow } from "@/lib/wedding";
 import { loadGoalMesh, computeGoals } from "@/lib/goals";
 import { loadMasterBoard } from "@/lib/tasks";
@@ -42,7 +42,7 @@ export default async function TasksPage({ params }: { params: Promise<{ locale: 
 
   return (
     <div>
-      <SectionTitle title={t("whatsNextSection")} accent={t("whatsNextHint")} className="mt-1" />
+      <StudioTitleBand title={t("whatsNextSection")} accent={t("whatsNextHint")} />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {weddings.map((w, i) => {
           const days = countdownDays(w.date_start);

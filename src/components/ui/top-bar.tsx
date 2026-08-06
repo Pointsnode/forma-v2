@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cx } from "./cn";
+import { Wordmark } from "./primitives";
 import { signOut } from "@/app/[locale]/(auth)/actions";
 import { QuickAddTask } from "@/components/tasks/quick-add";
 
@@ -35,8 +36,8 @@ export function TopBar({
 
   return (
     <div className="sticky top-0 z-50 flex h-[62px] items-center gap-7 bg-ink px-8 text-bone">
-      <Link href="/" className="font-display text-[20px] leading-none text-bone" aria-label={t("name")}>
-        <i>f</i>orma
+      <Link href="/" aria-label={t("name")}>
+        <Wordmark size={20} className="!text-bone" />
       </Link>
 
       {workspaceName ? (
