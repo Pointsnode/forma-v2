@@ -168,6 +168,27 @@ export async function convertLead(id: string): Promise<LeadResult> {
   // Carry a real date onto the default order-0 event; the date-rollup trigger sets the
   // wedding's date_start (mirrors convert_inquiry). Only when a real date exists.
   if (lead.date_start) await supabase.from("wedding_events").update({ event_date: lead.date_start }).eq("wedding_id", newId).eq("order_index", 0);
+
+  // L2 carry: if the lead has an ACCEPTED quote, its lines become the wedding's first EXPECTED
+  // budget lines (category = the line's section). Expected only — no payments, no schedules.
+  // ledger_lines requires amount <> 0, so zero-amount lines are skipped. quote_id is NOT set
+  // (that FK points at the M13 vendor quotes, not client_quotes).
+  const { data: acceptedQuote } = await supabase
+    .from("client_quotes").select("id, currency").eq("lead_id", id).eq("status", "accepted")
+    .order("accepted_at", { ascending: false }).limit(1).maybeSingle();
+  if (acceptedQuote) {
+    const { data: qlines } = await supabase.from("client_quote_lines").select("section, title, amount").eq("quote_id", acceptedQuote.id).order("section_sort").order("sort");
+    const budgetLines = ((qlines ?? []) as { section: string | null; title: string; amount: number }[])
+      .filter((l) => Number(l.amount) > 0)
+      .map((l) => ({ wedding_id: newId, title: l.title, amount: Number(l.amount), currency: acceptedQuote.currency as string, category: l.section, kind: "manual", status: "expected" }));
+    if (budgetLines.length) {
+      const { error: budErr } = await supabase.from("ledger_lines").insert(budgetLines);
+      if (budErr) console.error(`convertLead carry (${budErr.code}): ${budErr.message}`);
+      else await supabase.from("client_quotes").update({ wedding_id: newId }).eq("id", acceptedQuote.id);
+    }
+    await supabase.from("lead_events").insert({ lead_id: id, kind: "quote", body: "carried", meta: { lines: budgetLines.length } });
+  }
+
   await supabase.from("leads").update({ wedding_id: newId, stage: "won" }).eq("id", id);
   await supabase.from("lead_events").insert({ lead_id: id, kind: "converted", body: lead.couple_display as string, meta: { wedding_id: newId } });
   rv();
