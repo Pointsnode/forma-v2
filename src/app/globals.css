@@ -111,6 +111,37 @@
   }
 }
 
+/* Bone reset: an explicit re-declaration of the day values so a surface can force bone even
+   inside a night ancestor. Used by print/export views (which are documents for paper, never
+   dark) — they wrap their content in data-theme="bone". */
+[data-theme="bone"] {
+  --color-surface-page: var(--color-bone);
+  --color-surface-card: var(--color-bone);
+  --color-surface-chrome: var(--color-ink);
+  --color-text-primary: var(--color-ink);
+  --color-text-body: var(--color-graphite);
+  --color-text-meta: var(--color-ash);
+  --color-hairline-token: var(--color-hairline);
+  --color-button-edge: transparent;
+  --color-text-danger: var(--color-wine);
+}
+
+/* Print is ALWAYS bone (house law): whatever the signed-in theme, the printed page resets to
+   the day values so ink lands on paper, never a dark ground. */
+@media print {
+  :root, [data-theme="night"], [data-theme="default"], [data-theme="bone"] {
+    --color-surface-page: var(--color-bone);
+    --color-surface-card: var(--color-bone);
+    --color-surface-chrome: var(--color-ink);
+    --color-text-primary: var(--color-ink);
+    --color-text-body: var(--color-graphite);
+    --color-text-meta: var(--color-ash);
+    --color-hairline-token: var(--color-hairline);
+    --color-button-edge: transparent;
+    --color-text-danger: var(--color-wine);
+  }
+}
+
 html, body { height: 100%; }
 body {
   background: var(--color-surface-page);

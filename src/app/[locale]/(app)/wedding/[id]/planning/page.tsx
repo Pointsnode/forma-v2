@@ -59,8 +59,8 @@ export default async function PlanningRoom({ params }: { params: Promise<{ local
         <div className="mt-8 max-w-2xl">
           <SectionTitle title={tops("theDay")} accent={tops("theDayHint")} />
           <Card className="mb-[18px]">
-            <h3 className="mb-1 font-display text-[18px] text-ink">{tops("dayOfExtras")}</h3>
-            <p className="mb-3 text-[12.5px] text-muted">{tops("dayOfExtrasHint")}</p>
+            <h3 className="mb-1 font-display text-[18px] text-text-primary">{tops("dayOfExtras")}</h3>
+            <p className="mb-3 text-[12.5px] text-text-meta">{tops("dayOfExtrasHint")}</p>
             {open.filter((l) => l.kind === "day_of_extra").map((l) => (
               <Row key={l.id}><RowMain title={l.title} /><Badge tone="wine">{tops("unsettled")}</Badge></Row>
             ))}

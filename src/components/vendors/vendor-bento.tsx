@@ -35,7 +35,7 @@ export function VendorBento({ vendors }: { vendors: VendorCard[] }) {
     const city = v.cities[0];
     if (!v.description && !city) return null;
     return (
-      <p className="text-[12px] leading-snug text-muted">
+      <p className="text-[12px] leading-snug text-text-meta">
         {v.description}
         {v.description && city ? " · " : ""}
         {city ? <b className="font-medium text-taupe">{city}</b> : null}
@@ -62,18 +62,18 @@ export function VendorBento({ vendors }: { vendors: VendorCard[] }) {
   return (
     <Bento>
       {featured ? (
-        <div className="flex flex-col overflow-hidden rounded-[var(--radius)] bg-bone md:col-span-2">
+        <div className="flex flex-col overflow-hidden rounded-[var(--radius)] bg-surface-card md:col-span-2">
           <Link href={profileHref(featured)} className="block">{hero(featured, heroToneAt(0), 22)}</Link>
           <div className="flex flex-1 flex-col p-5">
             {desc(featured)}
             {featured.tags.length ? <div className="mt-1.5">{featured.tags.slice(0, 5).map((tag) => <Tag key={tag}>{tag}</Tag>)}</div> : null}
             <dl className="mt-3 grid grid-cols-[110px_1fr] gap-x-3.5 gap-y-2 text-[12.5px]">
-              {featured.restrictions ? <><dt className="pt-0.5 text-[10px] uppercase tracking-[0.1em] text-muted">{t("restrictions")}</dt><dd className="text-ink-soft">{featured.restrictions}</dd></> : null}
-              {featured.perks ? <><dt className="pt-0.5 text-[10px] uppercase tracking-[0.1em] text-muted">{t("perks")}</dt><dd className="text-ink-soft">{featured.perks}</dd></> : null}
+              {featured.restrictions ? <><dt className="pt-0.5 text-[10px] uppercase tracking-[0.1em] text-text-meta">{t("restrictions")}</dt><dd className="text-text-primary-soft">{featured.restrictions}</dd></> : null}
+              {featured.perks ? <><dt className="pt-0.5 text-[10px] uppercase tracking-[0.1em] text-text-meta">{t("perks")}</dt><dd className="text-text-primary-soft">{featured.perks}</dd></> : null}
               {featured.contactName || featured.contactEmail || featured.contactPhone ? (
                 <>
-                  <dt className="pt-1 text-[10px] uppercase tracking-[0.1em] text-muted">{t("contactName")}</dt>
-                  <dd className="flex items-center gap-2 text-ink-soft">
+                  <dt className="pt-1 text-[10px] uppercase tracking-[0.1em] text-text-meta">{t("contactName")}</dt>
+                  <dd className="flex items-center gap-2 text-text-primary-soft">
                     {featured.contactName ? <WhoBadge who="vendor">{nameInitials(featured.contactName)}</WhoBadge> : null}
                     <span>{[featured.contactName, featured.contactEmail, featured.contactPhone].filter(Boolean).join(" · ")}</span>
                   </dd>
@@ -82,22 +82,22 @@ export function VendorBento({ vendors }: { vendors: VendorCard[] }) {
             </dl>
             <BentoFoot>
               {pills(featured.engagements)}
-              <Link href={profileHref(featured)} className="ml-auto text-[11.5px] text-muted hover:text-ink">{t("editVendor")}</Link>
-              <Link href={profileHref(featured)} className="text-[11.5px] tracking-[0.03em] text-wine hover:underline hover:underline-offset-2">{t("present")} →</Link>
+              <Link href={profileHref(featured)} className="ml-auto text-[11.5px] text-text-meta hover:text-text-primary">{t("editVendor")}</Link>
+              <Link href={profileHref(featured)} className="text-[11.5px] tracking-[0.03em] text-[color:var(--color-text-danger)] hover:underline hover:underline-offset-2">{t("present")} →</Link>
             </BentoFoot>
           </div>
         </div>
       ) : null}
 
       {rest.map((v, i) => (
-        <div key={v.id} className="group flex flex-col overflow-hidden rounded-[var(--radius)] bg-bone transition-shadow">
+        <div key={v.id} className="group flex flex-col overflow-hidden rounded-[var(--radius)] bg-surface-card transition-shadow">
           <Link href={profileHref(v)} className="block">{hero(v, heroToneAt(i + 1), 18)}</Link>
           <div className="flex flex-1 flex-col p-4">
             {desc(v)}
             {v.tags.length ? <div className="mt-1">{v.tags.slice(0, 4).map((tag) => <Tag key={tag}>{tag}</Tag>)}</div> : null}
             <BentoFoot>
               {pills(v.engagements)}
-              <Link href={profileHref(v)} className={cx("ml-auto text-[11.5px] tracking-[0.03em] text-wine", "group-hover:underline group-hover:underline-offset-2")}>{t("present")} →</Link>
+              <Link href={profileHref(v)} className={cx("ml-auto text-[11.5px] tracking-[0.03em] text-[color:var(--color-text-danger)]", "group-hover:underline group-hover:underline-offset-2")}>{t("present")} →</Link>
             </BentoFoot>
           </div>
         </div>

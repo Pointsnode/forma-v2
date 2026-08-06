@@ -12,10 +12,10 @@ export function DocUpload({ weddingId }: { weddingId: string }) {
   const [err, setErr] = useState<string | null>(null);
   return (
     <form action={(fd) => start(async () => { const r = await uploadDocument(weddingId, fd); setErr(r.error ? t("uploadError") : null); })} className="flex flex-wrap items-end gap-2">
-      <label className="flex flex-col gap-1"><span className="text-[11px] text-muted">{t("docTitle")}</span><input name="title" required className="rounded-[var(--radius)] bg-bone px-2.5 py-1.5 text-[13px] outline-none" /></label>
+      <label className="flex flex-col gap-1"><span className="text-[11px] text-text-meta">{t("docTitle")}</span><input name="title" required className="rounded-[var(--radius)] bg-surface-card px-2.5 py-1.5 text-[13px] outline-none" /></label>
       <input type="file" name="file" required accept={WEDDING_DOCS_ACCEPT} className="text-[12.5px]" />
       <Button type="submit" variant="ghost" disabled={pending}>{t("upload")}</Button>
-      {err ? <span className="text-[12px] text-wine">{err}</span> : null}
+      {err ? <span className="text-[12px] text-[color:var(--color-text-danger)]">{err}</span> : null}
     </form>
   );
 }

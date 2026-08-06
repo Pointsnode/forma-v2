@@ -15,7 +15,7 @@ export default async function JoinPage({ params }: { params: Promise<{ locale: s
         <div className="mb-8 flex justify-center"><SignedMark /></div>
         <Card>
           <Heading>{t("acceptTitle")}</Heading>
-          <p className="mb-5 mt-1 font-accent text-[16px] text-muted">{t("membersHint")}</p>
+          <p className="mb-5 mt-1 font-accent text-[16px] text-text-meta">{t("membersHint")}</p>
           <AcceptInvite token={token} />
         </Card>
       </div>

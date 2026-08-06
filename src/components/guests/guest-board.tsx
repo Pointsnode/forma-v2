@@ -32,12 +32,12 @@ export async function GuestBoard({
         <Stat value={rollup.invited} label={t("invited")} />
         <Stat value={rollup.answered} valueClassName="text-teal" label={t("answered")} />
         <Stat value={rollup.yes} label={t("yes")} />
-        <Stat value={rollup.pending} valueClassName={rollup.pending ? "text-wine" : undefined} label={t("pending")} />
+        <Stat value={rollup.pending} valueClassName={rollup.pending ? "text-[color:var(--color-text-danger)]" : undefined} label={t("pending")} />
       </StatRow>
 
       {empty ? (
         <Card><div className="flex flex-col items-center gap-3 py-4">
-          <p className="font-accent text-[16px] text-muted">{t("noGuests")}</p>
+          <p className="font-accent text-[16px] text-text-meta">{t("noGuests")}</p>
           <GuestIntake weddingId={weddingId} existing={guests.map((g) => ({ full_name: g.full_name, email: g.email, phone: g.phone }))} />
         </div></Card>
       ) : (
@@ -54,10 +54,10 @@ export async function GuestBoard({
                   return (
                     <div key={e.id}>
                       <div className="flex items-baseline justify-between">
-                        <span className="text-[14px] text-ink">{e.label}</span>
-                        <span className="font-accent text-[13px] text-muted">{c?.confirmed ?? 0} {t("yes").toLowerCase()} · {c?.pending ?? 0} {t("pending").toLowerCase()}</span>
+                        <span className="text-[14px] text-text-primary">{e.label}</span>
+                        <span className="font-accent text-[13px] text-text-meta">{c?.confirmed ?? 0} {t("yes").toLowerCase()} · {c?.pending ?? 0} {t("pending").toLowerCase()}</span>
                       </div>
-                      <div className="mt-1.5 flex h-2.5 overflow-hidden rounded-[var(--radius)] bg-bone">
+                      <div className="mt-1.5 flex h-2.5 overflow-hidden rounded-[var(--radius)] bg-surface-card">
                         <span className="bg-teal" style={{ width: `${pct(c?.confirmed ?? 0)}%` }} />
                         <span className="bg-champagne" style={{ width: `${pct(c?.maybe ?? 0)}%` }} />
                         {/* declined = a neutral closed state, not urgency; oxblood is reserved. */}
@@ -75,14 +75,14 @@ export async function GuestBoard({
             <Heading className="flex items-center gap-2 text-[18px]"><DomainStar domain="people" size={12} />{t("exceptions")}</Heading>
             <SectionLabel className="mb-3 mt-0.5 normal-case tracking-normal text-[12px]">{t("exceptionsHint")}</SectionLabel>
             {exceptions.length === 0 ? (
-              <p className="py-3 text-center font-accent text-[15px] text-muted">{t("noExceptions")}</p>
+              <p className="py-3 text-center font-accent text-[15px] text-text-meta">{t("noExceptions")}</p>
             ) : (
               <ul className="flex flex-col">
                 {exceptions.map((x, i) => (
                   <li key={`${x.guest_id}-${x.reason}-${i}`} className="flex items-center gap-3 py-2 [box-shadow:inset_0_-1px_0_var(--color-hairline)] last:shadow-none">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-[var(--radius)] bg-bone text-[12px] text-wine">!</span>
-                    <span className="flex-1 text-[14px] text-ink">{x.full_name}</span>
-                    <span className="font-accent text-[13px] text-muted">{t(REASON_KEY[x.reason] ?? "reasonNoEmail")}</span>
+                    <span className="flex h-6 w-6 items-center justify-center rounded-[var(--radius)] bg-surface-card text-[12px] text-[color:var(--color-text-danger)]">!</span>
+                    <span className="flex-1 text-[14px] text-text-primary">{x.full_name}</span>
+                    <span className="font-accent text-[13px] text-text-meta">{t(REASON_KEY[x.reason] ?? "reasonNoEmail")}</span>
                   </li>
                 ))}
               </ul>

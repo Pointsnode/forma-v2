@@ -19,7 +19,7 @@ export default async function TeamPage({ params }: { params: Promise<{ locale: s
   if (!workspaceId) {
     return (
       <Card>
-        <p className="py-6 text-center font-accent text-[16px] text-muted">{t("noWorkspace")}</p>
+        <p className="py-6 text-center font-accent text-[16px] text-text-meta">{t("noWorkspace")}</p>
       </Card>
     );
   }

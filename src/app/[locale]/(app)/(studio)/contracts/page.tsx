@@ -32,10 +32,10 @@ export default async function StudioContractsPage({ params }: { params: Promise<
 
         <Card>
           <Heading className="text-[18px]">{tc("across")}</Heading>
-          <p className="mb-3 text-[12.5px] text-muted">{tc("acrossHint")}</p>
+          <p className="mb-3 text-[12.5px] text-text-meta">{tc("acrossHint")}</p>
 
           {contractCount === 0 ? (
-            <p className="py-4 text-center font-accent text-[15px] text-muted">{tc("acrossEmpty")}</p>
+            <p className="py-4 text-center font-accent text-[15px] text-text-meta">{tc("acrossEmpty")}</p>
           ) : (
             <>
               <Row className="-mx-2 rounded-[var(--radius)] px-2">
@@ -47,14 +47,14 @@ export default async function StudioContractsPage({ params }: { params: Promise<
               </Row>
 
               {exceptions.length === 0 ? (
-                <p className="mt-2 py-3 text-center font-accent text-[14px] text-muted">{tc("allSigned")}</p>
+                <p className="mt-2 py-3 text-center font-accent text-[14px] text-text-meta">{tc("allSigned")}</p>
               ) : (
                 exceptions.map((r) => (
                   <Link key={r.id} href={`/wedding/${r.weddingId}/contracts/${r.id}`} className="block">
-                    <Row className="-mx-2 rounded-[var(--radius)] px-2 hover:bg-bone">
+                    <Row className="-mx-2 rounded-[var(--radius)] px-2 hover:bg-surface-card">
                       <RowMain
-                        title={<span className="inline-flex items-center gap-2">{r.title}<span className="rounded bg-bone px-1.5 py-0.5 text-[10.5px] uppercase tracking-[0.08em] text-muted">{r.weddingName}</span></span>}
-                        detail={<span className={r.tone === "wine" ? "text-wine" : undefined}>{exceptionDetail(tc, r)}</span>}
+                        title={<span className="inline-flex items-center gap-2">{r.title}<span className="rounded bg-surface-card px-1.5 py-0.5 text-[10.5px] uppercase tracking-[0.08em] text-text-meta">{r.weddingName}</span></span>}
+                        detail={<span className={r.tone === "wine" ? "text-[color:var(--color-text-danger)]" : undefined}>{exceptionDetail(tc, r)}</span>}
                       />
                       {r.state === "held" ? (
                         <WhoBadge who="couple">{r.coupleInitials.replace("·", "")[0]?.toUpperCase() ?? "?"}</WhoBadge>

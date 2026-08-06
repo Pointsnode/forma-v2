@@ -17,7 +17,7 @@ export function SendButton({ contractId, held }: { contractId: string; held: boo
       >
         {t("send")}
       </Button>
-      {err ? <span className="text-[12.5px] text-wine">{err}</span> : null}
+      {err ? <span className="text-[12.5px] text-[color:var(--color-text-danger)]">{err}</span> : null}
     </span>
   );
 }

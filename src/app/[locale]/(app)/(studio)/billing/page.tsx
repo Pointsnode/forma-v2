@@ -32,14 +32,14 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
       </Card>
 
       <Card>
-        <h3 className="mb-2 font-display text-[19px] text-ink">{tb("feesTitle")}</h3>
+        <h3 className="mb-2 font-display text-[19px] text-text-primary">{tb("feesTitle")}</h3>
         {fees.length === 0 ? (
-          <p className="py-6 text-center font-accent text-[15px] text-muted">{tb("empty")}</p>
+          <p className="py-6 text-center font-accent text-[15px] text-text-meta">{tb("empty")}</p>
         ) : (
           fees.map((f) => (
             <Row key={f.id}>
               <RowMain title={f.title} detail={f.weddings?.couple_display ?? "·"} />
-              <span className="font-medium text-[13.5px] text-ink">{formatMoney(f.amount, lang) ?? "·"}</span>
+              <span className="font-medium text-[13.5px] text-text-primary">{formatMoney(f.amount, lang) ?? "·"}</span>
               <Badge tone={["paid", "settled"].includes(f.status) ? "sage" : "wine"}>{tb(`status_${f.status}`)}</Badge>
             </Row>
           ))

@@ -37,14 +37,14 @@ export function ProposalCard({ weddingId, p }: { weddingId: string; p: ViewPropo
   }
 
   return (
-    <div className="rounded-[var(--radius)] bg-bone p-4 transition-shadow">
+    <div className="rounded-[var(--radius)] bg-surface-card p-4 transition-shadow">
       <button onClick={() => setOpen((o) => !o)} className="flex w-full items-start gap-3 text-left">
-        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius)] bg-bone font-accent text-[15px] text-taupe">
+        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius)] bg-surface-card font-accent text-[15px] text-taupe">
           {initials(p.title)}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block font-medium text-[14.5px] text-ink">{p.title}</span>
-          {meta ? <span className="block font-accent text-[13px] text-muted">{meta}</span> : null}
+          <span className="block font-medium text-[14.5px] text-text-primary">{p.title}</span>
+          {meta ? <span className="block font-accent text-[13px] text-text-meta">{meta}</span> : null}
         </span>
         <span className="flex shrink-0 items-center gap-2">
           <span className={cx("rounded-[var(--radius)] px-2.5 py-1 text-[11.5px]", statusClass(p.status))}>{t(`status.${p.status}`)}</span>
@@ -57,15 +57,15 @@ export function ProposalCard({ weddingId, p }: { weddingId: string; p: ViewPropo
       </button>
 
       {open ? (
-        <div className="mt-3 border-t border-hairline pt-3">
-          {p.note ? <p className="mb-3 font-accent text-[14.5px] text-ink-soft">{p.note}</p> : null}
+        <div className="mt-3 border-t border-hairline-token pt-3">
+          {p.note ? <p className="mb-3 font-accent text-[14.5px] text-text-primary-soft">{p.note}</p> : null}
           <div className="flex flex-col gap-2.5">
             {p.messages.map((m) => (
               <div key={m.id} className="flex gap-2.5">
-                <span className={cx("flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius)] text-[9px] font-semibold", m.isCouple ? "bg-wine text-bone" : "bg-champagne text-ink")}>
+                <span className={cx("flex h-6 w-6 shrink-0 items-center justify-center rounded-[var(--radius)] text-[9px] font-semibold", m.isCouple ? "bg-wine text-bone" : "bg-champagne text-text-primary")}>
                   {m.authorInitials}
                 </span>
-                <div className="rounded-[var(--radius)] bg-bone px-3 py-2 text-[13px] text-ink">
+                <div className="rounded-[var(--radius)] bg-surface-card px-3 py-2 text-[13px] text-text-primary">
                   <div className="mb-0.5 text-[11px] font-semibold text-taupe">{m.authorName}</div>
                   {m.body}
                 </div>
@@ -80,7 +80,7 @@ export function ProposalCard({ weddingId, p }: { weddingId: string; p: ViewPropo
                 onChange={(e) => setMsg(e.target.value)}
                 rows={2}
                 placeholder={t("composer")}
-                className="w-full rounded-[var(--radius)] bg-bone px-3 py-2 text-[13.5px] text-ink outline-none"
+                className="w-full rounded-[var(--radius)] bg-surface-card px-3 py-2 text-[13.5px] text-text-primary outline-none"
               />
               <div className="flex flex-wrap items-center gap-2">
                 <Button
@@ -94,12 +94,12 @@ export function ProposalCard({ weddingId, p }: { weddingId: string; p: ViewPropo
                 ) : (
                   <Button variant="ghost" onClick={() => act(() => withdrawProposal(weddingId, p.id))} disabled={pending}>{t("withdraw")}</Button>
                 )}
-                <span className="ml-auto font-accent text-[13px] text-muted">{ageLabel}</span>
+                <span className="ml-auto font-accent text-[13px] text-text-meta">{ageLabel}</span>
               </div>
-              {err ? <p className="text-[13px] text-wine">{err}</p> : null}
+              {err ? <p className="text-[13px] text-[color:var(--color-text-danger)]">{err}</p> : null}
             </div>
           ) : null}
-          <div className="mt-3 flex justify-end border-t border-hairline pt-2.5">
+          <div className="mt-3 flex justify-end border-t border-hairline-token pt-2.5">
             <QuickAddTask weddings={[]} workspaceId="" defaultWeddingId={weddingId} prelink={{ kind: "proposal", id: p.id, label: p.title }} variant="inline" />
           </div>
         </div>

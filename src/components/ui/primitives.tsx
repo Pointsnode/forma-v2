@@ -47,15 +47,15 @@ const CHIP_TONE: Record<ChipTone, string> = {
   attention: "bg-wine text-bone",
   urgent: "bg-oxblood text-bone",
   pending: "border border-taupe text-taupe",
-  time: "bg-champagne text-ink",
+  time: "bg-champagne text-text-primary",
 };
 const CHIP_BASE = cx("inline-flex shrink-0 items-center whitespace-nowrap px-2.5 py-[3px] text-[9.5px] font-medium uppercase tracking-[0.14em]", RADIUS);
 
 export type PillTone = "ink" | "bone" | "sand" | "wine" | "sage";
 // Old pill tones map onto the chip grammar. ink/bone are non-status labels.
 const PILL: Record<PillTone, string> = {
-  ink: "bg-ink text-bone",
-  bone: "border border-hairline bg-bone text-ink",
+  ink: "bg-surface-chrome text-bone",
+  bone: "border border-hairline-token bg-surface-card text-text-primary",
   sand: CHIP_TONE.pending,
   wine: CHIP_TONE.attention,
   sage: CHIP_TONE.settled,
@@ -68,7 +68,7 @@ export function Pill({ children, tone = "bone", className }: { children: ReactNo
 export function Chip({ children, active = false, tone }: { children: ReactNode; active?: boolean; tone?: ChipTone }) {
   if (tone) return <span className={cx(CHIP_BASE, CHIP_TONE[tone])}>{children}</span>;
   return (
-    <span className={cx("inline-flex shrink-0 items-center px-3 py-1 text-[12.5px] transition-colors", RADIUS, active ? "bg-ink text-bone" : "bg-transparent text-text-meta hover:text-text-primary")}>
+    <span className={cx("inline-flex shrink-0 items-center px-3 py-1 text-[12.5px] transition-colors", RADIUS, active ? "bg-surface-chrome text-bone" : "bg-transparent text-text-meta hover:text-text-primary")}>
       {children}
     </span>
   );
@@ -89,9 +89,9 @@ export type ButtonProps = {
 // hairline on night so the charcoal fill stays distinct from the near-black room.
 const BTN: Record<NonNullable<ButtonProps["variant"]>, string> = {
   primary: "bg-wine text-bone hover:opacity-90",
-  dark: "bg-ink text-bone border border-[color:var(--color-button-edge)] hover:opacity-90",
-  solid: "bg-ink text-bone border border-[color:var(--color-button-edge)] hover:opacity-90",
-  ghost: "border border-ink bg-transparent text-ink hover:bg-ink hover:text-bone",
+  dark: "bg-surface-chrome text-bone border border-[color:var(--color-button-edge)] hover:opacity-90",
+  solid: "bg-surface-chrome text-bone border border-[color:var(--color-button-edge)] hover:opacity-90",
+  ghost: "border border-[color:var(--color-text-primary)] bg-transparent text-text-primary hover:bg-surface-chrome hover:text-bone",
 };
 export function Button({ children, type = "button", variant = "solid", disabled, className, onClick }: ButtonProps) {
   return (
@@ -112,7 +112,7 @@ export function Monogram({ initials, size = 44, dark = false }: { initials: stri
     <span
       aria-hidden
       style={{ width: size, height: size }}
-      className={cx("inline-flex items-center justify-center border font-display", RADIUS, dark ? "border-hairline-dark text-bone" : "border-hairline text-ink")}
+      className={cx("inline-flex items-center justify-center border font-display", RADIUS, dark ? "border-hairline-dark text-bone" : "border-hairline-token text-text-primary")}
     >
       <span style={{ fontSize: size * 0.4 }}>{initials}</span>
     </span>
@@ -137,7 +137,7 @@ const BADGE: Record<BadgeTone, string> = {
   wine: CHIP_TONE.attention,
   sage: CHIP_TONE.settled,
   maroon: CHIP_TONE.attention,
-  ink: "bg-ink text-bone",
+  ink: "bg-surface-chrome text-bone",
 };
 export function Badge({ children, tone = "sand", className }: { children: ReactNode; tone?: BadgeTone; className?: string }) {
   return <span className={cx(CHIP_BASE, BADGE[tone], className)}>{children}</span>;
@@ -146,7 +146,7 @@ export function Badge({ children, tone = "sand", className }: { children: ReactN
 /** Hairline square glyph holding a serif initial (list glyph; no circles). */
 export function Icon({ children, size = 36 }: { children: ReactNode; size?: number }) {
   return (
-    <span style={{ width: size, height: size }} className={cx("flex shrink-0 items-center justify-center border border-hairline font-accent italic text-taupe", RADIUS)}>
+    <span style={{ width: size, height: size }} className={cx("flex shrink-0 items-center justify-center border border-hairline-token font-accent italic text-taupe", RADIUS)}>
       <span style={{ fontSize: Math.round(size * 0.44) }}>{children}</span>
     </span>
   );
@@ -165,7 +165,7 @@ export function WhoBadge({ who, children, size = 22, title }: { who: Who; childr
 
 /** Small taupe keyword tag. */
 export function Tag({ children }: { children: ReactNode }) {
-  return <span className={cx("mr-1 mt-[3px] inline-block border border-hairline bg-bone px-[9px] py-[2px] text-[10.5px] text-taupe", RADIUS)}>{children}</span>;
+  return <span className={cx("mr-1 mt-[3px] inline-block border border-hairline-token bg-surface-card px-[9px] py-[2px] text-[10.5px] text-taupe", RADIUS)}>{children}</span>;
 }
 
 // ── DomainStar — the 8-point forma star marking a domain section. money=teal,
@@ -188,7 +188,7 @@ export function DomainStar({ domain, fill, size = 12 }: { domain?: Domain; fill?
 // bone on charcoal). ──
 export function Wordmark({ size = 20, className }: { size?: number; className?: string }) {
   return (
-    <span className={cx("font-display leading-none text-ink", className)} style={{ fontSize: size }} aria-label="forma">
+    <span className={cx("font-display leading-none text-text-primary", className)} style={{ fontSize: size }} aria-label="forma">
       <i>f</i>orma
     </span>
   );

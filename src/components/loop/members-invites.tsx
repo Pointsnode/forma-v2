@@ -31,8 +31,8 @@ export function MembersInvites({
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h3 className="font-display text-[18px] text-ink">{t("members")}</h3>
-        <p className="font-accent text-[14.5px] text-muted">{t("membersHint")}</p>
+        <h3 className="font-display text-[18px] text-text-primary">{t("members")}</h3>
+        <p className="font-accent text-[14.5px] text-text-meta">{t("membersHint")}</p>
       </div>
 
       {members.length ? (
@@ -41,27 +41,27 @@ export function MembersInvites({
             <div key={m.id} className="flex items-center gap-2">
               <Monogram initials={m.initials} size={30} />
               <div className="leading-tight">
-                <div className="text-[13.5px] text-ink">{m.name}</div>
-                <div className="text-[11.5px] text-muted">{roleLabel(m.role)}</div>
+                <div className="text-[13.5px] text-text-primary">{m.name}</div>
+                <div className="text-[11.5px] text-text-meta">{roleLabel(m.role)}</div>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <p className="font-accent text-[14.5px] text-muted">{t("none")}</p>
+        <p className="font-accent text-[14.5px] text-text-meta">{t("none")}</p>
       )}
 
       {invites.length ? (
         <div className="flex flex-col gap-2">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted">{t("pending")}</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-text-meta">{t("pending")}</p>
           {invites.map((i) => (
-            <div key={i.id} className="flex items-center gap-2 rounded-[var(--radius)] bg-bone px-3 py-2">
-              <span className="text-[13px] text-ink">{roleLabel(i.role)}</span>
-              <span className="font-accent text-[12.5px] text-muted">{t("expires", { date: fmtDate(i.expiresAt) })}</span>
-              <button onClick={() => copy(i.token)} className={cx("ml-auto rounded-[var(--radius)] px-3 py-1 text-[12.5px]", copied === i.token ? "bg-bone text-teal" : "bg-ink text-bone")}>
+            <div key={i.id} className="flex items-center gap-2 rounded-[var(--radius)] bg-surface-card px-3 py-2">
+              <span className="text-[13px] text-text-primary">{roleLabel(i.role)}</span>
+              <span className="font-accent text-[12.5px] text-text-meta">{t("expires", { date: fmtDate(i.expiresAt) })}</span>
+              <button onClick={() => copy(i.token)} className={cx("ml-auto rounded-[var(--radius)] px-3 py-1 text-[12.5px]", copied === i.token ? "bg-surface-card text-teal" : "bg-surface-chrome text-bone")}>
                 {copied === i.token ? t("copied") : t("copy")}
               </button>
-              <button onClick={() => start(async () => { await revokeInvite(weddingId, i.id); })} disabled={pending} className="rounded-[var(--radius)] px-2 py-1 text-[12.5px] text-muted hover:text-wine">
+              <button onClick={() => start(async () => { await revokeInvite(weddingId, i.id); })} disabled={pending} className="rounded-[var(--radius)] px-2 py-1 text-[12.5px] text-text-meta hover:text-[color:var(--color-text-danger)]">
                 {t("revoke")}
               </button>
             </div>
@@ -70,7 +70,7 @@ export function MembersInvites({
       ) : null}
 
       <div className="flex items-center gap-2">
-        <select value={role} onChange={(e) => setRole(e.target.value as Role)} className="rounded-[var(--radius)] bg-bone px-3 py-2 text-[13.5px] text-ink outline-none">
+        <select value={role} onChange={(e) => setRole(e.target.value as Role)} className="rounded-[var(--radius)] bg-surface-card px-3 py-2 text-[13.5px] text-text-primary outline-none">
           <option value="partner">{t("rolePartner")}</option>
           <option value="family">{t("roleFamily")}</option>
           <option value="day_of">{t("roleDayOf")}</option>

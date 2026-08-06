@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button, cx } from "@/components/ui";
 import { addLedgerLine, setLineStatus, payPlannerFee } from "@/app/[locale]/(app)/wedding/[id]/money-actions";
 
-const input = "rounded-[var(--radius)] border border-hairline bg-bone px-2.5 py-1.5 text-[13px] text-ink outline-none";
+const input = "rounded-[var(--radius)] border border-hairline-token bg-surface-card px-2.5 py-1.5 text-[13px] text-text-primary outline-none";
 
 // Couple pays a due planner_fee line → hosted Stripe Checkout (redirect).
 export function PayButton({ lineId }: { lineId: string }) {
@@ -25,7 +25,7 @@ export function PayButton({ lineId }: { lineId: string }) {
       >
         {t("pay")}
       </button>
-      {err ? <span className="text-[12px] text-wine">{err}</span> : null}
+      {err ? <span className="text-[12px] text-[color:var(--color-text-danger)]">{err}</span> : null}
     </span>
   );
 }
@@ -52,11 +52,11 @@ export function AddLineForm({ weddingId }: { weddingId: string }) {
       action={(fd) => start(async () => { const r = await addLedgerLine(weddingId, fd); if (r.error) setErr(t("error")); else { setOpen(false); setErr(null); } })}
       className="flex flex-wrap items-end gap-2"
     >
-      <label className="flex flex-col gap-1"><span className="text-[11px] text-muted">{t("lineTitle")}</span><input name="title" required className={cx(input, "w-56")} /></label>
-      <label className="flex flex-col gap-1"><span className="text-[11px] text-muted">{t("amount")}</span><input name="amount" inputMode="numeric" required className={cx(input, "w-28")} /></label>
-      <label className="flex flex-col gap-1"><span className="text-[11px] text-muted">{t("dueDate")}</span><input name="due_date" type="date" className={input} /></label>
+      <label className="flex flex-col gap-1"><span className="text-[11px] text-text-meta">{t("lineTitle")}</span><input name="title" required className={cx(input, "w-56")} /></label>
+      <label className="flex flex-col gap-1"><span className="text-[11px] text-text-meta">{t("amount")}</span><input name="amount" inputMode="numeric" required className={cx(input, "w-28")} /></label>
+      <label className="flex flex-col gap-1"><span className="text-[11px] text-text-meta">{t("dueDate")}</span><input name="due_date" type="date" className={input} /></label>
       <Button type="submit" disabled={pending}>{t("addLine")}</Button>
-      {err ? <span className="text-[12px] text-wine">{err}</span> : null}
+      {err ? <span className="text-[12px] text-[color:var(--color-text-danger)]">{err}</span> : null}
     </form>
   );
 }

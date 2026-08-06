@@ -20,7 +20,7 @@ export function TouchpointTimeline({
   const [pending, start] = useTransition();
   const fmt = (d: string) => new Intl.DateTimeFormat(intlTag(locale), { month: "short", day: "numeric" }).format(new Date(`${d}T12:00:00Z`));
 
-  if (touchpoints.length === 0) return <p className="font-accent text-[14.5px] text-muted">{t("none")}</p>;
+  if (touchpoints.length === 0) return <p className="font-accent text-[14.5px] text-text-meta">{t("none")}</p>;
 
   return (
     <div className="flex flex-col gap-2">
@@ -32,22 +32,22 @@ export function TouchpointTimeline({
           : t("statusScheduled", { date: fmt(tp.scheduled_for) });
         const aud = tp.audience_rule?.scope === "non_responders" ? t("chases", { count: reminderChase }) : t("toAll");
         return (
-          <div key={tp.id} className={cx("flex items-start gap-3 rounded-[var(--radius)] bg-bone px-3 py-2.5", skipped && "opacity-50")}>
-            <span className={cx("mt-1.5 h-2 w-2 shrink-0 rounded-[var(--radius)]", tp.status === "sent" ? "bg-teal" : tp.status === "scheduled" ? "bg-champagne" : "bg-hairline")} />
+          <div key={tp.id} className={cx("flex items-start gap-3 rounded-[var(--radius)] bg-surface-card px-3 py-2.5", skipped && "opacity-50")}>
+            <span className={cx("mt-1.5 h-2 w-2 shrink-0 rounded-[var(--radius)]", tp.status === "sent" ? "bg-teal" : tp.status === "scheduled" ? "bg-champagne" : "bg-[color:var(--color-hairline-token)]")} />
             <div className="min-w-0 flex-1">
-              <p className="text-[14px] text-ink">{t(KIND_KEY[tp.kind] ?? "kindRsvp_invite")}</p>
-              <p className="font-accent text-[13px] text-muted">{sub} · {aud}</p>
+              <p className="text-[14px] text-text-primary">{t(KIND_KEY[tp.kind] ?? "kindRsvp_invite")}</p>
+              <p className="font-accent text-[13px] text-text-meta">{sub} · {aud}</p>
             </div>
             {!readOnly && tp.status !== "sent" ? (
               <button disabled={pending} onClick={() => start(async () => { await skipTouchpoint(tp.id, weddingId, !skipped); })}
-                className="shrink-0 rounded-[var(--radius)] px-3 py-1 text-[12.5px] text-muted hover:text-ink">
+                className="shrink-0 rounded-[var(--radius)] px-3 py-1 text-[12.5px] text-text-meta hover:text-text-primary">
                 {skipped ? t("unskip") : t("skip")}
               </button>
             ) : null}
           </div>
         );
       })}
-      <p className="mt-1 font-accent text-[13px] text-muted">{t("tokenNote")}</p>
+      <p className="mt-1 font-accent text-[13px] text-text-meta">{t("tokenNote")}</p>
     </div>
   );
 }

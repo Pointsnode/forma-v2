@@ -9,7 +9,7 @@ import { VendorBento } from "./vendor-bento";
 
 const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-const INPUT = "w-full rounded-[var(--radius)] bg-bone px-3.5 py-2.5 pr-9 text-[14px] text-ink placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-champagne";
+const INPUT = "w-full rounded-[var(--radius)] bg-surface-card px-3.5 py-2.5 pr-9 text-[14px] text-text-primary placeholder:text-text-meta focus:outline-none focus:ring-1 focus:ring-champagne";
 
 function ToggleChip({ label, count, active, onClick }: { label: string; count?: number; active: boolean; onClick: () => void }) {
   return (
@@ -19,10 +19,10 @@ function ToggleChip({ label, count, active, onClick }: { label: string; count?: 
       onClick={onClick}
       className={cx(
         "rounded-[var(--radius)] px-3 py-1 text-[12.5px] transition",
-        active ? "bg-ink text-bone" : "border border-hairline text-muted hover:border-ink hover:text-ink",
+        active ? "bg-surface-chrome text-bone" : "border border-hairline-token text-text-meta hover:border-[color:var(--color-text-primary)] hover:text-text-primary",
       )}
     >
-      {label}{count != null ? <span className={cx("ml-1.5", active ? "text-bone/70" : "text-muted")}>{count}</span> : null}
+      {label}{count != null ? <span className={cx("ml-1.5", active ? "text-bone/70" : "text-text-meta")}>{count}</span> : null}
     </button>
   );
 }
@@ -57,17 +57,17 @@ export function CatalogBrowser({ vendors, mode }: { vendors: VendorCard[]; mode:
 
   return (
     <div>
-      <div className="mb-5 flex flex-col gap-3 rounded-[var(--radius)] bg-bone p-4">
+      <div className="mb-5 flex flex-col gap-3 rounded-[var(--radius)] bg-surface-card p-4">
         <div className="relative">
           <input className={INPUT} value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("searchPlaceholder")} aria-label={t("searchPlaceholder")} />
           {q ? (
-            <button type="button" onClick={() => setQ("")} aria-label={t("clearAll")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[16px] leading-none text-muted hover:text-ink">✕</button>
+            <button type="button" onClick={() => setQ("")} aria-label={t("clearAll")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[16px] leading-none text-text-meta hover:text-text-primary">✕</button>
           ) : null}
         </div>
 
         {kindFacets.length > 1 ? (
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="mr-1 text-[11px] uppercase tracking-[0.1em] text-muted">{t("facetKind")}</span>
+            <span className="mr-1 text-[11px] uppercase tracking-[0.1em] text-text-meta">{t("facetKind")}</span>
             {kindFacets.map(([k, n]) => (
               <ToggleChip key={k} label={titleCase(k)} count={n} active={kinds.has(k)} onClick={() => toggle(kinds, setKinds, k)} />
             ))}
@@ -76,7 +76,7 @@ export function CatalogBrowser({ vendors, mode }: { vendors: VendorCard[]; mode:
 
         {cityFacets.length > 1 ? (
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="mr-1 text-[11px] uppercase tracking-[0.1em] text-muted">{t("facetCity")}</span>
+            <span className="mr-1 text-[11px] uppercase tracking-[0.1em] text-text-meta">{t("facetCity")}</span>
             {cityFacets.map(([c, n]) => (
               <ToggleChip key={c} label={c} count={n} active={cities.has(c)} onClick={() => toggle(cities, setCities, c)} />
             ))}
@@ -92,16 +92,16 @@ export function CatalogBrowser({ vendors, mode }: { vendors: VendorCard[]; mode:
 
         {active ? (
           <div className="flex items-center justify-between pt-0.5">
-            <span className="text-[12.5px] text-muted">{t("countLine", { n: filtered.length, total: vendors.length })}</span>
-            <button type="button" onClick={clearAll} className="text-[12.5px] font-medium text-wine hover:underline hover:underline-offset-2">{t("clearAll")}</button>
+            <span className="text-[12.5px] text-text-meta">{t("countLine", { n: filtered.length, total: vendors.length })}</span>
+            <button type="button" onClick={clearAll} className="text-[12.5px] font-medium text-[color:var(--color-text-danger)] hover:underline hover:underline-offset-2">{t("clearAll")}</button>
           </div>
         ) : null}
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-[var(--radius)] bg-bone p-10 text-center">
-          <p className="font-accent text-[17px] text-muted">{mode === "venues" ? t("filteredEmptyVenues") : t("filteredEmptyVendors")}</p>
-          <button type="button" onClick={clearAll} className="mt-3 text-[13px] font-medium text-wine hover:underline hover:underline-offset-2">{t("clearAll")}</button>
+        <div className="rounded-[var(--radius)] bg-surface-card p-10 text-center">
+          <p className="font-accent text-[17px] text-text-meta">{mode === "venues" ? t("filteredEmptyVenues") : t("filteredEmptyVendors")}</p>
+          <button type="button" onClick={clearAll} className="mt-3 text-[13px] font-medium text-[color:var(--color-text-danger)] hover:underline hover:underline-offset-2">{t("clearAll")}</button>
         </div>
       ) : (
         <VendorBento vendors={filtered} />

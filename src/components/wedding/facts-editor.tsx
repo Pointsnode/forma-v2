@@ -5,8 +5,8 @@ import { useTranslations } from "next-intl";
 import { Button, cx } from "@/components/ui";
 import { updateWeddingFacts } from "@/app/[locale]/(app)/wedding/[id]/facts-actions";
 
-const input = "w-full rounded-[var(--radius)] border border-hairline bg-bone px-3.5 py-2.5 text-[14px] text-ink outline-none focus:border-ink";
-const mlbl = "mt-4 block text-[10.5px] uppercase tracking-[0.14em] text-muted";
+const input = "w-full rounded-[var(--radius)] border border-hairline-token bg-surface-card px-3.5 py-2.5 text-[14px] text-text-primary outline-none focus:border-[color:var(--color-text-primary)]";
+const mlbl = "mt-4 block text-[10.5px] uppercase tracking-[0.14em] text-text-meta";
 
 export type FactsInitial = {
   budget: string;
@@ -45,15 +45,15 @@ export function FactsEditor({ weddingId, initial }: { weddingId: string; initial
 
   return (
     <>
-      <button onClick={() => setOpen(true)} className="text-[12.5px] text-muted hover:text-ink hover:underline hover:underline-offset-2">
+      <button onClick={() => setOpen(true)} className="text-[12.5px] text-text-meta hover:text-text-primary hover:underline hover:underline-offset-2">
         {t("editFacts")}
       </button>
 
       {open ? (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
           <button aria-hidden className="absolute inset-0 cursor-default bg-[rgba(21,18,16,0.55)]" onClick={() => setOpen(false)} />
-          <form action={onSubmit} className="relative w-full max-w-[480px] rounded-[var(--radius)] bg-bone p-7">
-            <h3 className="font-display text-[22px] text-ink">{t("factsTitle")}</h3>
+          <form action={onSubmit} className="relative w-full max-w-[480px] rounded-[var(--radius)] bg-surface-card p-7">
+            <h3 className="font-display text-[22px] text-text-primary">{t("factsTitle")}</h3>
             <p className="mb-1 mt-0.5 font-accent text-[15px] italic text-taupe">{t("factsHint")}</p>
 
             <div className="grid grid-cols-2 gap-x-3">
@@ -90,7 +90,7 @@ export function FactsEditor({ weddingId, initial }: { weddingId: string; initial
               {LANGS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
             </select>
 
-            {err ? <p className="mt-2 text-[13px] text-wine">{err}</p> : null}
+            {err ? <p className="mt-2 text-[13px] text-[color:var(--color-text-danger)]">{err}</p> : null}
             <div className="mt-5 flex justify-end gap-2.5">
               <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>
               <Button type="submit" disabled={pending}>{t("save")}</Button>

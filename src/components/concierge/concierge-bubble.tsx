@@ -175,7 +175,7 @@ export function ConciergeBubble({ weddings, usage: usage0, initialPending = 0 }:
   return (
     <div className="fixed bottom-[26px] right-[26px] z-[60] flex flex-col items-end gap-4 print:hidden">
       {open ? (
-        <section className={`flex h-[600px] max-h-[74vh] w-[390px] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-[var(--radius)] bg-ink border ${HAIR}`}>
+        <section className={`flex h-[600px] max-h-[74vh] w-[390px] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-[var(--radius)] bg-surface-chrome border ${HAIR}`}>
           {/* Header: champagne star + THE CONCIERGE kicker + ledger toggle + new */}
           <header className={`flex items-center gap-2.5 border-b ${HAIR} px-4 py-[15px]`}>
             <DomainStar fill="#D7C3A5" size={15} />
@@ -219,7 +219,7 @@ export function ConciergeBubble({ weddings, usage: usage0, initialPending = 0 }:
               const isLast = i === convo.messages.length - 1;
               if (m.role === "planner") {
                 return (
-                  <div key={i} className="max-w-[85%] self-end rounded-[var(--radius)] bg-bone px-[13px] py-2.5 text-[13px] leading-[1.55] text-ink">{m.content}</div>
+                  <div key={i} className="max-w-[85%] self-end rounded-[var(--radius)] bg-surface-card px-[13px] py-2.5 text-[13px] leading-[1.55] text-text-primary">{m.content}</div>
                 );
               }
               const thinking = busy && isLast && !m.content && !m.draft && !m.action;
@@ -309,7 +309,7 @@ function ActionCardView({ card, t, onDecide }: { card: ActionCard; t: ReturnType
           <button onClick={() => onDecide(card.messageId, "dismiss")} className="rounded-[var(--radius)] px-2.5 py-1 text-[12px] text-[rgba(245,242,235,0.55)] transition-colors hover:text-bone">{t("dismiss")}</button>
         </div>
       ) : (
-        <p className={`mt-1 text-[11.5px] ${card.status === "approved" ? "text-teal" : card.status === "failed" ? "text-wine" : "text-[rgba(245,242,235,0.5)]"}`}>
+        <p className={`mt-1 text-[11.5px] ${card.status === "approved" ? "text-teal" : card.status === "failed" ? "text-[color:var(--color-text-danger)]" : "text-[rgba(245,242,235,0.5)]"}`}>
           {card.status === "approved" ? t("statusApproved") : card.status === "dismissed" ? t("statusDismissed") : card.error || t("actionFailed")}
         </p>
       )}

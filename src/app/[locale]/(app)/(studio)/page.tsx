@@ -49,7 +49,7 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
       <div className="mx-auto max-w-md">
         <Card>
           <Heading>{tws("createTitle")}</Heading>
-          <p className="mb-5 mt-1 font-accent text-[16px] text-muted">{tws("createHint")}</p>
+          <p className="mb-5 mt-1 font-accent text-[16px] text-text-meta">{tws("createHint")}</p>
           <CreateWorkspaceForm />
         </Card>
       </div>
@@ -108,7 +108,7 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
       <TouchLastSeen />
 
       {/* Hero band — charcoal, full-bleed, flush under the section nav (one dark chrome). */}
-      <section className="relative left-1/2 -mt-8 w-screen -translate-x-1/2 bg-ink text-bone">
+      <section className="relative left-1/2 -mt-8 w-screen -translate-x-1/2 bg-surface-chrome text-bone">
         <div className="mx-auto max-w-[1240px] px-8 py-9 md:px-10">
           <div className="flex flex-wrap items-baseline justify-between gap-x-5 gap-y-1">
             <div>
@@ -124,10 +124,10 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
       </section>
 
       {soon ? (
-        <Link href="/calendar" className="mt-4 inline-flex items-center gap-2 rounded-[var(--radius)] border border-hairline bg-bone px-3.5 py-1.5 text-[13px]">
+        <Link href="/calendar" className="mt-4 inline-flex items-center gap-2 rounded-[var(--radius)] border border-hairline-token bg-surface-card px-3.5 py-1.5 text-[13px]">
           <DomainStar domain="time" size={11} />
-          <span className="text-muted">{tc("nextMeeting")}</span>
-          <span className="font-medium text-ink">{soon.title}</span>
+          <span className="text-text-meta">{tc("nextMeeting")}</span>
+          <span className="font-medium text-text-primary">{soon.title}</span>
           <span className="text-taupe">· {timeOf(soon.startAt) === "·" ? formatDate(soon.date, prefs) : timeOf(soon.startAt)}</span>
         </Link>
       ) : null}
@@ -143,12 +143,12 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
               meta={tc("weddingsMeta", { count: inFlight.length })}
             />
             {weddings.length === 0 ? (
-              <p className="px-[18px] py-8 text-center font-accent text-[16px] text-muted">{tc("weddingsEmpty")}</p>
+              <p className="px-[18px] py-8 text-center font-accent text-[16px] text-text-meta">{tc("weddingsEmpty")}</p>
             ) : weddings.map((w) => (
               <PanelRow key={w.id} href={`/wedding/${w.id}`} cols="minmax(150px,1.4fr) 1fr auto auto">
-                <span className="truncate font-display text-[16px] text-ink">{w.couple_display}</span>
-                <span className="truncate text-[12px] text-muted">{[w.location_city, w.location_country].filter(Boolean).join(", ") || "·"}</span>
-                <span className="whitespace-nowrap text-[12px] text-muted">{formatDate(w.date_start, prefs)}</span>
+                <span className="truncate font-display text-[16px] text-text-primary">{w.couple_display}</span>
+                <span className="truncate text-[12px] text-text-meta">{[w.location_city, w.location_country].filter(Boolean).join(", ") || "·"}</span>
+                <span className="whitespace-nowrap text-[12px] text-text-meta">{formatDate(w.date_start, prefs)}</span>
                 <span className="flex items-center gap-2.5">
                   <PhaseDots phase={w.phase} />
                   {w.phase === "closed"
@@ -166,13 +166,13 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
               meta={todays.length ? tc("todayMeta", { count: todays.length }) : undefined}
             />
             {todays.length === 0 ? (
-              <p className="px-[18px] py-7 text-center font-accent text-[15px] text-muted">{tc("todayEmpty")}</p>
+              <p className="px-[18px] py-7 text-center font-accent text-[15px] text-text-meta">{tc("todayEmpty")}</p>
             ) : todays.slice(0, 8).map((e) => (
               <PanelRow key={e.id} href={e.href} cols="64px 1fr auto">
                 <span className="text-[12px] tabular-nums text-taupe">{timeOf(e.startAt)}</span>
-                <span className="truncate text-[13px] text-ink">{e.title}</span>
+                <span className="truncate text-[13px] text-text-primary">{e.title}</span>
                 {e.species === "wedding" ? <Chip tone="settled">{tp("wedding_days")}</Chip>
-                  : e.invitee ? <span className="truncate text-[12px] text-muted">{e.invitee}</span> : <span />}
+                  : e.invitee ? <span className="truncate text-[12px] text-text-meta">{e.invitee}</span> : <span />}
               </PanelRow>
             ))}
           </Panel>
@@ -183,22 +183,22 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
           <DomainHeadCard domain="money" title={tmoney("radar")} meta={tc("moneyRadarMeta")}>
             <div className="grid grid-cols-2 gap-3.5">
               <div>
-                <div className="font-display text-[26px] leading-none text-ink">{fmt(due60)}</div>
-                <div className="mt-1 text-[11px] text-wine">{tc("moneyDueLabel")}</div>
+                <div className="font-display text-[26px] leading-none text-text-primary">{fmt(due60)}</div>
+                <div className="mt-1 text-[11px] text-[color:var(--color-text-danger)]">{tc("moneyDueLabel")}</div>
               </div>
               <div>
-                <div className="font-display text-[26px] leading-none text-ink">{fmt(paidToDate)}</div>
-                <div className="mt-1 text-[11px] text-muted">{tc("moneyPaidLabel")}</div>
+                <div className="font-display text-[26px] leading-none text-text-primary">{fmt(paidToDate)}</div>
+                <div className="mt-1 text-[11px] text-text-meta">{tc("moneyPaidLabel")}</div>
               </div>
             </div>
             {radar.length ? (
-              <div className="mt-3.5 border-t border-hairline">
+              <div className="mt-3.5 border-t border-hairline-token">
                 {radar.slice(0, 5).map((r) => {
                   const od = daysOverdue(r.due_date, r.status);
                   return (
-                    <Link key={r.id} href={`/wedding/${r.wedding_id}/budget`} className="grid items-center gap-3 border-b border-hairline py-2.5 text-[13px] last:border-b-0 [grid-template-columns:1fr_auto_auto] hover:opacity-90">
-                      <span className="truncate text-ink">{r.title} <span className="text-muted">· {r.couple_display}</span></span>
-                      <span className="tabular-nums font-medium text-ink">{fmt(Number(r.amount))}</span>
+                    <Link key={r.id} href={`/wedding/${r.wedding_id}/budget`} className="grid items-center gap-3 border-b border-hairline-token py-2.5 text-[13px] last:border-b-0 [grid-template-columns:1fr_auto_auto] hover:opacity-90">
+                      <span className="truncate text-text-primary">{r.title} <span className="text-text-meta">· {r.couple_display}</span></span>
+                      <span className="tabular-nums font-medium text-text-primary">{fmt(Number(r.amount))}</span>
                       {od > 0 ? <Chip tone="urgent">{tmoney("overdue", { n: od })}</Chip> : <Chip tone="attention">{tmoney("dueChip")}</Chip>}
                     </Link>
                   );
@@ -214,12 +214,12 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
               meta={chase.length ? tc("chaseMeta", { count: chase.length }) : undefined}
             />
             {chase.length === 0 ? (
-              <p className="px-[18px] py-7 text-center font-accent text-[15px] text-muted">{tc("chaseEmpty")}</p>
+              <p className="px-[18px] py-7 text-center font-accent text-[15px] text-text-meta">{tc("chaseEmpty")}</p>
             ) : chase.map((c) => (
               // No "Nudge" action wired today — the row shows the age and links to the item.
               <PanelRow key={c.id} href={c.href} cols="1fr auto">
-                <span className="truncate text-[13px] text-ink">{c.title}{c.kind === "task" ? <span className="text-muted"> · {tc("chaseTask")}</span> : null}</span>
-                <span className={cx("shrink-0 text-[11.5px]", c.ageDays >= 7 ? "text-wine" : "text-taupe")}>{tc("ageDays", { days: c.ageDays })}</span>
+                <span className="truncate text-[13px] text-text-primary">{c.title}{c.kind === "task" ? <span className="text-text-meta"> · {tc("chaseTask")}</span> : null}</span>
+                <span className={cx("shrink-0 text-[11.5px]", c.ageDays >= 7 ? "text-[color:var(--color-text-danger)]" : "text-taupe")}>{tc("ageDays", { days: c.ageDays })}</span>
               </PanelRow>
             ))}
           </Panel>

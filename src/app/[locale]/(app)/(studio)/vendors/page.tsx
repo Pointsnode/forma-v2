@@ -16,7 +16,7 @@ export default async function VendorsPage({ params }: { params: Promise<{ locale
     <div>
       <StudioTitleBand title={t("vendors")} accent={t("vendorsHint")} action={<Link href="/vendors/new"><Button variant="primary">{t("add")}</Button></Link>} />
       {vendors.length === 0
-        ? <div className="rounded-[var(--radius)] bg-bone p-10 text-center"><p className="font-accent text-[17px] text-muted">{t("empty")}</p></div>
+        ? <div className="rounded-[var(--radius)] bg-surface-card p-10 text-center"><p className="font-accent text-[17px] text-text-meta">{t("empty")}</p></div>
         : <CatalogBrowser vendors={vendors} mode="vendors" />}
     </div>
   );

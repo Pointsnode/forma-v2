@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui";
 import { createProposal } from "@/app/[locale]/(app)/wedding/[id]/loop-actions";
 
-const inputCls = "w-full rounded-[var(--radius)] bg-bone px-3.5 py-2.5 text-[14px] text-ink outline-none";
+const inputCls = "w-full rounded-[var(--radius)] bg-surface-card px-3.5 py-2.5 text-[14px] text-text-primary outline-none";
 
 export function NewProposal({ weddingId, events }: { weddingId: string; events: { id: string; label: string }[] }) {
   const t = useTranslations("proposals");
@@ -29,22 +29,22 @@ export function NewProposal({ weddingId, events }: { weddingId: string; events: 
 
   if (!open) return <Button variant="ghost" onClick={() => setOpen(true)}>+ {t("new")}</Button>;
   return (
-    <div className="flex flex-col gap-3 rounded-[var(--radius)] bg-bone p-4">
-      <p className="font-display text-[16px] text-ink">{t("newTitle")}</p>
-      <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("title")}</span>
+    <div className="flex flex-col gap-3 rounded-[var(--radius)] bg-surface-card p-4">
+      <p className="font-display text-[16px] text-text-primary">{t("newTitle")}</p>
+      <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("title")}</span>
         <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} className={inputCls} /></label>
-      <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("note")}</span>
+      <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("note")}</span>
         <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className={inputCls} /></label>
       <div className="grid grid-cols-2 gap-3">
-        <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("estimate")}</span>
+        <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("estimate")}</span>
           <input value={estimate} onChange={(e) => setEstimate(e.target.value)} inputMode="numeric" className={inputCls} /></label>
-        <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("event")}</span>
+        <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("event")}</span>
           <select value={eventRef} onChange={(e) => setEventRef(e.target.value)} className={inputCls}>
             <option value="">{t("noEvent")}</option>
             {events.map((e) => <option key={e.id} value={e.id}>{e.label}</option>)}
           </select></label>
       </div>
-      {err ? <p className="text-[13px] text-wine">{err}</p> : null}
+      {err ? <p className="text-[13px] text-[color:var(--color-text-danger)]">{err}</p> : null}
       <div className="flex gap-2">
         <Button onClick={() => submit(true)} disabled={pending || !title.trim()}>{t("send")}</Button>
         <Button variant="ghost" onClick={() => submit(false)} disabled={pending || !title.trim()}>{t("saveDraft")}</Button>

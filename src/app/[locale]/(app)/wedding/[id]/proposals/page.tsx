@@ -36,7 +36,7 @@ export default async function ProposalsTab({ params }: { params: Promise<{ local
       <div className="mb-6"><NewProposal weddingId={id} events={events.map((e) => ({ id: e.id, label: e.label }))} /></div>
 
       {views.length === 0 ? (
-        <p className="rounded-[var(--radius)] bg-bone p-8 text-center font-accent text-[16px] text-muted">{tprop("emptyAll")}</p>
+        <p className="rounded-[var(--radius)] bg-surface-card p-8 text-center font-accent text-[16px] text-text-meta">{tprop("emptyAll")}</p>
       ) : (
         <div className="flex flex-col gap-6">
           {groups.map((g) =>

@@ -1,7 +1,7 @@
 import { phaseDots, type Phase } from "@/lib/wedding";
 import { cx } from "./cn";
 
-const LIGHT = { done: "bg-teal", now: "bg-wine", ahead: "bg-hairline" } as const;
+const LIGHT = { done: "bg-teal", now: "bg-wine", ahead: "bg-[color:var(--color-hairline-token)]" } as const;
 const DARK = { done: "bg-teal", now: "bg-wine", ahead: "bg-hairline-dark" } as const;
 
 /** Four phase dots — sage done · wine current · sand/hairline ahead. */

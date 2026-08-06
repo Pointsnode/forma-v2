@@ -31,12 +31,12 @@ export default async function JoinTeamPage({ params }: { params: Promise<{ local
         <div className="mb-8 flex justify-center"><SignedMark /></div>
         <Card>
           <Heading>{t("joinTitle")}</Heading>
-          <p className="mb-5 mt-1 font-accent text-[16px] text-muted">{t("joinSignInHint")}</p>
+          <p className="mb-5 mt-1 font-accent text-[16px] text-text-meta">{t("joinSignInHint")}</p>
           <div className="flex flex-col gap-2">
             <Link href={{ pathname: "/sign-in", query: { next: `/join/team/${token}` } }}>
               <Button className="w-full">{t("joinSignIn")}</Button>
             </Link>
-            <Link href={{ pathname: "/sign-up", query: { next: `/join/team/${token}` } }} className="text-center text-[13px] text-muted hover:text-ink">
+            <Link href={{ pathname: "/sign-up", query: { next: `/join/team/${token}` } }} className="text-center text-[13px] text-text-meta hover:text-text-primary">
               {t("joinSignUp")}
             </Link>
           </div>
@@ -62,23 +62,23 @@ export default async function JoinTeamPage({ params }: { params: Promise<{ local
         <Heading>{t("joinTitle")}</Heading>
         {preview && preview.status === "ok" ? (
           <>
-            <p className="mb-4 mt-1 font-accent text-[16px] text-muted">
+            <p className="mb-4 mt-1 font-accent text-[16px] text-text-meta">
               {t.rich("joinInvited", {
                 workspace: preview.workspace_name ?? "·",
                 inviter: preview.inviter ?? "·",
-                b: (c) => <span className="font-medium text-ink">{c}</span>,
+                b: (c) => <span className="font-medium text-text-primary">{c}</span>,
               })}
             </p>
             <div className="mb-5 flex flex-wrap gap-1.5">
               {CLEARANCE_BOXES.filter((k) => preview.grants.includes(k)).map((k) => (
                 <Chip key={k} active>{t(`box.${k}`)}</Chip>
               ))}
-              {preview.grants.length === 0 ? <span className="text-[13px] text-muted">{t("noBoxes")}</span> : null}
+              {preview.grants.length === 0 ? <span className="text-[13px] text-text-meta">{t("noBoxes")}</span> : null}
             </div>
             <AcceptTeamInvite token={token} />
           </>
         ) : (
-          <p className="mt-1 font-accent text-[16px] text-muted">{notice}</p>
+          <p className="mt-1 font-accent text-[16px] text-text-meta">{notice}</p>
         )}
       </Card>
     </div>

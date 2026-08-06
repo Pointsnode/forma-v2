@@ -70,7 +70,7 @@ export function PanelRow({ children, href, cols, className }: { children: ReactN
 // tint the body, never two accents. money=teal, time=champagne (ink type), people=taupe. ──
 const STRIP: Record<Domain, { bg: string; on: string; star: string; border: string; meta: string }> = {
   money: { bg: "bg-teal", on: "text-bone", star: "#F5F2EB", border: "border-teal", meta: "text-bone/75" },
-  time: { bg: "bg-champagne", on: "text-ink", star: "#111111", border: "border-champagne", meta: "text-ink/60" },
+  time: { bg: "bg-champagne", on: "text-text-primary", star: "#111111", border: "border-champagne", meta: "text-text-primary/60" },
   people: { bg: "bg-taupe", on: "text-bone", star: "#F5F2EB", border: "border-taupe", meta: "text-bone/75" },
 };
 export function DomainHeadCard({ domain, title, meta, children, className, id }: {

@@ -79,7 +79,7 @@ export default async function WeddingFloor({ params }: { params: Promise<{ local
         <Stat value={wedding.guest_target ?? guestRollup.invited} label={tw("statGuests")} sub={guestRollup.answered ? tw("statGuestsSub", { count: guestRollup.answered }) : undefined} />
         <Stat value={money ?? "·"} label={tw("statBudget")} />
         {engagements.length ? (
-          <Stat value={<>{booked}<span className="text-[16px] text-muted">/{engagements.length}</span></>} label={tw("statBookings")} />
+          <Stat value={<>{booked}<span className="text-[16px] text-text-meta">/{engagements.length}</span></>} label={tw("statBookings")} />
         ) : null}
         <Stat
           value={wedding.phase === "closed" ? tw("settled") : days == null ? "·" : days >= 0 ? days : tw("daysAgo", { count: -days })}
@@ -93,7 +93,7 @@ export default async function WeddingFloor({ params }: { params: Promise<{ local
           <SectionTitle title={tprop("waiting")} accent={tprop("waitingLoop")} className="mt-0" />
           <div className="flex flex-col gap-3">
             {waiting.length === 0 ? (
-              <p className="rounded-[var(--radius)] bg-bone p-6 text-center font-accent text-[16px] text-muted">{tprop("empty")}</p>
+              <p className="rounded-[var(--radius)] bg-surface-card p-6 text-center font-accent text-[16px] text-text-meta">{tprop("empty")}</p>
             ) : (
               waiting.map((v) => <ProposalCard key={v.id} weddingId={id} p={v} />)
             )}
@@ -193,7 +193,7 @@ async function CoupleLens({
           <PanelHead star={<DomainStar domain="people" size={11} />} title={tcp("decisionsWaiting")} meta={inCourt.length ? String(inCourt.length) : undefined} />
           <div className="p-[18px]">
             {inCourt.length === 0 && settled.length === 0
-              ? <p className="font-accent text-[15px] italic text-muted">{tcp("decisionsEmpty")}</p>
+              ? <p className="font-accent text-[15px] italic text-text-meta">{tcp("decisionsEmpty")}</p>
               : <DecisionInbox weddingId={weddingId} inCourt={inCourt} settled={settled} />}
           </div>
         </Panel>
@@ -203,11 +203,11 @@ async function CoupleLens({
           <PanelHead star={<DomainStar domain="money" size={11} />} title={tcp("theBudget")} meta={tcp("alwaysCurrent")} />
           <div className="p-[18px]">
             <div className="flex items-baseline justify-between">
-              <span className="font-display text-[24px] tabular-nums text-ink">{formatMoney(committed, lang) ?? "·"}</span>
-              <span className="text-[12px] text-muted">{tcp("ofCommitted", { total: formatMoney(budgetTotal, lang) ?? "·" })}</span>
+              <span className="font-display text-[24px] tabular-nums text-text-primary">{formatMoney(committed, lang) ?? "·"}</span>
+              <span className="text-[12px] text-text-meta">{tcp("ofCommitted", { total: formatMoney(budgetTotal, lang) ?? "·" })}</span>
             </div>
-            <div className="mt-3 h-[3px] rounded-[2px] bg-hairline"><div className="h-[3px] rounded-[2px] bg-teal" style={{ width: `${pctBudget}%` }} /></div>
-            <p className="mt-3 text-[12px] text-muted">{dueAmount > 0 ? tcp("dueLine", { amount: formatMoney(dueAmount, lang) ?? "·" }) : tcp("nothingDue")}</p>
+            <div className="mt-3 h-[3px] rounded-[2px] bg-[color:var(--color-hairline-token)]"><div className="h-[3px] rounded-[2px] bg-teal" style={{ width: `${pctBudget}%` }} /></div>
+            <p className="mt-3 text-[12px] text-text-meta">{dueAmount > 0 ? tcp("dueLine", { amount: formatMoney(dueAmount, lang) ?? "·" }) : tcp("nothingDue")}</p>
           </div>
         </Panel>
 
@@ -222,15 +222,15 @@ async function CoupleLens({
                   const hero = p.photos?.[0]?.path ? photoUrls.get(p.photos[0].path) : null;
                   return (
                     <li key={p.engagement_id} className="flex items-center gap-3 py-3 not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)]">
-                      <span className="h-12 w-12 shrink-0 overflow-hidden rounded-[var(--radius)] bg-bone">
+                      <span className="h-12 w-12 shrink-0 overflow-hidden rounded-[var(--radius)] bg-surface-card">
                         {hero ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={hero} alt={p.vendor_name} className="h-12 w-12 object-cover" />
                         ) : null}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="font-display text-[15px] text-ink">{p.vendor_name}</p>
-                        {p.description ? <p className="truncate font-accent text-[13.5px] text-muted">{p.description}</p> : null}
+                        <p className="font-display text-[15px] text-text-primary">{p.vendor_name}</p>
+                        {p.description ? <p className="truncate font-accent text-[13.5px] text-text-meta">{p.description}</p> : null}
                       </div>
                       <Pill tone={p.status === "booked" ? "sage" : "sand"}>{teng(statusKey(p.status))}</Pill>
                     </li>
@@ -244,7 +244,7 @@ async function CoupleLens({
 
       {/* The weekend band (charcoal, full-bleed) — champagne star + day rows with champagne times. */}
       {weekend.length ? (
-        <section className="relative left-1/2 mt-8 w-screen -translate-x-1/2 bg-ink text-bone">
+        <section className="relative left-1/2 mt-8 w-screen -translate-x-1/2 bg-surface-chrome text-bone">
           <div className="mx-auto max-w-[860px] px-8 py-11">
             <div className="flex items-baseline justify-between">
               <span className="flex items-center gap-2 font-display text-[24px] text-bone"><DomainStar fill="#D7C3A5" size={13} />{tcp("theWeekend")}</span>

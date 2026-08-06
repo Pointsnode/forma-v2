@@ -37,7 +37,7 @@ export default async function DocumentsTab({ params }: { params: Promise<{ local
       {role === "staff" || role === "member" ? <div className="mb-4"><DocUpload weddingId={id} /></div> : null}
       <Card>
         {docs.length === 0 ? (
-          <p className="py-6 text-center font-accent text-[15px] text-muted">{t("noDocuments")}</p>
+          <p className="py-6 text-center font-accent text-[15px] text-text-meta">{t("noDocuments")}</p>
         ) : (
           docs.map((d) => {
             const url = urls.get(d.id);
@@ -46,11 +46,11 @@ export default async function DocumentsTab({ params }: { params: Promise<{ local
               <>
                 <Icon>{d.title.trim()[0]?.toUpperCase() ?? "D"}</Icon>
                 <RowMain title={d.title} detail={detail} />
-                {url ? <span className="shrink-0 text-[12px] text-wine">{t("open")} ↓</span> : null}
+                {url ? <span className="shrink-0 text-[12px] text-[color:var(--color-text-danger)]">{t("open")} ↓</span> : null}
               </>
             );
             return (
-              <Row key={d.id} className="-mx-2 rounded-[var(--radius)] px-2 hover:bg-bone">
+              <Row key={d.id} className="-mx-2 rounded-[var(--radius)] px-2 hover:bg-surface-card">
                 {url ? <a href={url} target="_blank" rel="noopener" className="flex min-w-0 flex-1 items-center gap-3">{inner}</a> : <span className="flex min-w-0 flex-1 items-center gap-3">{inner}</span>}
                 {role === "staff" ? <QuickAddTask weddings={[]} workspaceId="" defaultWeddingId={id} prelink={{ kind: "document", id: d.id, label: d.title }} variant="inline" /> : null}
               </Row>

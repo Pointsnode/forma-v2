@@ -29,20 +29,20 @@ export function GuestIntake({ weddingId, existing }: { weddingId: string; existi
 
   if (!open) return <Button variant="ghost" onClick={() => setOpen(true)}>+ {t("addGuests")}</Button>;
   return (
-    <div className="flex flex-col gap-3 rounded-[var(--radius)] bg-bone p-4">
-      <p className="font-display text-[16px] text-ink">{t("intakeTitle")}</p>
+    <div className="flex flex-col gap-3 rounded-[var(--radius)] bg-surface-card p-4">
+      <p className="font-display text-[16px] text-text-primary">{t("intakeTitle")}</p>
       <label className="flex flex-col gap-1">
-        <span className="text-[12px] text-muted">{t("pasteLabel")}</span>
+        <span className="text-[12px] text-text-meta">{t("pasteLabel")}</span>
         <textarea value={text} onChange={(e) => setText(e.target.value)} rows={6} placeholder={t("pastePlaceholder")}
-          className="w-full rounded-[var(--radius)] bg-bone px-3 py-2 font-mono text-[13px] text-ink outline-none" />
+          className="w-full rounded-[var(--radius)] bg-surface-card px-3 py-2 font-mono text-[13px] text-text-primary outline-none" />
       </label>
       {text.trim() ? (
-        <p className="font-accent text-[14.5px] text-muted">
+        <p className="font-accent text-[14.5px] text-text-meta">
           {t("previewNew", { count: toAdd.length })}
           {duplicates > 0 ? ` · ${t("previewDuplicates", { count: duplicates })}` : ""}
         </p>
       ) : null}
-      {err ? <p className="text-[13px] text-wine">{err}</p> : null}
+      {err ? <p className="text-[13px] text-[color:var(--color-text-danger)]">{err}</p> : null}
       <div className="flex gap-2">
         <Button onClick={commit} disabled={pending || !toAdd.length}>{t("commit")}</Button>
         <Button variant="ghost" onClick={() => setOpen(false)}>{t("cancel")}</Button>

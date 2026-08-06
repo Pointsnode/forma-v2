@@ -5,8 +5,8 @@ import { useTranslations } from "next-intl";
 import { Button, cx } from "@/components/ui";
 import { createVendor, uploadVendorMedia, presentVendor, type VendorResult } from "@/app/[locale]/(app)/(studio)/vendors/actions";
 
-const input = "w-full rounded-[var(--radius)] border border-hairline bg-bone px-3.5 py-2.5 text-[14px] text-ink outline-none focus:border-ink";
-const mlbl = "mt-4 block text-[10.5px] uppercase tracking-[0.14em] text-muted";
+const input = "w-full rounded-[var(--radius)] border border-hairline-token bg-surface-card px-3.5 py-2.5 text-[14px] text-text-primary outline-none focus:border-[color:var(--color-text-primary)]";
+const mlbl = "mt-4 block text-[10.5px] uppercase tracking-[0.14em] text-text-meta";
 const KINDS = ["venue", "catering", "florals", "music", "photo_video", "beauty", "decor", "rentals", "other"] as const;
 const kindKey = (k: string) => `kind${k.charAt(0).toUpperCase()}${k.slice(1)}`;
 
@@ -16,28 +16,28 @@ export function AddVendorForm({ defaultKind = "other" }: { defaultKind?: string 
   const [state, action, pending] = useActionState<VendorResult, FormData>(async (_p, fd) => createVendor(fd), {});
   return (
     <form action={action} className="flex flex-col gap-3">
-      <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("name")}</span><input name="name" required maxLength={200} className={input} /></label>
-      <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("kind")}</span>
+      <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("name")}</span><input name="name" required maxLength={200} className={input} /></label>
+      <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("kind")}</span>
         <select name="kind" value={kind} onChange={(e) => setKind(e.target.value)} className={input}>
           {KINDS.map((k) => <option key={k} value={k}>{t(kindKey(k))}</option>)}
         </select></label>
-      <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("description")}</span><textarea name="description" rows={2} className={input} /></label>
+      <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("description")}</span><textarea name="description" rows={2} className={input} /></label>
       <div className="grid grid-cols-2 gap-3">
-        <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("tags")}</span><input name="tags" className={input} /></label>
-        <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("cities")}</span><input name="cities" className={input} /></label>
+        <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("tags")}</span><input name="tags" className={input} /></label>
+        <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("cities")}</span><input name="cities" className={input} /></label>
       </div>
       {kind === "venue" ? (
         <div className="grid grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("capacity")}</span><input name="capacity" inputMode="numeric" className={input} /></label>
-          <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("address")}</span><input name="address" className={input} /></label>
+          <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("capacity")}</span><input name="capacity" inputMode="numeric" className={input} /></label>
+          <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("address")}</span><input name="address" className={input} /></label>
         </div>
       ) : null}
       <div className="grid grid-cols-3 gap-3">
-        <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("contactName")}</span><input name="contact_name" className={input} /></label>
-        <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("contactEmail")}</span><input name="contact_email" className={input} /></label>
-        <label className="flex flex-col gap-1"><span className="text-[12px] text-muted">{t("contactPhone")}</span><input name="contact_phone" className={input} /></label>
+        <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("contactName")}</span><input name="contact_name" className={input} /></label>
+        <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("contactEmail")}</span><input name="contact_email" className={input} /></label>
+        <label className="flex flex-col gap-1"><span className="text-[12px] text-text-meta">{t("contactPhone")}</span><input name="contact_phone" className={input} /></label>
       </div>
-      {state?.error ? <p className="text-[13px] text-wine">{t("error")}</p> : null}
+      {state?.error ? <p className="text-[13px] text-[color:var(--color-text-danger)]">{t("error")}</p> : null}
       <Button type="submit" disabled={pending}>{t("save")}</Button>
     </form>
   );
@@ -50,12 +50,12 @@ export function MediaUpload({ vendorId, kind }: { vendorId: string; kind: "photo
     <form action={action} className="flex items-center gap-2">
       <input type="file" name="file" required accept={kind === "photo" ? "image/*" : "image/*,application/pdf"} className="text-[13px]" />
       {kind === "file" ? (
-        <select name="label" className="rounded-[var(--radius)] bg-bone px-2 py-1.5 text-[13px] outline-none">
+        <select name="label" className="rounded-[var(--radius)] bg-surface-card px-2 py-1.5 text-[13px] outline-none">
           {["packet", "rates", "menu", "other"].map((l) => <option key={l} value={l}>{t(`label${l.charAt(0).toUpperCase()}${l.slice(1)}`)}</option>)}
         </select>
       ) : null}
       <Button type="submit" variant="ghost" disabled={pending}>{pending ? t("uploading") : (kind === "photo" ? t("addPhoto") : t("addFile"))}</Button>
-      {state?.error ? <span className="text-[12.5px] text-wine">{t("error")}</span> : null}
+      {state?.error ? <span className="text-[12.5px] text-[color:var(--color-text-danger)]">{t("error")}</span> : null}
     </form>
   );
 }
@@ -95,13 +95,13 @@ export function PresentForm({ vendorKind, weddingId, events, onDone, doPresent }
     <div>
       {multiEvent ? (
         <>
-          <label className={mlbl}>{t("pickEvents")}{isVenue ? <span className="ml-1.5 lowercase tracking-normal text-wine">· {t("eventRequired")}</span> : null}</label>
+          <label className={mlbl}>{t("pickEvents")}{isVenue ? <span className="ml-1.5 lowercase tracking-normal text-[color:var(--color-text-danger)]">· {t("eventRequired")}</span> : null}</label>
           <div className="mt-2 flex flex-wrap gap-2">
             {events.map((e) => {
               const on = selEvents.includes(e.id);
               return (
                 <button key={e.id} type="button" onClick={() => setSelEvents(on ? selEvents.filter((x) => x !== e.id) : [...selEvents, e.id])}
-                  className={cx("rounded-[var(--radius)] px-3.5 py-1.5 text-[12px]", on ? "bg-ink text-bone" : "bg-bone text-ink-soft")}>{e.label}</button>
+                  className={cx("rounded-[var(--radius)] px-3.5 py-1.5 text-[12px]", on ? "bg-surface-chrome text-bone" : "bg-surface-card text-text-primary-soft")}>{e.label}</button>
               );
             })}
           </div>
@@ -115,7 +115,7 @@ export function PresentForm({ vendorKind, weddingId, events, onDone, doPresent }
       <label className={mlbl}>{t("note")}</label>
       <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className={cx(input, "mt-1.5 min-h-16 resize-y")} />
 
-      {err ? <p className="mt-2 text-[13px] text-wine">{err}</p> : null}
+      {err ? <p className="mt-2 text-[13px] text-[color:var(--color-text-danger)]">{err}</p> : null}
       <div className="mt-5 flex justify-end gap-2.5">
         <button type="button" onClick={submit} disabled={pending || !weddingId}
           className="inline-flex items-center justify-center rounded-[var(--radius)] bg-wine px-5 py-2.5 text-[14px] font-medium text-bone transition-opacity hover:opacity-90 disabled:opacity-50">{t("confirmSend")}</button>
@@ -144,8 +144,8 @@ export function PresentModal({ vendorId, vendorName, vendorKind, weddings }: { v
       {open ? (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4">
           <button aria-hidden className="absolute inset-0 cursor-default bg-[rgba(21,18,16,0.55)]" onClick={() => setOpen(false)} />
-          <div className="relative w-full max-w-[530px] rounded-[var(--radius)] bg-bone p-7">
-            <h3 className="font-display text-[23px] text-ink">{t("presentVendor", { vendor: vendorName })}</h3>
+          <div className="relative w-full max-w-[530px] rounded-[var(--radius)] bg-surface-card p-7">
+            <h3 className="font-display text-[23px] text-text-primary">{t("presentVendor", { vendor: vendorName })}</h3>
             <p className="mb-2 mt-0.5 font-accent text-[15px] italic text-taupe">{t("presentSub")}</p>
             <label className={mlbl}>{t("pickWedding")}</label>
             <select value={weddingId} onChange={(e) => setWeddingId(e.target.value)} className={cx(input, "mt-1.5")}>
@@ -156,7 +156,7 @@ export function PresentModal({ vendorId, vendorName, vendorKind, weddings }: { v
           </div>
         </div>
       ) : null}
-      {toast ? <div className="fixed bottom-16 left-1/2 z-[95] w-max max-w-[92vw] -translate-x-1/2 rounded-[var(--radius)] bg-ink px-6 py-3 text-center text-[12.5px] text-bone">{toast}</div> : null}
+      {toast ? <div className="fixed bottom-16 left-1/2 z-[95] w-max max-w-[92vw] -translate-x-1/2 rounded-[var(--radius)] bg-surface-chrome px-6 py-3 text-center text-[12.5px] text-bone">{toast}</div> : null}
     </>
   );
 }

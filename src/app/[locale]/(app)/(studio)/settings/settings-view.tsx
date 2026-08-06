@@ -278,7 +278,7 @@ function PlanSection({ data }: { data: SettingsData }) {
         {data.stripeConfigured && data.isOwner ? (
           <div className="mt-4 flex items-center gap-3">
             {isLive ? (
-              <button onClick={() => goto(openBillingPortal)} disabled={pending} className="rounded-[var(--radius)] border border-ink px-5 py-2 text-[13px] text-text-primary hover:bg-surface-chrome hover:text-bone disabled:opacity-50">{t("managePlanBtn")}</button>
+              <button onClick={() => goto(openBillingPortal)} disabled={pending} className="rounded-[var(--radius)] border border-[color:var(--color-text-primary)] px-5 py-2 text-[13px] text-text-primary hover:bg-surface-chrome hover:text-bone disabled:opacity-50">{t("managePlanBtn")}</button>
             ) : (
               <button onClick={() => goto(startSubscription)} disabled={pending} className="rounded-[var(--radius)] bg-surface-chrome px-5 py-2 text-[13px] text-bone hover:opacity-90 disabled:opacity-50">{t("startSubscription")}</button>
             )}
@@ -317,11 +317,11 @@ function AccountSection({ data }: { data: SettingsData }) {
       <p className="mb-2 text-[13px] text-text-primary">{data.email}</p>
       <div className="mb-5 flex max-w-md gap-2">
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("newEmailPlaceholder")} className="flex-1 rounded-[var(--radius)] border border-hairline-token bg-surface-card px-3 py-2 text-[13px]" />
-        <button onClick={() => start(async () => { const r = await changeEmail(email); flash(r.ok ? "emailSent" : "err"); if (r.ok) setEmail(""); })} disabled={pending || !email} className="rounded-[var(--radius)] border border-ink px-4 py-2 text-[13px] text-text-primary hover:bg-surface-chrome hover:text-bone disabled:opacity-40">{t("changeEmail")}</button>
+        <button onClick={() => start(async () => { const r = await changeEmail(email); flash(r.ok ? "emailSent" : "err"); if (r.ok) setEmail(""); })} disabled={pending || !email} className="rounded-[var(--radius)] border border-[color:var(--color-text-primary)] px-4 py-2 text-[13px] text-text-primary hover:bg-surface-chrome hover:text-bone disabled:opacity-40">{t("changeEmail")}</button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3 border-t border-hairline-token pt-5">
-        <button onClick={() => start(async () => { const r = await sendPasswordReset(); flash(r.ok ? "resetSent" : "err"); })} disabled={pending} className="rounded-[var(--radius)] border border-ink px-4 py-2 text-[13px] text-text-primary hover:bg-surface-chrome hover:text-bone disabled:opacity-50">{t("changePassword")}</button>
+        <button onClick={() => start(async () => { const r = await sendPasswordReset(); flash(r.ok ? "resetSent" : "err"); })} disabled={pending} className="rounded-[var(--radius)] border border-[color:var(--color-text-primary)] px-4 py-2 text-[13px] text-text-primary hover:bg-surface-chrome hover:text-bone disabled:opacity-50">{t("changePassword")}</button>
         <button onClick={() => start(() => signOutEverywhere())} disabled={pending} className="rounded-[var(--radius)] border border-wine px-4 py-2 text-[13px] text-[color:var(--color-text-danger)] hover:bg-wine hover:text-bone disabled:opacity-50">{t("signOutEverywhere")}</button>
       </div>
 
@@ -364,7 +364,7 @@ function PrivacySection({ data }: { data: SettingsData }) {
         {data.deletionRequestedAt ? (
           <>
             <p className="mb-3 mt-0.5 text-[12.5px] text-[color:var(--color-text-danger)]">{t("deletePending")}</p>
-            <button onClick={() => start(async () => { await undoDeletion(); })} disabled={pending} className="rounded-[var(--radius)] border border-ink px-4 py-2 text-[13px] text-text-primary hover:bg-surface-chrome hover:text-bone disabled:opacity-50">{t("undoDelete")}</button>
+            <button onClick={() => start(async () => { await undoDeletion(); })} disabled={pending} className="rounded-[var(--radius)] border border-[color:var(--color-text-primary)] px-4 py-2 text-[13px] text-text-primary hover:bg-surface-chrome hover:text-bone disabled:opacity-50">{t("undoDelete")}</button>
           </>
         ) : !data.isOwner ? (
           <p className="mt-0.5 text-[12.5px] text-text-meta">{t("deleteOwnerOnly")}</p>
@@ -378,7 +378,7 @@ function PrivacySection({ data }: { data: SettingsData }) {
             <p className="mb-3 mt-0.5 text-[12.5px] text-[color:var(--color-text-danger)]">{t("deleteConfirm")}</p>
             <div className="flex gap-2">
               <button onClick={() => start(async () => { await requestDeletion(); setConfirming(false); })} disabled={pending} className="rounded-[var(--radius)] bg-wine px-4 py-2 text-[13px] text-bone hover:opacity-90 disabled:opacity-50">{t("deleteConfirmYes")}</button>
-              <button onClick={() => setConfirming(false)} className="rounded-[var(--radius)] border border-ink px-4 py-2 text-[13px] text-text-primary hover:bg-surface-card">{t("cancel")}</button>
+              <button onClick={() => setConfirming(false)} className="rounded-[var(--radius)] border border-[color:var(--color-text-primary)] px-4 py-2 text-[13px] text-text-primary hover:bg-surface-card">{t("cancel")}</button>
             </div>
           </>
         )}

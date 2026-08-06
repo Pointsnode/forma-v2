@@ -72,7 +72,7 @@ export function TopBar({
                   onClick={() => setOpen(false)}
                   className="flex items-center gap-3 px-4 py-3 text-[12.5px] not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline-token)] hover:bg-surface-page"
                 >
-                  <span className="flex h-[26px] w-[26px] items-center justify-center rounded-[var(--radius)] bg-ink text-[9px] font-semibold text-bone">{monogram}</span>
+                  <span className="flex h-[26px] w-[26px] items-center justify-center rounded-[var(--radius)] bg-surface-chrome text-[9px] font-semibold text-bone">{monogram}</span>
                   <span>
                     <span className="block font-medium">{ts("switcherStudio")}</span>
                     <span className="block text-[11px] text-text-meta">{ts("switcherStudioHint")}</span>

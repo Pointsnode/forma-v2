@@ -37,7 +37,7 @@ export async function VendorProfile({ id }: { id: string }) {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-5">
-      <Link href={isVenue ? "/venues" : "/vendors"} className="text-[13px] text-muted hover:text-ink">← {isVenue ? t("venues") : t("vendors")}</Link>
+      <Link href={isVenue ? "/venues" : "/vendors"} className="text-[13px] text-text-meta hover:text-text-primary">← {isVenue ? t("venues") : t("vendors")}</Link>
 
       <div className="flex items-center gap-3">
         <Heading className="text-[28px]">{vendor.name}</Heading>
@@ -59,14 +59,14 @@ export async function VendorProfile({ id }: { id: string }) {
       )}
 
       <Card>
-        {vendor.description ? <p className="mb-3 font-accent text-[16px] text-ink-soft">{vendor.description}</p> : null}
+        {vendor.description ? <p className="mb-3 font-accent text-[16px] text-text-primary-soft">{vendor.description}</p> : null}
         {facts.length ? <p className="text-[13.5px] text-taupe">{facts.join(" · ")}</p> : null}
         {vendor.tags.length ? <div className="mt-2 flex flex-wrap gap-1.5">{vendor.tags.map((tag) => <Pill key={tag} tone="bone">{tag}</Pill>)}</div> : null}
         <dl className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {vendor.services ? <div><SectionLabel>{t("services")}</SectionLabel><p className="text-[14px] text-ink">{vendor.services}</p></div> : null}
-          {vendor.restrictions ? <div><SectionLabel>{t("restrictions")}</SectionLabel><p className="text-[14px] text-ink">{vendor.restrictions}</p></div> : null}
-          {vendor.perks ? <div><SectionLabel>{t("perks")}</SectionLabel><p className="text-[14px] text-ink">{vendor.perks}</p></div> : null}
-          {vendor.contact_name || vendor.contact_email ? <div><SectionLabel>{t("contactName")}</SectionLabel><p className="text-[14px] text-ink">{[vendor.contact_name, vendor.contact_email, vendor.contact_phone].filter(Boolean).join(" · ")}</p></div> : null}
+          {vendor.services ? <div><SectionLabel>{t("services")}</SectionLabel><p className="text-[14px] text-text-primary">{vendor.services}</p></div> : null}
+          {vendor.restrictions ? <div><SectionLabel>{t("restrictions")}</SectionLabel><p className="text-[14px] text-text-primary">{vendor.restrictions}</p></div> : null}
+          {vendor.perks ? <div><SectionLabel>{t("perks")}</SectionLabel><p className="text-[14px] text-text-primary">{vendor.perks}</p></div> : null}
+          {vendor.contact_name || vendor.contact_email ? <div><SectionLabel>{t("contactName")}</SectionLabel><p className="text-[14px] text-text-primary">{[vendor.contact_name, vendor.contact_email, vendor.contact_phone].filter(Boolean).join(" · ")}</p></div> : null}
         </dl>
       </Card>
 
@@ -93,7 +93,7 @@ export async function VendorProfile({ id }: { id: string }) {
           <ul className="flex flex-col">
             {engagements.map((e) => (
               <li key={e.id} className="flex items-center justify-between py-2.5 text-[14px] not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)]">
-                <span className="text-ink">{t("presentedTo", { couple: e.couple })}</span>
+                <span className="text-text-primary">{t("presentedTo", { couple: e.couple })}</span>
                 <Badge tone={e.status === "booked" ? "ink" : "sand"}>{te(statusKey(e.status))}</Badge>
               </li>
             ))}
