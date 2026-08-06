@@ -1575,6 +1575,20 @@
     "catTablescape": "Tablescape",
     "catFlorals": "Florals",
     "catAttire": "Attire",
-    "catPaper": "Paper"
+    "catPaper": "Paper",
+    "setTable": "Set the table",
+    "printKicker": "The design",
+    "comments": "Comments",
+    "addComment": "Add a note",
+    "commentPlaceholder": "Write a note…",
+    "editComment": "Edit",
+    "deleteComment": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "commentEmpty": "No notes yet.",
+    "commentSend": "Send",
+    "emailSubject": "A note on your design · {couple}",
+    "emailLead": "{planner} left a note on your design studio.",
+    "emailCta": "Open the studio"
   }
 }

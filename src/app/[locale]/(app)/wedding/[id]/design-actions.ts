@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { notifyCoupleOfComment } from "@/lib/design-notify";
 
 export type DesignResult = { ok?: boolean; error?: string };
 const HEX = /^#[0-9a-fA-F]{6}$/;
@@ -59,6 +60,39 @@ export async function pinGuide(boardId: string, weddingId: string, budgetCategor
 export async function updateGuide(boardId: string, weddingId: string, patch: { category?: string | null; cover_item_id?: string | null }): Promise<DesignResult> {
   const supabase = await createClient();
   const { error } = await supabase.from("design_boards").update(patch).eq("id", boardId).eq("wedding_id", weddingId);
+  if (error) return { error: error.code || "generic" };
+  revalidate();
+  return { ok: true };
+}
+
+// ── Comments (per image, planner + couple). RLS gates read to the wedding's staff+couple
+// and write/edit/delete to the author. A PLANNER comment notifies the couple by email. ──
+export async function addComment(itemId: string, weddingId: string, body: string): Promise<DesignResult> {
+  const clean = body.trim();
+  if (!clean) return { error: "empty" };
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const { error } = await supabase.from("design_comments").insert({ item_id: itemId, author_id: user?.id, body: clean });
+  if (error) return { error: error.code || "generic" };
+  // Best-effort couple notification (fires only for a staff author; see design-notify).
+  try { await notifyCoupleOfComment(weddingId, itemId, user?.id, clean); } catch (e) { console.error("comment notify failed", e); }
+  revalidate();
+  return { ok: true };
+}
+
+export async function editComment(id: string, body: string): Promise<DesignResult> {
+  const clean = body.trim();
+  if (!clean) return { error: "empty" };
+  const supabase = await createClient();
+  const { error } = await supabase.from("design_comments").update({ body: clean, edited_at: new Date().toISOString() }).eq("id", id);
+  if (error) return { error: error.code || "generic" };
+  revalidate();
+  return { ok: true };
+}
+
+export async function deleteComment(id: string): Promise<DesignResult> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("design_comments").delete().eq("id", id);
   if (error) return { error: error.code || "generic" };
   revalidate();
   return { ok: true };

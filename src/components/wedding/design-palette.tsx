@@ -5,7 +5,10 @@ import { useTranslations } from "next-intl";
 import { extractSwatches } from "@/lib/palette-extract.mjs";
 import {
   addWeddingSwatch, removeWeddingSwatch, keepSwatchForStudio, pinGuide, updateGuide,
+  addComment, editComment, deleteComment,
 } from "@/app/[locale]/(app)/wedding/[id]/design-actions";
+
+export type LightboxComment = { id: string; author: string; body: string; createdAt: string; edited: boolean; mine: boolean };
 
 type Swatch = { id: string; hex: string; name: string | null };
 
@@ -141,5 +144,71 @@ export function PinControl({ boardId, weddingId, categories, engagements, budget
         </div>
       ) : null}
     </div>
+  );
+}
+
+// The lightbox: an enlarged image + its per-image comment thread (planner + couple). A new
+// planner comment emails the couple (server-side). Edit/delete your own.
+export function CommentLightbox({ item, comments, weddingId }: {
+  item: { id: string; title: string; url: string }; comments: LightboxComment[]; weddingId: string;
+}) {
+  const t = useTranslations("design");
+  const [open, setOpen] = useState(false);
+  const [body, setBody] = useState("");
+  const [editing, setEditing] = useState<string | null>(null);
+  const [editBody, setEditBody] = useState("");
+  const [, start] = useTransition();
+  return (
+    <>
+      <button onClick={() => setOpen(true)} className="block h-24 w-full" aria-label={item.title}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={item.url} alt={item.title} className="h-24 w-full object-cover" />
+      </button>
+      {open ? (
+        <div className="fixed inset-0 z-[95] flex items-center justify-center p-4">
+          <button aria-hidden className="absolute inset-0 bg-[rgba(17,17,17,0.7)]" onClick={() => setOpen(false)} />
+          <div className="relative flex max-h-[86vh] w-full max-w-[880px] flex-col overflow-hidden rounded-[var(--radius)] border border-hairline bg-bone md:flex-row">
+            <div className="flex flex-1 items-center justify-center bg-ink">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={item.url} alt={item.title} className="max-h-[86vh] w-full object-contain" />
+            </div>
+            <div className="flex w-full flex-col md:w-[320px]">
+              <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
+                <p className="font-display text-[16px] text-ink">{item.title}</p>
+                <button onClick={() => setOpen(false)} aria-label={t("cancel")} className="text-[13px] text-muted hover:text-ink">✕</button>
+              </div>
+              <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
+                {comments.length === 0 ? (
+                  <p className="font-accent text-[14px] italic text-muted">{t("commentEmpty")}</p>
+                ) : comments.map((c) => (
+                  <div key={c.id}>
+                    <p className="text-[11px] text-muted"><span className="font-medium text-ink">{c.author}</span> · {c.createdAt}</p>
+                    {editing === c.id ? (
+                      <div className="mt-1 flex gap-1.5">
+                        <input value={editBody} onChange={(e) => setEditBody(e.target.value)} className="flex-1 rounded-[var(--radius)] border border-hairline bg-bone px-2 py-1 text-[13px] outline-none" />
+                        <button onClick={() => start(async () => { await editComment(c.id, editBody); setEditing(null); })} className="text-[12px] text-ink">{t("save")}</button>
+                      </div>
+                    ) : <p className="text-[13.5px] leading-[1.5] text-ink">{c.body}</p>}
+                    {c.mine && editing !== c.id ? (
+                      <div className="mt-0.5 flex gap-2.5 text-[11px] text-muted">
+                        <button onClick={() => { setEditing(c.id); setEditBody(c.body); }} className="hover:text-ink">{t("editComment")}</button>
+                        <button onClick={() => start(() => { deleteComment(c.id); })} className="hover:text-wine">{t("deleteComment")}</button>
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-2 border-t border-hairline px-3 py-2.5">
+                <input value={body} onChange={(e) => setBody(e.target.value)} placeholder={t("commentPlaceholder")}
+                  onKeyDown={(e) => { if (e.key === "Enter" && body.trim()) { const b = body; setBody(""); start(async () => { await addComment(item.id, weddingId, b); }); } }}
+                  className="flex-1 rounded-[var(--radius)] border border-hairline bg-bone px-2.5 py-1.5 text-[13px] outline-none" />
+                <button onClick={() => { if (body.trim()) { const b = body; setBody(""); start(async () => { await addComment(item.id, weddingId, b); }); } }}
+                  className="rounded-[var(--radius)] bg-wine px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.12em] text-bone">{t("commentSend")}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }

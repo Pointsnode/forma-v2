@@ -6,8 +6,9 @@ import { createClient } from "@/lib/supabase/server";
 import { loadWeddingContext } from "@/lib/load-wedding";
 import { WeddingShell } from "@/components/wedding/wedding-shell";
 import { AddBoard, AddItem } from "@/components/wedding/design-controls";
-import { PaletteRow, DrawSwatches, GuideCategory, SetCoverButton, PinControl } from "@/components/wedding/design-palette";
-import { Card, Panel, PanelHead, Chip, DomainStar, StudioTitleBand } from "@/components/ui";
+import { PaletteRow, DrawSwatches, GuideCategory, SetCoverButton, PinControl, CommentLightbox, type LightboxComment } from "@/components/wedding/design-palette";
+import { intlTag } from "@/lib/intl";
+import { Card, Panel, PanelHead, Chip, Button, DomainStar, StudioTitleBand } from "@/components/ui";
 
 type Item = { id: string; title: string; note: string | null; storage_path: string | null; sort: number };
 type Board = { id: string; title: string; category: string | null; cover_item_id: string | null; budget_category: string | null; engagement_id: string | null; design_items: Item[] };
@@ -24,7 +25,7 @@ export default async function DesignTab({ params }: { params: Promise<{ locale: 
   }
   setRequestLocale(locale);
   const [t, td] = [await getTranslations("ops"), await getTranslations("design")];
-  await getLocale();
+  const lang = await getLocale();
   const canEdit = role === "staff" || role === "member";
   const isStaff = role === "staff";
 
@@ -52,9 +53,33 @@ export default async function DesignTab({ params }: { params: Promise<{ locale: 
     if (data?.signedUrl) urls.set(i.id, data.signedUrl);
   }));
 
+  // Per-image comment threads (RLS-scoped to staff+couple of this wedding).
+  const itemIds = boards.flatMap((b) => b.design_items.map((i) => i.id));
+  const commentsByItem = new Map<string, LightboxComment[]>();
+  if (itemIds.length) {
+    const { data: crows } = await supabase
+      .from("design_comments")
+      .select("id, item_id, body, author_id, created_at, edited_at, profiles:author_id(display_name)")
+      .in("item_id", itemIds).order("created_at");
+    const dfmt = new Intl.DateTimeFormat(intlTag(lang), { month: "short", day: "numeric" });
+    for (const c of (crows ?? []) as unknown as { id: string; item_id: string; body: string; author_id: string | null; created_at: string; edited_at: string | null; profiles: { display_name: string } | null }[]) {
+      const list = commentsByItem.get(c.item_id) ?? [];
+      list.push({ id: c.id, author: c.profiles?.display_name ?? "·", body: c.body, createdAt: dfmt.format(new Date(c.created_at)), edited: !!c.edited_at, mine: c.author_id === ctx.userId });
+      commentsByItem.set(c.item_id, list);
+    }
+  }
+
   return (
     <WeddingShell wedding={wedding} events={events} role={role} active="design">
-      <StudioTitleBand kicker={td("guides")} title={t("design")} accent={td("guidesHint")} action={canEdit ? <AddBoard weddingId={id} /> : undefined} />
+      <StudioTitleBand kicker={td("guides")} title={t("design")} accent={td("guidesHint")} />
+
+      {/* Actions live in the bone room, not on the charcoal band (band actions read wrong). */}
+      <div className="mb-5 flex flex-wrap items-center gap-3">
+        {canEdit ? <AddBoard weddingId={id} /> : null}
+        {boards.length ? (
+          <Link href={`/wedding/${id}/design/print`} target="_blank"><Button variant="ghost">{td("setTable")}</Button></Link>
+        ) : null}
+      </div>
 
       <PaletteRow weddingId={id} wedding={wedgeSwatches} studio={studioSwatches} canManage={canEdit} canKeep={isStaff} />
 
@@ -96,12 +121,9 @@ export default async function DesignTab({ params }: { params: Promise<{ locale: 
                       const url = urls.get(it.id);
                       return (
                         <div key={it.id} className="overflow-hidden rounded-[var(--radius)] border border-hairline bg-bone">
-                          <div className="relative h-24 bg-bone">
-                            {url ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={url} alt={it.title} className="absolute inset-0 h-24 w-full object-cover" />
-                            ) : null}
-                          </div>
+                          {url ? (
+                            <CommentLightbox item={{ id: it.id, title: it.title, url }} comments={commentsByItem.get(it.id) ?? []} weddingId={id} />
+                          ) : <div className="h-24 bg-bone" />}
                           <div className="p-2.5">
                             <p className="font-display text-[14px] text-ink">{it.title}</p>
                             {it.note ? <p className="text-[11.5px] text-muted">{it.note}</p> : null}
