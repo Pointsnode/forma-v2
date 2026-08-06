@@ -15,9 +15,10 @@ import { MembersInvites } from "@/components/loop/members-invites";
 import { DecisionInbox } from "@/components/loop/decision-inbox";
 import { CoupleTasks } from "@/components/tasks/couple-tasks";
 import {
-  Card, Pill, StatRow, Stat, SectionTitle, GateCard, GateRow,
+  Card, Pill, StatRow, Stat, SectionTitle, GateCard, GateRow, Panel, PanelHead, DomainStar,
 } from "@/components/ui";
-import { formatMoney, countdownDays, gateItems, nextPhase } from "@/lib/wedding";
+import { formatMoney, formatTime, countdownDays, gateItems, nextPhase } from "@/lib/wedding";
+import { intlTag } from "@/lib/intl";
 import { signedUrlMap } from "@/lib/storage";
 
 export default async function WeddingFloor({ params }: { params: Promise<{ locale: string; id: string }> }) {
@@ -150,63 +151,116 @@ async function CoupleLens({
   events: import("@/lib/wedding").EventRow[];
 }) {
   const supabase = await createClient();
-  const [tw, tpart, teng] = [await getTranslations("wedding"), await getTranslations("partner"), await getTranslations("engagement")];
+  const [tpart, teng, tcp] = [await getTranslations("partner"), await getTranslations("engagement"), await getTranslations("couple")];
   const lang = await getLocale();
   const inCourt = views.filter((v) => v.status === "sent" || v.status === "seen");
   const settled = views.filter((v) => v.status !== "sent" && v.status !== "seen");
-  const money = formatMoney(wedding.budget_total, lang);
-  const days = countdownDays(wedding.date_start);
-  const location = [wedding.location_city, wedding.location_country].filter(Boolean).join(", ");
 
-  const { data: coupleTaskRows } = await supabase.from("tasks").select("id, title, note, due_date, status, flagged").eq("wedding_id", weddingId).order("due_date", { ascending: true, nullsFirst: false });
+  const [{ data: coupleTaskRows }, { data: partnerRows }, { data: rollupRow }, { data: dueRows }, { data: schedRows }] = await Promise.all([
+    supabase.from("tasks").select("id, title, note, due_date, status, flagged").eq("wedding_id", weddingId).order("due_date", { ascending: true, nullsFirst: false }),
+    supabase.rpc("wedding_partners", { w: weddingId }),
+    supabase.from("wedding_money_rollup").select("budget_total, committed, paid").eq("wedding_id", weddingId).maybeSingle(),
+    supabase.from("ledger_lines").select("amount").eq("wedding_id", weddingId).eq("kind", "planner_fee").eq("status", "due"),
+    supabase.from("schedule_items").select("id, time, title, event_id").eq("wedding_id", weddingId).order("time", { ascending: true, nullsFirst: false }).order("sort"),
+  ]);
   const coupleTasks = (coupleTaskRows ?? []) as { id: string; title: string; note: string | null; due_date: string | null; status: string; flagged: boolean }[];
-
-  const { data: partnerRows } = await supabase.rpc("wedding_partners", { w: weddingId });
   const partners = (partnerRows ?? []) as { engagement_id: string; status: string; vendor_name: string; vendor_kind: string; description: string | null; photos: { path: string }[] }[];
   const photoUrls = await signedUrlMap(supabase, partners.flatMap((p) => (p.photos ?? []).map((ph) => ph.path)));
   const statusKey = (s: string) => `status${s.charAt(0).toUpperCase()}${s.slice(1)}`;
 
+  // The budget, couple view (read-only): committed of total, teal bar, and the due line
+  // only when a planner fee is actually due from them.
+  const rollup = (rollupRow as { budget_total: number | string | null; committed: number; paid: number } | null) ?? { budget_total: null, committed: 0, paid: 0 };
+  const committed = Number(rollup.committed ?? 0);
+  const budgetTotal = Number(rollup.budget_total ?? 0);
+  const pctBudget = budgetTotal > 0 ? Math.min(100, Math.round((committed / budgetTotal) * 100)) : 0;
+  const dueAmount = ((dueRows ?? []) as { amount: number | string }[]).reduce((s, r) => s + Number(r.amount ?? 0), 0);
+
+  // The weekend, from the real run of show — schedule items ordered by their event's date
+  // then time. Couple-visible only (RLS); the band doesn't render if there's no schedule.
+  const evById = new Map(events.map((e) => [e.id, e]));
+  const weekday = (d: string | null) => (d ? new Intl.DateTimeFormat(intlTag(lang), { weekday: "long" }).format(new Date(`${d}T12:00:00Z`)) : "");
+  const weekend = ((schedRows ?? []) as { id: string; time: string | null; title: string; event_id: string }[])
+    .map((it) => ({ ...it, ev: evById.get(it.event_id) }))
+    .filter((x) => x.ev)
+    .sort((a, b) => (a.ev!.event_date ?? "z").localeCompare(b.ev!.event_date ?? "z") || (a.time ?? "z").localeCompare(b.time ?? "z"));
+
   return (
     <WeddingShell wedding={wedding} events={events} role="member" active="overview">
-      <StatRow>
-        <Stat value={wedding.guest_target ?? "·"} label={tw("statGuests")} />
-        <Stat value={events.length} label={tw("facts.events")} />
-        <Stat value={money ?? "·"} label={tw("statBudget")} />
-        <Stat value={days ?? "·"} label={tw("statDays")} sub={location || undefined} />
-      </StatRow>
+      <div className="mx-auto max-w-[860px]">
+        {/* Decisions waiting (people domain → taupe star). One wine primary is DecisionInbox's own. */}
+        <Panel className="mb-4">
+          <PanelHead star={<DomainStar domain="people" size={11} />} title={tcp("decisionsWaiting")} meta={inCourt.length ? String(inCourt.length) : undefined} />
+          <div className="p-[18px]">
+            {inCourt.length === 0 && settled.length === 0
+              ? <p className="font-accent text-[15px] italic text-muted">{tcp("decisionsEmpty")}</p>
+              : <DecisionInbox weddingId={weddingId} inCourt={inCourt} settled={settled} />}
+          </div>
+        </Panel>
 
-      <div className="mt-[18px]">
-        <DecisionInbox weddingId={weddingId} inCourt={inCourt} settled={settled} />
+        {/* The budget (money domain → teal star), read-only couple view. */}
+        <Panel className="mb-4">
+          <PanelHead star={<DomainStar domain="money" size={11} />} title={tcp("theBudget")} meta={tcp("alwaysCurrent")} />
+          <div className="p-[18px]">
+            <div className="flex items-baseline justify-between">
+              <span className="font-display text-[24px] tabular-nums text-ink">{formatMoney(committed, lang) ?? "·"}</span>
+              <span className="text-[12px] text-muted">{tcp("ofCommitted", { total: formatMoney(budgetTotal, lang) ?? "·" })}</span>
+            </div>
+            <div className="mt-3 h-[3px] rounded-[2px] bg-hairline"><div className="h-[3px] rounded-[2px] bg-teal" style={{ width: `${pctBudget}%` }} /></div>
+            <p className="mt-3 text-[12px] text-muted">{dueAmount > 0 ? tcp("dueLine", { amount: formatMoney(dueAmount, lang) ?? "·" }) : tcp("nothingDue")}</p>
+          </div>
+        </Panel>
+
+        <CoupleTasks tasks={coupleTasks} />
+
+        {partners.length ? (
+          <>
+            <SectionTitle title={tpart("title")} accent={tpart("hint")} />
+            <Card>
+              <ul className="flex flex-col">
+                {partners.map((p) => {
+                  const hero = p.photos?.[0]?.path ? photoUrls.get(p.photos[0].path) : null;
+                  return (
+                    <li key={p.engagement_id} className="flex items-center gap-3 py-3 not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)]">
+                      <span className="h-12 w-12 shrink-0 overflow-hidden rounded-[var(--radius)] bg-bone">
+                        {hero ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={hero} alt={p.vendor_name} className="h-12 w-12 object-cover" />
+                        ) : null}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-display text-[15px] text-ink">{p.vendor_name}</p>
+                        {p.description ? <p className="truncate font-accent text-[13.5px] text-muted">{p.description}</p> : null}
+                      </div>
+                      <Pill tone={p.status === "booked" ? "sage" : "sand"}>{teng(statusKey(p.status))}</Pill>
+                    </li>
+                  );
+                })}
+              </ul>
+            </Card>
+          </>
+        ) : null}
       </div>
 
-      <CoupleTasks tasks={coupleTasks} />
-
-      {partners.length ? (
-        <>
-          <SectionTitle title={tpart("title")} accent={tpart("hint")} />
-          <Card>
-            <ul className="flex flex-col">
-              {partners.map((p) => {
-                const hero = p.photos?.[0]?.path ? photoUrls.get(p.photos[0].path) : null;
-                return (
-                  <li key={p.engagement_id} className="flex items-center gap-3 py-3 not-last:[box-shadow:inset_0_-1px_0_var(--color-hairline)]">
-                    <span className="h-12 w-12 shrink-0 overflow-hidden rounded-[var(--radius)] bg-bone">
-                      {hero ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={hero} alt={p.vendor_name} className="h-12 w-12 object-cover" />
-                      ) : null}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-display text-[15px] text-ink">{p.vendor_name}</p>
-                      {p.description ? <p className="truncate font-accent text-[13.5px] text-muted">{p.description}</p> : null}
-                    </div>
-                    <Pill tone={p.status === "booked" ? "sage" : "sand"}>{teng(statusKey(p.status))}</Pill>
-                  </li>
-                );
-              })}
-            </ul>
-          </Card>
-        </>
+      {/* The weekend band (charcoal, full-bleed) — champagne star + day rows with champagne times. */}
+      {weekend.length ? (
+        <section className="relative left-1/2 mt-8 w-screen -translate-x-1/2 bg-ink text-bone">
+          <div className="mx-auto max-w-[860px] px-8 py-11">
+            <div className="flex items-baseline justify-between">
+              <span className="flex items-center gap-2 font-display text-[24px] text-bone"><DomainStar fill="#D7C3A5" size={13} />{tcp("theWeekend")}</span>
+              <span className="text-[10px] font-medium uppercase tracking-[0.24em] text-champagne">{tcp("weekendKicker")}</span>
+            </div>
+            <div className="mt-4">
+              {weekend.map((x) => (
+                <div key={x.id} className="grid grid-cols-[110px_1fr_auto] items-center gap-3.5 border-b border-hairline-dark py-3 text-[13px] text-[rgba(245,242,235,0.75)] last:border-b-0">
+                  <span className="capitalize">{weekday(x.ev!.event_date)}</span>
+                  <span>{x.title}</span>
+                  <span className="tabular-nums text-champagne">{formatTime(x.time, lang) ?? ""}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       ) : null}
     </WeddingShell>
   );

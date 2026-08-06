@@ -293,7 +293,20 @@
     "error": "Qualcosa è andato storto. Riprova.",
     "decline": "Rifiuta",
     "confirmDecline": "Rifiutare questa proposta? Il planner sarà avvisato.",
-    "reallyDecline": "Rifiutare davvero?"
+    "reallyDecline": "Rifiutare davvero?",
+    "theWeddingOf": "The wedding of",
+    "yourPlanner": "Your planner",
+    "held": "Held with care",
+    "decisionsWaiting": "Decisions waiting",
+    "decisionsEmpty": "Nothing waiting. Enjoy the calm.",
+    "theBudget": "The budget",
+    "alwaysCurrent": "Always current",
+    "ofCommitted": "of {total} committed",
+    "nothingDue": "Nothing due from you. The studio holds every receipt.",
+    "dueLine": "{amount} due from you.",
+    "theWeekend": "The weekend",
+    "weekendKicker": "Every hour, held",
+    "daysAfter": "Married"
   },
   "invites": {
     "members": "Membri e accessi",

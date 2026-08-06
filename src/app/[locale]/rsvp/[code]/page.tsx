@@ -4,7 +4,7 @@ import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { RsvpForm } from "./rsvp-form";
 import { formatDateRange } from "@/lib/wedding";
-import { Wordmark } from "@/components/ui";
+import { Wordmark, SignedFooter } from "@/components/ui";
 
 type LookupPayload = {
   guest: { full_name: string; plus_one_allowed: boolean; plus_one_name: string | null; dietary: string | null };
@@ -15,10 +15,11 @@ type LookupPayload = {
   events: { event_id: string; label: string; event_date: string | null; status: string }[];
 };
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Shell({ children, held }: { children: React.ReactNode; held: string }) {
   return (
-    <div className="min-h-screen bg-bone px-5 py-12">
-      <div className="mx-auto max-w-md">{children}</div>
+    <div className="flex min-h-screen flex-col bg-bone">
+      <div className="mx-auto w-full max-w-md flex-1 px-5 py-12">{children}</div>
+      <SignedFooter heldLabel={held} />
     </div>
   );
 }
@@ -44,10 +45,11 @@ export default async function RsvpPage({
   }
   setRequestLocale(locale);
   const t = await getTranslations("rsvp");
+  const held = (await getTranslations("couple"))("held");
 
   if (error || !data) {
     return (
-      <Shell>
+      <Shell held={held}>
         <p className="mb-1 font-display text-[24px] text-ink">{t("invalidTitle")}</p>
         <p className="font-accent text-[16px] text-muted">{t("invalidBody")}</p>
       </Shell>
@@ -57,7 +59,7 @@ export default async function RsvpPage({
   const range = formatDateRange(payload.wedding.date_start, payload.wedding.date_end, locale);
 
   return (
-    <Shell>
+    <Shell held={held}>
       <div className="mb-6">
         <Wordmark size={15} className="mb-1 block" />
         <h1 className="font-display text-[30px] leading-tight text-ink">{payload.wedding.couple_display}</h1>

@@ -1,7 +1,22 @@
 import type { ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import { cx } from "./cn";
-import { Monogram, Chip, DomainStar, type Domain } from "./primitives";
+import { Monogram, Chip, DomainStar, Wordmark, type Domain } from "./primitives";
+
+// The signed footer — law on every couple/guest page. Champagne star above the bone
+// wordmark (SignedMark anatomy on charcoal), then the held line. Full-bleed. NOTE: the
+// studio NAME isn't readable on couple/guest surfaces (RLS gates workspaces to members,
+// and no function changes this milestone), so the caller passes a name-free held line from
+// the catalogs ("Held with care") rather than "Held by {studio}".
+export function SignedFooter({ heldLabel }: { heldLabel: string }) {
+  return (
+    <footer className="relative left-1/2 w-screen -translate-x-1/2 bg-ink px-6 py-12 text-center text-bone">
+      <DomainStar fill="#D7C3A5" size={13} />
+      <div className="mt-2.5"><Wordmark size={19} className="!text-bone" /></div>
+      <p className="mt-3 text-[10px] uppercase tracking-[0.2em] text-champagne">{heldLabel}</p>
+    </footer>
+  );
+}
 
 // ── Panel / PanelHead / PanelRow — the cockpit + list anatomy (reference .card/.chead/
 // .rows): a bone card, a starred head (the domain star marks what it is; the body stays
