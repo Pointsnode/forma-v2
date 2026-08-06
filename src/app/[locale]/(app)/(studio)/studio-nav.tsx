@@ -4,10 +4,10 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cx } from "@/components/ui";
 
-// Studio-scope nav — the prototype's .snav: full-bleed, sticky under the top bar,
-// paper ground with a hairline base and an ink underline on the active tab.
-// Surfaces past M4 (Contracts, Tasks, Calendar…) arrive with their milestones —
-// absent, not stubbed.
+// Studio-scope nav — Edition One: CHARCOAL, continuous with the top bar and the cockpit
+// hero band (one dark chrome). The current section wears the champagne underline; inactive
+// items are quiet bone-alpha. Full-bleed, sticky under the top bar. Items + order are the
+// law (the reference's nav is illustrative); routes unchanged.
 export function StudioNav() {
   const t = useTranslations("studio");
   const tv = useTranslations("vendors");
@@ -27,7 +27,7 @@ export function StudioNav() {
     { href: "/calendar", label: t("calendar") },
   ];
   return (
-    <nav className="sticky top-[62px] z-40 flex gap-7 overflow-x-auto bg-bone px-8 [box-shadow:inset_0_-1px_0_var(--color-hairline)] md:px-10">
+    <nav className="sticky top-[62px] z-40 flex gap-7 overflow-x-auto bg-ink px-8 md:px-10">
       {items.map((i) => {
         const active = i.href === "/" ? path === "/" : path.startsWith(i.href);
         return (
@@ -35,8 +35,8 @@ export function StudioNav() {
             key={i.href}
             href={i.href}
             className={cx(
-              "whitespace-nowrap border-b-2 pb-[13px] pt-[15px] text-[13px]",
-              active ? "border-ink font-medium text-ink" : "border-transparent text-muted hover:text-ink",
+              "whitespace-nowrap border-b-2 pb-[13px] pt-[15px] text-[13px] tracking-[0.04em] transition-colors",
+              active ? "border-champagne text-bone" : "border-transparent text-[rgba(245,242,235,0.55)] hover:text-bone",
             )}
           >
             {i.label}

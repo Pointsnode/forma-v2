@@ -111,6 +111,12 @@ export function ConciergeBubble({ weddings, usage: usage0, initialPending = 0 }:
     return () => { cancelled = true; };
   }, [open, convo.loaded, weddingId, setConvo]);
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }); }, [convo.messages, open]);
+  // The cockpit concierge card opens the desk through this window event (OpenDeskButton).
+  useEffect(() => {
+    const h = () => setOpen(true);
+    window.addEventListener("forma:open-concierge", h);
+    return () => window.removeEventListener("forma:open-concierge", h);
+  }, []);
 
   function startNew() { setConvo((c) => ({ ...c, threadId: null, messages: [] })); setLedgerOpen(false); }
   function selectThread(id: string) { loadHistory(id); setLedgerOpen(false); }

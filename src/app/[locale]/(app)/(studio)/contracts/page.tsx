@@ -2,7 +2,7 @@ import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loadStudioContracts, type ExceptionRow } from "@/lib/studio-contracts";
-import { Card, SectionTitle, Heading, Row, RowMain, Badge, WhoBadge } from "@/components/ui";
+import { Card, StudioTitleBand, Heading, Row, RowMain, Badge, WhoBadge } from "@/components/ui";
 import { TemplatesPanel } from "@/components/contracts/templates-panel";
 
 function exceptionDetail(tc: Awaited<ReturnType<typeof getTranslations>>, r: ExceptionRow): string {
@@ -24,7 +24,7 @@ export default async function StudioContractsPage({ params }: { params: Promise<
 
   return (
     <div>
-      <SectionTitle title={tc("studioTitle")} accent={tc("studioHint")} className="mt-1" />
+      <StudioTitleBand title={tc("studioTitle")} accent={tc("studioHint")} />
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <TemplatesPanel templates={templates} lang={lang} />

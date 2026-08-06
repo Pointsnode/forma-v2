@@ -2,7 +2,7 @@ import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
-  Button, PhaseDots, SectionTitle, Bento, BentoCard, BentoBig, BentoFoot, Badge, type BadgeTone,
+  Button, PhaseDots, StudioTitleBand, Bento, BentoCard, BentoBig, BentoFoot, Badge, type BadgeTone,
   heroToneAt,
 } from "@/components/ui";
 import {
@@ -33,11 +33,10 @@ export default async function WeddingsPage({ params }: { params: Promise<{ local
 
   return (
     <div>
-      <SectionTitle
+      <StudioTitleBand
         title={t("weddings")}
         accent={t("weddingsHint")}
-        action={<Link href="/weddings/new"><Button>{t("createWedding")}</Button></Link>}
-        className="mt-1"
+        action={<Link href="/weddings/new"><Button variant="primary">{t("createWedding")}</Button></Link>}
       />
 
       {error || weddings.length === 0 ? (

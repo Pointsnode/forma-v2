@@ -1,6 +1,53 @@
 import type { ReactNode } from "react";
+import { Link } from "@/i18n/navigation";
 import { cx } from "./cn";
 import { Monogram, Chip, DomainStar, type Domain } from "./primitives";
+
+// ── Panel / PanelHead / PanelRow — the cockpit + list anatomy (reference .card/.chead/
+// .rows): a bone card, a starred head (the domain star marks what it is; the body stays
+// bone), and hairline-divided rows. The row grid is caller-set via `cols`. ──
+export function Panel({ children, className, id }: { children: ReactNode; className?: string; id?: string }) {
+  return <div id={id} className={cx("overflow-hidden rounded-[var(--radius)] border border-hairline bg-bone", className)}>{children}</div>;
+}
+export function PanelHead({ star, title, meta }: { star?: ReactNode; title: ReactNode; meta?: ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-hairline px-[18px] py-4">
+      <span className="flex items-center gap-2 font-display text-[18px] leading-none text-ink">{star}{title}</span>
+      {meta ? <span className="shrink-0 text-[11px] uppercase tracking-[0.14em] text-muted">{meta}</span> : null}
+    </div>
+  );
+}
+// The studio-surface title band (§3): a slim charcoal, full-bleed band — kicker (champagne)
+// + Playfair bone title, an optional champagne accent line and a right-side action. Bone
+// room follows below. One per page; secondary section headers stay bone (SectionTitle).
+export function StudioTitleBand({ kicker, title, accent, action, className }: { kicker?: ReactNode; title: ReactNode; accent?: ReactNode; action?: ReactNode; className?: string }) {
+  return (
+    <section className={cx("relative left-1/2 -mt-8 mb-7 w-screen -translate-x-1/2 bg-ink text-bone", className)}>
+      <div className="mx-auto flex max-w-[1240px] items-end justify-between gap-4 px-8 py-7 md:px-10">
+        <div>
+          {kicker ? <p className="mb-1.5 text-[10px] font-medium uppercase tracking-[0.24em] text-champagne">{kicker}</p> : null}
+          <h1 className="font-display text-[26px] leading-none text-bone">{title}</h1>
+          {accent ? <p className="mt-1.5 font-accent text-[15px] italic text-champagne">{accent}</p> : null}
+        </div>
+        {action ? <div className="shrink-0">{action}</div> : null}
+      </div>
+    </section>
+  );
+}
+
+export function PanelRow({ children, href, cols, className }: { children: ReactNode; href?: string; cols?: string; className?: string }) {
+  // The last-row exception must sit on the element that actually varies within the Panel:
+  // an unlinked row IS the direct child (last:), a linked row's inner div is always the
+  // only child of its Link, so the Link carries it (last:[&>div]). This keeps a hairline
+  // between every row and none under the last, in both linked and unlinked lists.
+  const inner = (
+    <div style={cols ? { gridTemplateColumns: cols } : undefined}
+      className={cx("grid items-center gap-3.5 border-b border-hairline px-[18px] py-3 text-[13px]", !href && "last:border-b-0", className)}>
+      {children}
+    </div>
+  );
+  return href ? <Link href={href} className="block transition-colors last:[&>div]:border-b-0 hover:bg-[rgba(17,17,17,0.03)]">{inner}</Link> : inner;
+}
 
 // ── DomainHeadCard — the ONE sanctioned domain field (color-roles law): a domain may tint
 // its card HEADER, a single title strip (the money radar wears a teal head), while the body

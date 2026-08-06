@@ -1,6 +1,6 @@
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
-import { Card, SectionTitle, Row, RowMain, Badge } from "@/components/ui";
+import { Card, StudioTitleBand, Row, RowMain, Badge } from "@/components/ui";
 import { stripeConfigured } from "@/lib/stripe";
 import { formatMoney } from "@/lib/wedding";
 
@@ -22,7 +22,7 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
 
   return (
     <div>
-      <SectionTitle title={tb("title")} accent={tb("hint")} className="mt-1" />
+      <StudioTitleBand title={tb("title")} accent={tb("hint")} />
 
       <Card className="mb-[18px]">
         <Row>
