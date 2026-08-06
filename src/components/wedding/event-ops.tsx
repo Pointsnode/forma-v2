@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { Button, Card, Heading, Badge, Tag, cx } from "@/components/ui";
+import { Button, Card, Heading, Badge, Tag, DomainStar, cx } from "@/components/ui";
 import {
   addScheduleItem, updateScheduleItem, deleteScheduleItem, checkScheduleItem,
   addMenu, addMenuOption, lockMenu,
@@ -28,7 +28,7 @@ export function ScheduleCard({ weddingId, eventId, items, live }: { weddingId: s
   return (
     <Card>
       <div className="mb-1 flex items-baseline justify-between">
-        <Heading className="text-[18px]">{t("schedule")}</Heading>
+        <Heading className="flex items-center gap-2 text-[18px]"><DomainStar domain="time" size={12} />{t("schedule")}</Heading>
         <button onClick={() => setAdding((v) => !v)} className="text-[12.5px] text-muted hover:text-ink">+ {t("addItem")}</button>
       </div>
       <p className="mb-2 text-[12.5px] text-muted">{live ? t("scheduleLive") : t("scheduleDraft")}</p>

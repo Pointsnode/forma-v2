@@ -129,7 +129,8 @@
     "save": "Salva",
     "cancel": "Annulla",
     "daysAgo": "{count} giorni fa",
-    "settled": "saldato"
+    "settled": "saldato",
+    "theWedding": "Il matrimonio"
   },
   "phase": {
     "hiring": "Le prenotazioni",
@@ -829,7 +830,13 @@
     "urgentHint": "da pagare ora o blocca un passaggio",
     "yours": "tue",
     "overdue": "In ritardo di {n, plural, one {# giorno} other {# giorni}}",
-    "dueChip": "Da pagare"
+    "dueChip": "Da pagare",
+    "lineByLine": "Riga per riga",
+    "totalLabel": "Totale",
+    "deltaUnder": "{amount} sotto",
+    "deltaOver": "{amount} oltre",
+    "exportCouple": "Esporta per la coppia",
+    "lineCount": "{count} righe"
   },
   "contract": {
     "tab": "Contratti",
@@ -1542,5 +1549,46 @@
     "managePlanBtn": "Gestisci l'abbonamento",
     "startSubscription": "Avvia l'abbonamento",
     "subErr": "Impossibile raggiungere Stripe, riprova."
+  },
+  "design": {
+    "guides": "Guide di stile",
+    "guidesHint": "Le bacheche diventano guide: una categoria, una copertina e la palette che cresce da loro.",
+    "palette": "La palette",
+    "paletteEmpty": "Tocca un colore da qualsiasi immagine per far crescere la palette.",
+    "drawSwatches": "Estrai i campioni",
+    "tapToSave": "Tocca per salvare",
+    "keepForStudio": "Conserva per lo studio",
+    "removeSwatch": "Rimuovi",
+    "studioPalette": "Palette dello studio",
+    "studioPaletteHint": "Conservata tra i matrimoni.",
+    "category": "Categoria",
+    "categoryPlaceholder": "Atmosfera, Location, Fiori…",
+    "setCover": "Usa come copertina",
+    "cover": "Copertina",
+    "pinTo": "Fissa a una categoria o a un fornitore",
+    "pinnedBudget": "Budget · {name}",
+    "pinnedVendor": "{name}",
+    "unpin": "Stacca",
+    "pinSave": "Fissa",
+    "catMood": "Atmosfera",
+    "catVenue": "Location",
+    "catTablescape": "La tavola",
+    "catFlorals": "Fiori",
+    "catAttire": "Abiti",
+    "catPaper": "Cartoleria",
+    "setTable": "Apparecchia la tavola",
+    "printKicker": "Il design",
+    "comments": "Note",
+    "addComment": "Aggiungi una nota",
+    "commentPlaceholder": "Scrivi una nota…",
+    "editComment": "Modifica",
+    "deleteComment": "Elimina",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "commentEmpty": "Ancora nessuna nota.",
+    "commentSend": "Invia",
+    "emailSubject": "Una nota sul tuo design · {couple}",
+    "emailLead": "{planner} ha lasciato una nota nel tuo studio di design.",
+    "emailCta": "Apri lo studio"
   }
 }

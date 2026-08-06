@@ -129,7 +129,8 @@
     "save": "Enregistrer",
     "cancel": "Annuler",
     "daysAgo": "il y a {count} jours",
-    "settled": "réglé"
+    "settled": "réglé",
+    "theWedding": "Le mariage"
   },
   "phase": {
     "hiring": "Les réservations",
@@ -829,7 +830,13 @@
     "urgentHint": "à payer maintenant ou bloquant un passage",
     "yours": "à vous",
     "overdue": "En retard de {n, plural, one {# jour} other {# jours}}",
-    "dueChip": "À payer"
+    "dueChip": "À payer",
+    "lineByLine": "Ligne par ligne",
+    "totalLabel": "Total",
+    "deltaUnder": "{amount} en dessous",
+    "deltaOver": "{amount} au-dessus",
+    "exportCouple": "Exporter pour le couple",
+    "lineCount": "{count} lignes"
   },
   "contract": {
     "tab": "Contrats",
@@ -1542,5 +1549,46 @@
     "managePlanBtn": "Gérer l'abonnement",
     "startSubscription": "Démarrer l'abonnement",
     "subErr": "Impossible de joindre Stripe, réessayez."
+  },
+  "design": {
+    "guides": "Guides de style",
+    "guidesHint": "Les tableaux deviennent des guides : une catégorie, une couverture, et la palette qui en grandit.",
+    "palette": "La palette",
+    "paletteEmpty": "Touchez une couleur de n'importe quelle image pour faire grandir la palette.",
+    "drawSwatches": "Extraire les nuances",
+    "tapToSave": "Touchez pour garder",
+    "keepForStudio": "Garder pour le studio",
+    "removeSwatch": "Retirer",
+    "studioPalette": "Palette du studio",
+    "studioPaletteHint": "Conservée d'un mariage à l'autre.",
+    "category": "Catégorie",
+    "categoryPlaceholder": "Ambiance, Lieu, Fleurs…",
+    "setCover": "Choisir comme couverture",
+    "cover": "Couverture",
+    "pinTo": "Épingler à une catégorie ou un prestataire",
+    "pinnedBudget": "Budget · {name}",
+    "pinnedVendor": "{name}",
+    "unpin": "Détacher",
+    "pinSave": "Épingler",
+    "catMood": "Ambiance",
+    "catVenue": "Lieu",
+    "catTablescape": "Art de la table",
+    "catFlorals": "Fleurs",
+    "catAttire": "Tenues",
+    "catPaper": "Papeterie",
+    "setTable": "Dresser la table",
+    "printKicker": "Le design",
+    "comments": "Notes",
+    "addComment": "Ajouter une note",
+    "commentPlaceholder": "Écrivez une note…",
+    "editComment": "Modifier",
+    "deleteComment": "Supprimer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "commentEmpty": "Pas encore de note.",
+    "commentSend": "Envoyer",
+    "emailSubject": "Une note sur votre design · {couple}",
+    "emailLead": "{planner} a laissé une note dans votre studio de design.",
+    "emailCta": "Ouvrir le studio"
   }
 }

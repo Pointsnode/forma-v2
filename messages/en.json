@@ -129,7 +129,8 @@
     "save": "Save",
     "cancel": "Cancel",
     "daysAgo": "{count} days ago",
-    "settled": "settled"
+    "settled": "settled",
+    "theWedding": "The wedding"
   },
   "phase": {
     "hiring": "Hiring",
@@ -829,7 +830,13 @@
     "urgentHint": "due now or blocking a gate",
     "yours": "yours",
     "overdue": "Overdue {n, plural, one {# day} other {# days}}",
-    "dueChip": "Due"
+    "dueChip": "Due",
+    "lineByLine": "Line by line",
+    "totalLabel": "Total",
+    "deltaUnder": "{amount} under",
+    "deltaOver": "{amount} over",
+    "exportCouple": "Export for the couple",
+    "lineCount": "{count} lines"
   },
   "contract": {
     "tab": "Contracts",
@@ -1542,5 +1549,46 @@
     "managePlanBtn": "Manage plan",
     "startSubscription": "Start subscription",
     "subErr": "Couldn't reach Stripe, try again."
+  },
+  "design": {
+    "guides": "Style guides",
+    "guidesHint": "Boards become guides: a category, a cover, and the palette that grows from them.",
+    "palette": "The palette",
+    "paletteEmpty": "Tap a color from any image to grow the palette.",
+    "drawSwatches": "Draw swatches",
+    "tapToSave": "Tap to save",
+    "keepForStudio": "Keep for the studio",
+    "removeSwatch": "Remove",
+    "studioPalette": "Studio palette",
+    "studioPaletteHint": "Kept across weddings.",
+    "category": "Category",
+    "categoryPlaceholder": "Mood, Venue, Florals…",
+    "setCover": "Set as cover",
+    "cover": "Cover",
+    "pinTo": "Pin to a category or vendor",
+    "pinnedBudget": "Budget · {name}",
+    "pinnedVendor": "{name}",
+    "unpin": "Unpin",
+    "pinSave": "Pin",
+    "catMood": "Mood",
+    "catVenue": "Venue",
+    "catTablescape": "Tablescape",
+    "catFlorals": "Florals",
+    "catAttire": "Attire",
+    "catPaper": "Paper",
+    "setTable": "Set the table",
+    "printKicker": "The design",
+    "comments": "Comments",
+    "addComment": "Add a note",
+    "commentPlaceholder": "Write a note…",
+    "editComment": "Edit",
+    "deleteComment": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "commentEmpty": "No notes yet.",
+    "commentSend": "Send",
+    "emailSubject": "A note on your design · {couple}",
+    "emailLead": "{planner} left a note on your design studio.",
+    "emailCta": "Open the studio"
   }
 }

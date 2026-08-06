@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { Card, Heading, SectionLabel, SectionTitle, StatRow, Stat } from "@/components/ui";
+import { Card, Heading, SectionLabel, SectionTitle, StatRow, Stat, DomainStar } from "@/components/ui";
 import { GuestIntake } from "./guest-intake";
 import { AllGuests } from "./all-guests";
 import { RsvpControls } from "./rsvp-controls";
@@ -70,9 +70,9 @@ export async function GuestBoard({
             </Card>
           ) : null}
 
-          {/* Exceptions — the only people who need a human */}
+          {/* Exceptions — the only people who need a human (people domain → taupe star) */}
           <Card>
-            <Heading className="text-[18px]">{t("exceptions")}</Heading>
+            <Heading className="flex items-center gap-2 text-[18px]"><DomainStar domain="people" size={12} />{t("exceptions")}</Heading>
             <SectionLabel className="mb-3 mt-0.5 normal-case tracking-normal text-[12px]">{t("exceptionsHint")}</SectionLabel>
             {exceptions.length === 0 ? (
               <p className="py-3 text-center font-accent text-[15px] text-muted">{t("noExceptions")}</p>

@@ -17,6 +17,10 @@ const ALLOWLIST = new Set([
   // M11: the Calendly webhook has no session — it verifies the signature then writes
   // the meeting via service-role (Stripe-webhook precedent).
   "src/app/api/calendly/webhook/route.ts",
+  // M3: the design-comment couple notification reads couple auth-emails (not RLS-readable)
+  // + the image via service-role, then sends. Isolated to this one module; fires only for a
+  // planner comment; no anon surface, no matrix change.
+  "src/lib/design-notify.ts",
 ]);
 const PATTERNS = [/SUPABASE_SERVICE_ROLE_KEY/, /createAdminClient/];
 function* walk(dir) {

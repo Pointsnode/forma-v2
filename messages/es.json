@@ -129,7 +129,8 @@
     "save": "Guardar",
     "cancel": "Cancelar",
     "daysAgo": "hace {count} días",
-    "settled": "liquidada"
+    "settled": "liquidada",
+    "theWedding": "La boda"
   },
   "phase": {
     "hiring": "Contratación",
@@ -829,7 +830,13 @@
     "urgentHint": "vence ahora o bloquea una puerta",
     "yours": "tuyo",
     "overdue": "Vencido {n, plural, one {# día} other {# días}}",
-    "dueChip": "Por vencer"
+    "dueChip": "Por vencer",
+    "lineByLine": "Línea por línea",
+    "totalLabel": "Total",
+    "deltaUnder": "{amount} por debajo",
+    "deltaOver": "{amount} por encima",
+    "exportCouple": "Exportar para la pareja",
+    "lineCount": "{count} líneas"
   },
   "contract": {
     "tab": "Contratos",
@@ -1542,5 +1549,46 @@
     "managePlanBtn": "Gestionar plan",
     "startSubscription": "Iniciar suscripción",
     "subErr": "No se pudo conectar con Stripe, inténtalo de nuevo."
+  },
+  "design": {
+    "guides": "Guías de estilo",
+    "guidesHint": "Los tableros se vuelven guías: una categoría, una portada y la paleta que crece de ellos.",
+    "palette": "La paleta",
+    "paletteEmpty": "Toca un color de cualquier imagen para hacer crecer la paleta.",
+    "drawSwatches": "Extraer muestras",
+    "tapToSave": "Toca para guardar",
+    "keepForStudio": "Guardar para el estudio",
+    "removeSwatch": "Quitar",
+    "studioPalette": "Paleta del estudio",
+    "studioPaletteHint": "Se conserva entre bodas.",
+    "category": "Categoría",
+    "categoryPlaceholder": "Ambiente, Lugar, Flores…",
+    "setCover": "Usar de portada",
+    "cover": "Portada",
+    "pinTo": "Fijar a una categoría o proveedor",
+    "pinnedBudget": "Presupuesto · {name}",
+    "pinnedVendor": "{name}",
+    "unpin": "Soltar",
+    "pinSave": "Fijar",
+    "catMood": "Ambiente",
+    "catVenue": "Lugar",
+    "catTablescape": "La mesa",
+    "catFlorals": "Flores",
+    "catAttire": "Vestuario",
+    "catPaper": "Papelería",
+    "setTable": "Poner la mesa",
+    "printKicker": "El diseño",
+    "comments": "Notas",
+    "addComment": "Añadir una nota",
+    "commentPlaceholder": "Escribe una nota…",
+    "editComment": "Editar",
+    "deleteComment": "Eliminar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "commentEmpty": "Aún no hay notas.",
+    "commentSend": "Enviar",
+    "emailSubject": "Una nota sobre tu diseño · {couple}",
+    "emailLead": "{planner} dejó una nota en tu estudio de diseño.",
+    "emailCta": "Abrir el estudio"
   }
 }
