@@ -1607,6 +1607,15 @@
     "commentSend": "Envoyer",
     "emailSubject": "Une note sur votre design · {couple}",
     "emailLead": "{planner} a laissé une note dans votre studio de design.",
-    "emailCta": "Ouvrir le studio"
+    "emailCta": "Ouvrir le studio",
+    "setScene": "Set the scene",
+    "settingScene": "Composing the scene",
+    "renderTitle": "The scene · {n}",
+    "renderChip": "Concept",
+    "renderHint": "An impression of the direction, not a photograph of the actual rentals.",
+    "rendersLeft": "{count} left for this wedding",
+    "renderCapWedding": "This wedding’s scenes are spent.",
+    "renderCapDay": "The studio’s scenes for today are spent. Tomorrow.",
+    "renderErr": "The scene did not come through. Try again in a moment."
   }
 }
