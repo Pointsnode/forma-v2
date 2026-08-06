@@ -2,13 +2,15 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { Card, Heading, Monogram, Button, cx } from "@/components/ui";
 import type { InquiryItem } from "@/lib/cockpit";
 import { convertInquiry, archiveInquiry, markReplied } from "./inquiries-actions";
+import { takeToDesk } from "./leads/leads-actions";
 
-export function InquiriesCard({ inquiries }: { inquiries: InquiryItem[] }) {
+export function InquiriesCard({ inquiries, leadsNeedTouch = 0 }: { inquiries: InquiryItem[]; leadsNeedTouch?: number }) {
   const t = useTranslations("cockpit");
+  const tl = useTranslations("leads");
   const router = useRouter();
   const [list, setList] = useState(inquiries);
   const [open, setOpen] = useState<InquiryItem | null>(null);
@@ -45,6 +47,15 @@ export function InquiriesCard({ inquiries }: { inquiries: InquiryItem[] }) {
     });
   }
 
+  function take(inq: InquiryItem) {
+    setErr(null);
+    start(async () => {
+      const r = await takeToDesk(inq.id);
+      if (r.ok && r.id) router.push(`/leads/${r.id}`);
+      else setErr(t("convertError"));
+    });
+  }
+
   return (
     <Card>
       <div className="flex items-center justify-between">
@@ -54,6 +65,9 @@ export function InquiriesCard({ inquiries }: { inquiries: InquiryItem[] }) {
         ) : null}
       </div>
       <p className="mb-3 mt-0.5 text-[12.5px] text-text-meta">{t("inquiriesHint")}</p>
+      {leadsNeedTouch ? (
+        <Link href="/leads" className="mb-3 block text-[12.5px] text-[color:var(--color-text-danger)] hover:underline">{tl("needTouchPorch", { count: leadsNeedTouch })}</Link>
+      ) : null}
       {list.length === 0 ? (
         <p className="py-4 text-center font-accent text-[15px] text-text-meta">{t("inquiriesEmpty")}</p>
       ) : (
@@ -101,7 +115,8 @@ export function InquiriesCard({ inquiries }: { inquiries: InquiryItem[] }) {
             <p className="mb-5 whitespace-pre-wrap rounded-[var(--radius)] bg-surface-card p-4 font-accent text-[16px] leading-relaxed text-text-primary-soft">{open.message}</p>
             {err ? <p className="mb-3 text-[13px] text-[color:var(--color-text-danger)]">{err}</p> : null}
             <div className="flex flex-wrap items-center gap-2.5">
-              <Button onClick={() => convert(open)} disabled={pending}>{t("convert")}</Button>
+              <Button variant="primary" onClick={() => take(open)} disabled={pending}>{tl("takeToDesk")}</Button>
+              <Button variant="ghost" onClick={() => convert(open)} disabled={pending}>{t("convert")}</Button>
               <Button variant="ghost" onClick={() => reply(open)} disabled={pending}>{t("reply")}</Button>
               <button onClick={() => archive(open)} disabled={pending} className="ml-auto text-[13px] text-text-meta hover:text-[color:var(--color-text-danger)] disabled:opacity-50">
                 {t("archive")}

@@ -5,6 +5,7 @@ import { redirect } from "@/i18n/navigation";
 import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { currentWorkspace, clearanceGate } from "@/lib/workspace";
+import { insertWedding } from "@/lib/wedding-create";
 
 // Advances the cockpit "Since you were away" cursor. Called on mount from the
 // overview so the next visit's window starts from now.
@@ -17,9 +18,6 @@ export async function touchLastSeen(): Promise<void> {
 }
 
 export type WeddingState = { error?: "invalid" | "generic" | "clearance" } | null;
-
-const slugify = (s: string) =>
-  s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "wedding";
 
 const optionalText = z.string().trim().max(120).optional().or(z.literal("")).transform((v) => (v ? v : null));
 const optionalInt = z
@@ -64,40 +62,17 @@ export async function createWedding(_prev: WeddingState, formData: FormData): Pr
   if (await clearanceGate(supabase, "weddings")) return { error: "clearance" };
 
   const d = parsed.data;
-  const base = slugify(d.coupleDisplay);
-  // weddings_select reads workspace_id off the row, so INSERT ... RETURNING is
-  // safe here (the creator is a workspace member) — no M0-style read-back trap.
-  let newId: string | null = null;
-  for (let attempt = 0; attempt < 5 && !newId; attempt++) {
-    const slug = `${base}-${crypto.randomUUID().slice(0, 6)}`;
-    const { data: row, error } = await supabase
-      .from("weddings")
-      .insert({
-        workspace_id: workspaceId,
-        slug,
-        couple_display: d.coupleDisplay,
-        partner_a: d.partnerA,
-        partner_b: d.partnerB,
-        kind: d.kind,
-        location_city: d.locationCity,
-        location_country: d.locationCountry,
-        guest_target: d.guestTarget,
-        budget_total: d.budgetTotal,
-      })
-      .select("id")
-      .single();
-    if (!error && row) {
-      newId = row.id;
-      break;
-    }
-    if (error?.code === "23505") continue; // slug collision — retry
-    console.error(`createWedding: insert failed (${error?.code}): ${error?.message}`);
-    return { error: "generic" };
-  }
-  if (!newId) {
-    console.error("createWedding: could not find a unique slug after 5 attempts");
-    return { error: "generic" };
-  }
+  const newId = await insertWedding(supabase, workspaceId, {
+    coupleDisplay: d.coupleDisplay,
+    partnerA: d.partnerA,
+    partnerB: d.partnerB,
+    kind: d.kind,
+    locationCity: d.locationCity,
+    locationCountry: d.locationCountry,
+    guestTarget: d.guestTarget,
+    budgetTotal: d.budgetTotal,
+  });
+  if (!newId) return { error: "generic" };
 
   redirect({ href: `/wedding/${newId}`, locale: await getLocale() });
   return null;
