@@ -13,7 +13,7 @@ const intl = createIntlMiddleware(routing);
 // /join/team is public so a signed-out invitee lands on the page (which shows a
 // neutral "sign in to view this invitation" + ?next) instead of a bounce that drops
 // the token — the page itself reveals zero invite detail until signed in (matrix stays 10).
-const PUBLIC = ["/", "/sign-in", "/sign-up", "/reset", "/styleguide", "/rsvp", "/menu", "/sign", "/planners", "/p", "/join/team", "/atelier", "/pricing", "/about"];
+const PUBLIC = ["/", "/sign-in", "/sign-up", "/reset", "/styleguide", "/rsvp", "/menu", "/sign", "/quote", "/planners", "/p", "/join/team", "/atelier", "/pricing", "/about"];
 
 export async function middleware(request: NextRequest) {
   // 1. next-intl handles locale routing and returns the base response.
