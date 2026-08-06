@@ -13,16 +13,18 @@ export function StudioNav() {
   const tv = useTranslations("vendors");
   const tops = useTranslations("ops");
   const tc = useTranslations("contract");
+  const tl = useTranslations("leads");
   const path = usePathname();
   // §A2 Team & Profile moved OUT of the section nav into the account menu (top bar). The
   // section nav is now exactly the 7 studio surfaces; /team and /profile are unchanged
   // routes reached from the monogram menu.
-  const items: { href: "/" | "/weddings" | "/venues" | "/vendors" | "/contracts" | "/tasks" | "/calendar"; label: string }[] = [
+  const items: { href: "/" | "/weddings" | "/venues" | "/vendors" | "/contracts" | "/leads" | "/tasks" | "/calendar"; label: string }[] = [
     { href: "/", label: t("overview") },
     { href: "/weddings", label: t("weddings") },
     { href: "/venues", label: tv("venues") },
     { href: "/vendors", label: tv("vendors") },
     { href: "/contracts", label: tc("tab") },
+    { href: "/leads", label: tl("tab") },
     { href: "/tasks", label: tops("tasksTab") },
     { href: "/calendar", label: t("calendar") },
   ];

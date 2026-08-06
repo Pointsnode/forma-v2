@@ -82,7 +82,7 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
   const paidToDate = (rollups ?? []).reduce((s, r) => s + Number((r as { paid: number | string }).paid ?? 0), 0);
 
   // The chase (things waiting on OTHERS) — the existing loader, recomposed below.
-  const { chase } = await loadCockpit(supabase, user!.id, weddings.map((w) => ({ id: w.id, couple_display: w.couple_display })));
+  const { chase, leadsNeedTouch } = await loadCockpit(supabase, user!.id, weddings.map((w) => ({ id: w.id, couple_display: w.couple_display })));
   // The directory inbox (real leads → weddings) is not one of the reference's six cards,
   // but it is live behaviour, so it is kept as a real card at the top of the left column.
   const inquiries = await loadInquiries(supabase);
@@ -135,7 +135,7 @@ export default async function StudioOverview({ params }: { params: Promise<{ loc
       <div className="mt-7 grid gap-4 lg:grid-cols-[2fr_1fr]">
         {/* Left column — the directory inbox (real leads), the weddings, then Today */}
         <div className="flex flex-col gap-4">
-          {inquiries.length ? <InquiriesCard inquiries={inquiries} /> : null}
+          {inquiries.length || leadsNeedTouch ? <InquiriesCard inquiries={inquiries} leadsNeedTouch={leadsNeedTouch} /> : null}
           <Panel>
             <PanelHead
               star={<DomainStar domain="people" size={12} />}

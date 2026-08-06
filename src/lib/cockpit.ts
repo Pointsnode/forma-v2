@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { initials } from "@/lib/wedding";
 
 export type FeedItem = { id: string; verb: string; summary: string; actorName: string | null; tag: string; actorKind: "user" | "concierge" };
-export type ChaseItem = { id: string; title: string; weddingId: string; tag: string; ageDays: number; href: string; kind: "proposal" | "task" };
+export type ChaseItem = { id: string; title: string; weddingId: string; tag: string; ageDays: number; href: string; kind: "proposal" | "task" | "lead" };
 export type InquiryItem = {
   id: string;
   name: string;
@@ -53,7 +53,7 @@ export async function loadCockpit(
   supabase: SupabaseClient,
   userId: string,
   weddings: { id: string; couple_display: string }[],
-): Promise<{ feed: FeedItem[]; chase: ChaseItem[] }> {
+): Promise<{ feed: FeedItem[]; chase: ChaseItem[]; leadsNeedTouch: number }> {
   const name = new Map(weddings.map((w) => [w.id, w.couple_display]));
   const tag = (weddingId: string) => initials(name.get(weddingId) ?? "");
 
@@ -110,6 +110,21 @@ export async function loadCockpit(
     chase.push({ id: w.id, title: w.title, weddingId: w.wedding_id, tag: tag(w.wedding_id), ageDays, href: `/wedding/${w.wedding_id}/tasks`, kind: "task" });
   }
 
+  // Leads whose next step is due join the chase (planner-facing reminders; §6). The row links
+  // to the sheet, not a wedding, and wears the same age treatment.
+  const today = new Date().toISOString().slice(0, 10);
+  const { data: dueLeads } = await supabase
+    .from("leads")
+    .select("id, couple_display, next_step, next_step_at")
+    .not("stage", "in", "(won,lost)")
+    .not("next_step_at", "is", null)
+    .lte("next_step_at", today);
+  const dueRows = (dueLeads ?? []) as { id: string; couple_display: string; next_step: string | null; next_step_at: string }[];
+  for (const l of dueRows) {
+    const ageDays = Math.max(0, Math.floor((now - new Date(l.next_step_at).getTime()) / 86_400_000));
+    chase.push({ id: l.id, title: l.next_step ? `${l.couple_display} · ${l.next_step}` : l.couple_display, weddingId: "", tag: "", ageDays, href: `/leads/${l.id}`, kind: "lead" });
+  }
+
   chase.sort((a, b) => b.ageDays - a.ageDays);
-  return { feed, chase: chase.slice(0, 8) };
+  return { feed, chase: chase.slice(0, 8), leadsNeedTouch: dueRows.length };
 }
