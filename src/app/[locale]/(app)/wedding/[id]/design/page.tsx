@@ -29,12 +29,17 @@ export default async function DesignTab({ params }: { params: Promise<{ locale: 
   const canEdit = role === "staff" || role === "member";
   const isStaff = role === "staff";
 
-  const [{ data: boardRows }, { data: swatchRows }, { data: engRows }, { data: catRows }] = await Promise.all([
-    supabase.from("design_boards").select("id, title, category, cover_item_id, budget_category, engagement_id, design_items(id, title, note, storage_path, sort)").eq("wedding_id", id).order("sort"),
+  const [{ data: boardRows, error: boardErr }, { data: swatchRows }, { data: engRows }, { data: catRows }] = await Promise.all([
+    // design_items!design_items_board_fk disambiguates the board→items relationship (the
+    // cover_item_id FK adds a second design_boards↔design_items link).
+    supabase.from("design_boards").select("id, title, category, cover_item_id, budget_category, engagement_id, design_items!design_items_board_fk(id, title, note, storage_path, sort)").eq("wedding_id", id).order("sort"),
     supabase.from("design_palette_swatches").select("id, hex, name").eq("wedding_id", id).order("sort").order("created_at"),
     isStaff ? supabase.from("wedding_vendors").select("id, vendors(name)").eq("wedding_id", id) : Promise.resolve({ data: [] }),
     isStaff ? supabase.from("ledger_lines").select("category").eq("wedding_id", id).not("category", "is", null) : Promise.resolve({ data: [] }),
   ]);
+  // A query failure must not masquerade as an empty studio — log it, and the render shows
+  // a real error state (not "No boards yet").
+  if (boardErr) console.error(`design boards load (${boardErr.code}): ${boardErr.message}`);
   const boards = ((boardRows ?? []) as unknown as Board[]).map((b) => ({ ...b, design_items: [...b.design_items].sort((a, c) => a.sort - c.sort) }));
   const wedgeSwatches = (swatchRows ?? []) as { id: string; hex: string; name: string | null }[];
   const engagements = ((engRows ?? []) as unknown as { id: string; vendors: { name: string } | null }[]).map((e) => ({ id: e.id, name: e.vendors?.name ?? "·" }));
@@ -83,7 +88,9 @@ export default async function DesignTab({ params }: { params: Promise<{ locale: 
 
       <PaletteRow weddingId={id} wedding={wedgeSwatches} studio={studioSwatches} canManage={canEdit} canKeep={isStaff} />
 
-      {boards.length === 0 ? (
+      {boardErr ? (
+        <Card><p className="py-6 text-center font-accent text-[15px] text-wine">{t("uploadError")}</p></Card>
+      ) : boards.length === 0 ? (
         <Card><p className="py-6 text-center font-accent text-[15px] text-muted">{t("noBoards")}</p></Card>
       ) : (
         <div className="flex flex-col gap-5">

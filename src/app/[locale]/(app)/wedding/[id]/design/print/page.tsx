@@ -25,10 +25,12 @@ export default async function DesignPrint({ params }: { params: Promise<{ locale
   const wl = (wedding.locale as string | null) ?? viewer;
   const td = await getTranslations({ locale: wl, namespace: "design" });
 
-  const [{ data: boardRows }, { data: swatchRows }] = await Promise.all([
-    supabase.from("design_boards").select("id, title, category, design_items(id, title, note, storage_path, sort)").eq("wedding_id", id).order("sort"),
+  const [{ data: boardRows, error: boardErr }, { data: swatchRows }] = await Promise.all([
+    // Name the board→items relationship (the cover_item_id FK adds a second link).
+    supabase.from("design_boards").select("id, title, category, design_items!design_items_board_fk(id, title, note, storage_path, sort)").eq("wedding_id", id).order("sort"),
     supabase.from("design_palette_swatches").select("id, hex").eq("wedding_id", id).order("sort").order("created_at"),
   ]);
+  if (boardErr) console.error(`design print load (${boardErr.code}): ${boardErr.message}`);
   const boards = ((boardRows ?? []) as unknown as Board[]).map((b) => ({ ...b, design_items: [...b.design_items].sort((a, c) => a.sort - c.sort) }));
   const swatches = (swatchRows ?? []) as { id: string; hex: string }[];
   const range = formatDateRange(wedding.date_start, wedding.date_end, wl);

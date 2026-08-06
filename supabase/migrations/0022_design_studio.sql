@@ -5,11 +5,14 @@
 -- ── design_boards: style-guide metadata + read-only pins ─────────────────────
 -- category (free text), cover_item_id (a chosen item as the guide cover), and the two
 -- pins (budget_category / engagement_id) that tie a guide to the money it becomes.
+-- Loose uuids must not dangle: cover/engagement/source_item carry FKs, all on delete set
+-- null. The cover FK creates a SECOND design_boards→design_items relationship, so every
+-- nested design_items embed must name the board relationship (design_items!design_items_board_fk).
 alter table public.design_boards
   add column if not exists category text,
-  add column if not exists cover_item_id uuid,
+  add column if not exists cover_item_id uuid references public.design_items (id) on delete set null,
   add column if not exists budget_category text,
-  add column if not exists engagement_id uuid;
+  add column if not exists engagement_id uuid references public.wedding_vendors (id) on delete set null;
 
 -- ── design_palette_swatches — the wedding's palette (grows from the imagery) ──
 create table if not exists public.design_palette_swatches (
@@ -17,7 +20,7 @@ create table if not exists public.design_palette_swatches (
   wedding_id uuid not null references public.weddings (id) on delete cascade,
   hex text not null check (hex ~ '^#[0-9a-fA-F]{6}$'),
   name text,
-  source_item_id uuid,
+  source_item_id uuid references public.design_items (id) on delete set null,
   sort int not null default 0,
   created_by uuid references public.profiles (id) on delete set null,
   created_at timestamptz not null default now()

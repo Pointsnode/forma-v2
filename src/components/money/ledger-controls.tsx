@@ -46,7 +46,7 @@ export function AddLineForm({ weddingId }: { weddingId: string }) {
   const [open, setOpen] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [pending, start] = useTransition();
-  if (!open) return <button onClick={() => setOpen(true)} className="text-[13px] text-muted hover:text-ink hover:underline hover:underline-offset-2">+ {t("addLine")}</button>;
+  if (!open) return <Button variant="primary" onClick={() => setOpen(true)}>{t("addLine")}</Button>;
   return (
     <form
       action={(fd) => start(async () => { const r = await addLedgerLine(weddingId, fd); if (r.error) setErr(t("error")); else { setOpen(false); setErr(null); } })}

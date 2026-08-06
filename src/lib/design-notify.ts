@@ -18,7 +18,9 @@ export async function notifyCoupleOfComment(weddingId: string, itemId: string, a
   const { data: staff } = await admin.from("workspace_members").select("user_id").eq("workspace_id", wd.workspace_id).eq("user_id", authorId).maybeSingle();
   if (!staff) return;
   const { data: prof } = await admin.from("profiles").select("display_name").eq("id", authorId).maybeSingle();
-  const { data: members } = await admin.from("wedding_members").select("user_id").eq("wedding_id", weddingId);
+  const { data: ws } = await admin.from("workspaces").select("name, created_by").eq("id", wd.workspace_id).maybeSingle();
+  // Only the COUPLE (partner members) get the note — never family or day-of coordinators.
+  const { data: members } = await admin.from("wedding_members").select("user_id").eq("wedding_id", weddingId).eq("role", "partner");
   if (!members?.length) return;
   const emails: string[] = [];
   for (const m of members as { user_id: string }[]) {
@@ -32,10 +34,18 @@ export async function notifyCoupleOfComment(weddingId: string, itemId: string, a
     const { data } = await admin.storage.from("design-media").createSignedUrl(item.storage_path as string, 604800); // 7 days, for the email
     imageUrl = data?.signedUrl ?? null;
   }
-  const wl = (wd.locale as string | null) ?? "en";
+  // #37 resolution, exactly as the lookups: wedding.locale → workspace creator's locale → 'en'.
+  let wl = wd.locale as string | null;
+  if (!wl && ws?.created_by) {
+    const { data: cp } = await admin.from("profiles").select("locale").eq("id", ws.created_by as string).maybeSingle();
+    wl = (cp?.locale as string | null) ?? null;
+  }
+  wl = wl ?? "en";
+  // Planner name falls back to the STUDIO name (not the brand) so the couple sees who wrote.
+  const plannerName = (prof?.display_name as string | null) ?? (ws?.name as string | null) ?? "";
   const studioUrl = `${APP_URL}${wl === "en" ? "" : `/${wl}`}/wedding/${weddingId}/design`;
   const mails = emails.map((to) => commentEmail({
-    to, couple: wd.couple_display as string, planner: (prof?.display_name as string | null) ?? "Forma",
+    to, couple: wd.couple_display as string, planner: plannerName,
     imageUrl, studioUrl, body, locale: wl,
   }));
   await sendBatch(mails);
