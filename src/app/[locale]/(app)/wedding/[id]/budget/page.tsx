@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loadWeddingContext } from "@/lib/load-wedding";
 import { loadLedger, daysOverdue } from "@/lib/money";
 import { WeddingShell } from "@/components/wedding/wedding-shell";
 import { AddLineForm, PayButton, MarkPaid } from "@/components/money/ledger-controls";
-import { Card, StatRow, Stat, SectionTitle, Row, RowMain, Badge, Chip, Tag, type BadgeTone } from "@/components/ui";
+import { Card, Panel, PanelHead, PanelRow, Row, RowMain, Badge, Chip, Button, DomainStar, Tag, type BadgeTone } from "@/components/ui";
 import { formatMoney } from "@/lib/wedding";
 import { loadDatePrefs } from "@/lib/prefs";
 import { formatDate } from "@/lib/format-date";
@@ -27,60 +28,80 @@ export default async function BudgetTab({ params }: { params: Promise<{ locale: 
   const { lines, rollup, traceFor, slices } = await loadLedger(supabase, id);
   const eventLabel = new Map(events.map((e) => [e.id, e.label]));
   const fmt = (n: string | number | null) => formatMoney(n, lang) ?? "·";
-  // §B4 — ledger due dates honour the account's date-format preference (a DATE-typed
-  // value, reordered without a timezone shift).
   const prefs = await loadDatePrefs(supabase, lang);
+
+  const budget = Number(rollup.budget_total ?? 0);
+  const committed = Number(rollup.committed ?? 0);
+  const paid = Number(rollup.paid ?? 0);
+  const pct = (n: number) => (budget > 0 ? Math.min(100, Math.round((n / budget) * 100)) : 0);
+  const lineSum = lines.reduce((s, l) => s + Number(l.amount ?? 0), 0);
+  const delta = budget - lineSum; // + = under budget, - = over
 
   return (
     <WeddingShell wedding={wedding} events={events} role={role} active="budget">
-      <SectionTitle title={tm("title")} accent={tm("hint")} className="mt-0" />
+      {/* Summary strip — teal (money) domain stars, committed teal bar, paid charcoal bar. */}
+      <div className="mb-6 grid gap-4 border-b border-hairline pb-6 sm:grid-cols-3">
+        <SummaryCol star label={tm("budget")} value={fmt(rollup.budget_total)} />
+        <SummaryCol star label={tm("committed")} value={fmt(rollup.committed)} bar={{ pct: pct(committed), fill: "bg-teal" }} />
+        <SummaryCol star label={tm("paid")} value={fmt(rollup.paid)} bar={{ pct: pct(paid), fill: "bg-ink" }} />
+      </div>
 
-      <StatRow>
-        <Stat value={fmt(rollup.budget_total)} label={tm("budget")} />
-        <Stat value={fmt(rollup.paid)} valueClassName="text-teal" label={tm("paid")} />
-        <Stat value={fmt(rollup.committed)} label={tm("committed")} />
-        <Stat value={fmt(rollup.open)} label={tm("open")} />
-      </StatRow>
-
-      <div className="mt-[18px] grid gap-[18px] lg:grid-cols-[1.6fr_1fr]">
-        <Card>
-          <div className="mb-2 flex items-baseline justify-between">
-            <h3 className="font-display text-[19px] text-ink">{tm("ledgerTitle")}</h3>
-            {role === "staff" ? <AddLineForm weddingId={id} /> : null}
-          </div>
-          <p className="mb-2 text-[12.5px] text-muted">{tm("ledgerHint")}</p>
-          {lines.length === 0 ? (
-            <p className="py-6 text-center font-accent text-[15px] text-muted">{tm("empty")}</p>
-          ) : (
-            lines.map((l) => (
-              <Row key={l.id}>
-                <RowMain
-                  title={l.title}
-                  detail={
-                    <span className="flex flex-wrap items-center gap-1.5">
-                      {traceFor(l).map((tr, i) => (
-                        <Tag key={i}>{tr.kind === "quote" ? tm("traceQuote") : tr.label}</Tag>
-                      ))}
-                      {l.due_date ? <span className="text-taupe">· {formatDate(l.due_date, prefs)}</span> : null}
-                    </span>
-                  }
-                />
-                <span className="shrink-0 font-medium text-[13.5px] text-ink">{fmt(l.amount)}</span>
-                {(() => {
-                  // urgency is earned: a line strictly past its due date (and unsettled) wears
-                  // the oxblood urgent chip; every other state keeps its normal status badge.
+      <div className="grid gap-[18px] lg:grid-cols-[1.6fr_1fr]">
+        <div>
+          <Panel>
+            <PanelHead
+              star={<DomainStar domain="money" size={11} />}
+              title={tm("lineByLine")}
+              meta={lines.length ? tm("lineCount", { count: lines.length }) : undefined}
+            />
+            {lines.length === 0 ? (
+              <p className="px-[18px] py-8 text-center font-accent text-[15px] text-muted">{tm("empty")}</p>
+            ) : (
+              <>
+                {lines.map((l) => {
                   const od = daysOverdue(l.due_date, l.status);
-                  return od > 0
-                    ? <Chip tone="urgent">{tm("overdue", { n: od })}</Chip>
-                    : <Badge tone={STATUS_TONE[l.status] ?? "sand"}>{tm(`status_${l.status}`)}</Badge>;
-                })()}
-                {l.kind === "planner_fee" && l.status === "due" && role === "member" ? <PayButton lineId={l.id} /> : null}
-                {role === "staff" && l.kind !== "planner_fee" && !["paid", "settled", "void"].includes(l.status) ? <MarkPaid lineId={l.id} /> : null}
-              </Row>
-            ))
-          )}
-          <p className="mt-3 text-[11.5px] text-muted">{tm("computedNote")}</p>
-        </Card>
+                  return (
+                    <PanelRow key={l.id} cols="1fr auto auto auto">
+                      <span className="min-w-0">
+                        <span className="text-ink">{l.title}</span>
+                        <span className="ml-2 inline-flex flex-wrap items-center gap-1.5 align-middle">
+                          {traceFor(l).map((tr, i) => <Tag key={i}>{tr.kind === "quote" ? tm("traceQuote") : tr.label}</Tag>)}
+                          {l.due_date ? <span className="text-[12px] text-taupe">· {formatDate(l.due_date, prefs)}</span> : null}
+                        </span>
+                      </span>
+                      <span className="whitespace-nowrap tabular-nums font-medium text-[13.5px] text-ink">{fmt(l.amount)}</span>
+                      {od > 0
+                        ? <Chip tone="urgent">{tm("overdue", { n: od })}</Chip>
+                        : <Badge tone={STATUS_TONE[l.status] ?? "sand"}>{tm(`status_${l.status}`)}</Badge>}
+                      {l.kind === "planner_fee" && l.status === "due" && role === "member" ? <PayButton lineId={l.id} />
+                        : role === "staff" && l.kind !== "planner_fee" && !["paid", "settled", "void"].includes(l.status) ? <MarkPaid lineId={l.id} />
+                        : <span />}
+                    </PanelRow>
+                  );
+                })}
+                {/* Charcoal total row — bone text + champagne delta ($X under / $X over). */}
+                <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3.5 bg-ink px-[18px] py-3 text-[13px] text-bone">
+                  <span className="font-medium">{tm("totalLabel")}</span>
+                  <span className="whitespace-nowrap tabular-nums font-medium">{fmt(lineSum)}</span>
+                  {budget > 0 ? (
+                    <span className="whitespace-nowrap text-[11px] text-champagne">
+                      {delta >= 0 ? tm("deltaUnder", { amount: fmt(delta) }) : tm("deltaOver", { amount: fmt(-delta) })}
+                    </span>
+                  ) : <span />}
+                </div>
+              </>
+            )}
+          </Panel>
+
+          {/* Actions — wine "Add a line" + ghost "Export for the couple" (a real print route). */}
+          <div className="mt-[18px] flex items-center gap-2.5">
+            {role === "staff" ? <AddLineForm weddingId={id} /> : null}
+            <Link href={`/wedding/${id}/budget/print`} target="_blank">
+              <Button variant="ghost">{tm("exportCouple")}</Button>
+            </Link>
+            <p className="ml-auto font-accent text-[14px] italic text-taupe">{tm("computedNote")}</p>
+          </div>
+        </div>
 
         {slices.length ? (
           <Card className="self-start">
@@ -96,5 +117,21 @@ export default async function BudgetTab({ params }: { params: Promise<{ locale: 
         ) : null}
       </div>
     </WeddingShell>
+  );
+}
+
+function SummaryCol({ label, value, bar }: { star?: boolean; label: string; value: string; bar?: { pct: number; fill: string } }) {
+  return (
+    <div>
+      <p className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.24em] text-muted">
+        <DomainStar domain="money" size={10} />{label}
+      </p>
+      <p className="mt-1 font-display text-[30px] leading-none text-ink tabular-nums">{value}</p>
+      {bar ? (
+        <div className="mt-2.5 h-[3px] max-w-[220px] rounded-[2px] bg-hairline">
+          <div className={`h-[3px] rounded-[2px] ${bar.fill}`} style={{ width: `${bar.pct}%` }} />
+        </div>
+      ) : null}
+    </div>
   );
 }

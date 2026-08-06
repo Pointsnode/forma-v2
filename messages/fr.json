@@ -129,7 +129,8 @@
     "save": "Enregistrer",
     "cancel": "Annuler",
     "daysAgo": "il y a {count} jours",
-    "settled": "réglé"
+    "settled": "réglé",
+    "theWedding": "The wedding"
   },
   "phase": {
     "hiring": "Les réservations",
@@ -829,7 +830,13 @@
     "urgentHint": "à payer maintenant ou bloquant un passage",
     "yours": "à vous",
     "overdue": "En retard de {n, plural, one {# jour} other {# jours}}",
-    "dueChip": "À payer"
+    "dueChip": "À payer",
+    "lineByLine": "Line by line",
+    "totalLabel": "Total",
+    "deltaUnder": "{amount} under",
+    "deltaOver": "{amount} over",
+    "exportCouple": "Export for the couple",
+    "lineCount": "{count} lines"
   },
   "contract": {
     "tab": "Contrats",

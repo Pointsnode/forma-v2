@@ -129,7 +129,8 @@
     "save": "Save",
     "cancel": "Cancel",
     "daysAgo": "{count} days ago",
-    "settled": "settled"
+    "settled": "settled",
+    "theWedding": "The wedding"
   },
   "phase": {
     "hiring": "Hiring",
@@ -829,7 +830,13 @@
     "urgentHint": "due now or blocking a gate",
     "yours": "yours",
     "overdue": "Overdue {n, plural, one {# day} other {# days}}",
-    "dueChip": "Due"
+    "dueChip": "Due",
+    "lineByLine": "Line by line",
+    "totalLabel": "Total",
+    "deltaUnder": "{amount} under",
+    "deltaOver": "{amount} over",
+    "exportCouple": "Export for the couple",
+    "lineCount": "{count} lines"
   },
   "contract": {
     "tab": "Contracts",

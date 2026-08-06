@@ -107,7 +107,8 @@ export async function WeddingShell({
       {/* ── full-bleed ink masthead ─────────────────────────────────────────── */}
       <div className="bg-ink text-bone">
         <div className="mx-auto max-w-[1240px] px-8 pt-[34px] md:px-10">
-          {eyebrow ? <p className="mb-2.5 text-[10.5px] uppercase tracking-[0.34em] text-[#B8AFA2]">{eyebrow}</p> : null}
+          {/* Edition One kicker (the reference's "THE WEDDING"); kind · city folds into the meta. */}
+          <p className="mb-2.5 text-[10px] font-medium uppercase tracking-[0.24em] text-champagne">{tw("theWedding")}</p>
           <h1 className="font-display text-[40px] leading-[1.08]">{wedding.couple_display}</h1>
           <p className="mt-2 text-[13.5px] text-[#CFC7B9]">
             {range ? <span className="font-accent text-[16px] italic text-champagne">{range}</span> : null}
@@ -118,6 +119,7 @@ export async function WeddingShell({
               money,
             ].filter(Boolean).join("  ·  ")}
             {days != null ? <span className="ml-3 text-[#948C7F]">· {wedding.phase === "closed" ? tw("settled") : days >= 0 ? `${days} ${tw("days")}` : tw("daysAgo", { count: -days })}</span> : null}
+            {eyebrow ? <span className="ml-3 text-[#948C7F]">· {eyebrow}</span> : null}
           </p>
 
           {/* Single-event law: no chip row exists until a second event does. */}
@@ -154,15 +156,15 @@ export async function WeddingShell({
 
       {/* ── sticky wedding nav ──────────────────────────────────────────────── */}
       {showNav ? (
-        <div className="sticky top-[62px] z-40 bg-bone [box-shadow:inset_0_-1px_0_var(--color-hairline)]">
+        <div className="sticky top-[62px] z-40 bg-ink">
           <nav className="mx-auto flex max-w-[1240px] gap-7 overflow-x-auto px-8 md:px-10">
             {tabs.map((t) => (
               <Link
                 key={t.key}
                 href={t.href}
                 className={cx(
-                  "whitespace-nowrap border-b-2 pb-[13px] pt-[15px] text-[13px]",
-                  active === t.key ? "border-ink font-medium text-ink" : "border-transparent text-muted hover:text-ink",
+                  "whitespace-nowrap border-b-2 pb-[13px] pt-[15px] text-[13px] transition-colors",
+                  active === t.key ? "border-champagne text-bone" : "border-transparent text-[rgba(245,242,235,0.55)] hover:text-bone",
                 )}
               >
                 {t.label}
@@ -218,8 +220,8 @@ function Chip({
     <Link
       href={href}
       className={cx(
-        "flex shrink-0 flex-col rounded-[var(--radius)] px-4 py-[7px] text-[12.5px] transition-colors",
-        active ? "bg-bone text-ink" : "bg-[#1E1E1E] text-[#D9D2C6] hover:bg-[#2A2A2A]",
+        "flex shrink-0 flex-col rounded-[var(--radius)] border px-4 py-[7px] text-[12.5px] transition-colors",
+        active ? "border-transparent bg-bone text-ink" : "border-[rgba(245,242,235,0.16)] text-[rgba(245,242,235,0.65)] hover:text-bone",
       )}
     >
       <span>{children}</span>

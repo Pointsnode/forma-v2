@@ -129,7 +129,8 @@
     "save": "Guardar",
     "cancel": "Cancelar",
     "daysAgo": "hace {count} días",
-    "settled": "liquidada"
+    "settled": "liquidada",
+    "theWedding": "The wedding"
   },
   "phase": {
     "hiring": "Contratación",
@@ -829,7 +830,13 @@
     "urgentHint": "vence ahora o bloquea una puerta",
     "yours": "tuyo",
     "overdue": "Vencido {n, plural, one {# día} other {# días}}",
-    "dueChip": "Por vencer"
+    "dueChip": "Por vencer",
+    "lineByLine": "Line by line",
+    "totalLabel": "Total",
+    "deltaUnder": "{amount} under",
+    "deltaOver": "{amount} over",
+    "exportCouple": "Export for the couple",
+    "lineCount": "{count} lines"
   },
   "contract": {
     "tab": "Contratos",
