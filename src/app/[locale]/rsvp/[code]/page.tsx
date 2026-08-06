@@ -61,9 +61,9 @@ export default async function RsvpPage({
 
   return (
     <Shell held={held}>
-      <div className="mb-6">
-        <Wordmark size={15} className="mb-3 block" />
-        <DomainStar fill="#111111" size={16} />
+      <div className="mb-6 text-center">
+        <Wordmark size={15} className="mb-3 inline-block" />
+        <div className="flex justify-center"><DomainStar fill="#111111" size={16} /></div>
         <p className="mt-1.5 text-[10px] uppercase tracking-[0.2em] text-taupe">{tcp("theWeddingOf")}</p>
         <h1 className="mt-1 font-display text-[30px] leading-tight text-ink">{payload.wedding.couple_display}</h1>
         <p className="mt-1 font-accent text-[16px] text-taupe">
@@ -77,7 +77,7 @@ export default async function RsvpPage({
           <p className="font-accent text-[15.5px] text-muted">{payload.closed_reason === "expired" ? t("expiredBody") : t("closedBody")}</p>
         </div>
       ) : (
-        <RsvpForm code={code} sendToken={sendToken ?? null} couple={payload.wedding.couple_display} guest={payload.guest} events={payload.events} />
+        <RsvpForm code={code} sendToken={sendToken ?? null} couple={payload.wedding.couple_display} guest={payload.guest} events={payload.events} locale={locale} />
       )}
     </Shell>
   );

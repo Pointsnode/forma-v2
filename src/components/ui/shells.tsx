@@ -11,7 +11,7 @@ import { Monogram, Chip, DomainStar, Wordmark, type Domain } from "./primitives"
 export function SignedFooter({ heldLabel }: { heldLabel: string }) {
   return (
     <footer className="relative left-1/2 w-screen -translate-x-1/2 bg-ink px-6 py-12 text-center text-bone">
-      <DomainStar fill="#D7C3A5" size={13} />
+      <div className="flex justify-center"><DomainStar fill="#D7C3A5" size={13} /></div>
       <div className="mt-2.5"><Wordmark size={19} className="!text-bone" /></div>
       <p className="mt-3 text-[10px] uppercase tracking-[0.2em] text-champagne">{heldLabel}</p>
     </footer>

@@ -6,12 +6,14 @@ import { updateSession } from "@/lib/supabase/middleware";
 
 const intl = createIntlMiddleware(routing);
 // "/" is the M12 landing (the storefront) for signed-out visitors — crawlable.
-// /planners + /p are the M10 public directory. /menu and /sign remain tokenized-
-// public via their own guards; the directory + landing are fully open.
+// /planners + /p are the M10 public directory. /rsvp, /menu and /sign are the guest
+// entry points: accountless and tokenized, gated by their own token guards + DEFINER
+// lookups (the menu + signature emails link straight here, so they MUST be public or
+// the links dead-end at the sign-in wall). The directory + landing are fully open.
 // /join/team is public so a signed-out invitee lands on the page (which shows a
 // neutral "sign in to view this invitation" + ?next) instead of a bounce that drops
 // the token — the page itself reveals zero invite detail until signed in (matrix stays 10).
-const PUBLIC = ["/", "/sign-in", "/sign-up", "/reset", "/styleguide", "/rsvp", "/planners", "/p", "/join/team", "/atelier", "/pricing", "/about"];
+const PUBLIC = ["/", "/sign-in", "/sign-up", "/reset", "/styleguide", "/rsvp", "/menu", "/sign", "/planners", "/p", "/join/team", "/atelier", "/pricing", "/about"];
 
 export async function middleware(request: NextRequest) {
   // 1. next-intl handles locale routing and returns the base response.

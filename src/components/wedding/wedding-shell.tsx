@@ -111,7 +111,7 @@ export async function WeddingShell({
           // THE WEDDING OF, Playfair names, champagne meta. Real names/date/city; the days
           // counter drops once the date passes. No planning strip (the phase is the planner's).
           <div className="mx-auto max-w-[1240px] px-8 py-14 text-center md:px-10">
-            <DomainStar fill="#F5F2EB" size={22} />
+            <div className="flex justify-center"><DomainStar fill="#F5F2EB" size={22} /></div>
             <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.24em] text-champagne">{tcp("theWeddingOf")}</p>
             <h1 className="mt-2.5 font-display text-[46px] leading-[1.05] text-bone">{wedding.couple_display}</h1>
             <p className="mt-3.5 text-[11px] uppercase tracking-[0.22em] text-champagne">
