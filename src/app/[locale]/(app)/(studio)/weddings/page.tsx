@@ -37,7 +37,6 @@ export default async function WeddingsPage({ params }: { params: Promise<{ local
         title={t("weddings")}
         accent={t("weddingsHint")}
         action={<Link href="/weddings/new"><Button variant="primary">{t("createWedding")}</Button></Link>}
-        className="mt-1"
       />
 
       {error || weddings.length === 0 ? (

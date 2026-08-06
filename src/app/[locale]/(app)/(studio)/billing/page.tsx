@@ -22,7 +22,7 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
 
   return (
     <div>
-      <StudioTitleBand title={tb("title")} accent={tb("hint")} className="mt-1" />
+      <StudioTitleBand title={tb("title")} accent={tb("hint")} />
 
       <Card className="mb-[18px]">
         <Row>

@@ -24,7 +24,7 @@ export default async function StudioContractsPage({ params }: { params: Promise<
 
   return (
     <div>
-      <StudioTitleBand title={tc("studioTitle")} accent={tc("studioHint")} className="mt-1" />
+      <StudioTitleBand title={tc("studioTitle")} accent={tc("studioHint")} />
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <TemplatesPanel templates={templates} lang={lang} />
