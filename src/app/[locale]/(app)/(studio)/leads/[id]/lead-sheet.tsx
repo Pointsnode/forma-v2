@@ -37,14 +37,19 @@ export function LeadSheet({ lead, events }: { lead: LeadFull; events: ThreadEven
 
   function run(fn: () => Promise<unknown>) { start(async () => { await fn(); setPanel(null); }); }
 
+  // Resolve a coded body ('new' → the lane label) but fall back to the plain body when the key
+  // is missing, so a stray value never surfaces a raw catalog key path.
+  const labelOr = (prefix: string, body: string | null): string =>
+    body && t.has(`${prefix}_${body}`) ? t(`${prefix}_${body}`) : (body ?? "");
+
   function eventMain(e: ThreadEvent): string {
     switch (e.kind) {
       case "arrived": return t("evtArrived");
       case "note": return e.body ?? "";
-      case "stage": return t("evtStage", { stage: e.body ? t(`lane_${e.body}`) : "" });
+      case "stage": return t("evtStage", { stage: labelOr("lane", e.body) });
       case "consult": return t("evtConsult");
       case "converted": return t("evtConverted");
-      case "lost": return t("evtLost", { reason: e.body ? t(`lost_${e.body}`) : "" });
+      case "lost": return t("evtLost", { reason: labelOr("lost", e.body) });
       default: return e.body ?? e.kind;
     }
   }

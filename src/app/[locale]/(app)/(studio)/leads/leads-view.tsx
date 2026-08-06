@@ -64,7 +64,9 @@ function LeadCard({ lead, today }: { lead: LeadRow; today: string }) {
       <Link href={`/leads/${lead.id}`} className="block">
         <p className="font-display text-[15.5px] text-text-primary">{lead.couple_display}</p>
         {feelLine(lead) ? <p className="mt-[3px] text-[11.5px] text-text-meta">{feelLine(lead)}</p> : null}
-        <div className="mt-2.5 flex items-center justify-between gap-2">
+        {/* flex-wrap so the urgent chip drops to its own line when tight — the one card that
+            earns urgency must never be the one card that clips. */}
+        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
           {won ? <Chip tone="settled">{t("wonChip")}</Chip> : <SourceChip lead={lead} />}
           {won ? <span /> : <NextStep lead={lead} today={today} />}
         </div>
