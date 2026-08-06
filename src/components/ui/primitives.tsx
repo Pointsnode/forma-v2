@@ -7,16 +7,17 @@ import { cx } from "./cn";
 
 const RADIUS = "rounded-[var(--radius)]";
 
-/** Card: bone ground, 1px hairline border, radius token, no shadow. */
+/** Card: raised surface, 1px hairline border, radius token, no shadow. Surface + hairline
+    resolve through the themeable tokens (bone in day, the raised night tone under night). */
 export function Card({ children, className, id }: { children: ReactNode; className?: string; lift?: boolean; id?: string }) {
   return (
-    <div id={id} className={cx(RADIUS, "border border-hairline bg-bone p-6", className)}>{children}</div>
+    <div id={id} className={cx(RADIUS, "border border-hairline-token bg-surface-card p-6", className)}>{children}</div>
   );
 }
 
 /** Playfair section heading (never below 18px). */
 export function Heading({ children, className }: { children: ReactNode; className?: string }) {
-  return <h2 className={cx("font-display text-[22px] leading-tight text-ink", className)}>{children}</h2>;
+  return <h2 className={cx("font-display text-[22px] leading-tight text-text-primary", className)}>{children}</h2>;
 }
 
 /** Cormorant accent line. */
@@ -26,7 +27,7 @@ export function Accent({ children, className }: { children: ReactNode; className
 
 export function SectionLabel({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <p className={cx("text-[11px] font-medium uppercase tracking-[0.16em] text-muted", className)}>{children}</p>
+    <p className={cx("text-[11px] font-medium uppercase tracking-[0.16em] text-text-meta", className)}>{children}</p>
   );
 }
 
@@ -67,7 +68,7 @@ export function Pill({ children, tone = "bone", className }: { children: ReactNo
 export function Chip({ children, active = false, tone }: { children: ReactNode; active?: boolean; tone?: ChipTone }) {
   if (tone) return <span className={cx(CHIP_BASE, CHIP_TONE[tone])}>{children}</span>;
   return (
-    <span className={cx("inline-flex shrink-0 items-center px-3 py-1 text-[12.5px] transition-colors", RADIUS, active ? "bg-ink text-bone" : "bg-transparent text-muted hover:text-ink")}>
+    <span className={cx("inline-flex shrink-0 items-center px-3 py-1 text-[12.5px] transition-colors", RADIUS, active ? "bg-ink text-bone" : "bg-transparent text-text-meta hover:text-text-primary")}>
       {children}
     </span>
   );
@@ -84,10 +85,12 @@ export type ButtonProps = {
 
 // primary = wine solid · dark/solid = charcoal solid · ghost = 1px charcoal outline.
 // Uppercase 11px, 500, .16em, radius, no shadow. ("solid" kept = dark for back-compat.)
+// dark/solid carry a themeable edge: transparent on bone (day is byte-for-byte), a bone-alpha
+// hairline on night so the charcoal fill stays distinct from the near-black room.
 const BTN: Record<NonNullable<ButtonProps["variant"]>, string> = {
   primary: "bg-wine text-bone hover:opacity-90",
-  dark: "bg-ink text-bone hover:opacity-90",
-  solid: "bg-ink text-bone hover:opacity-90",
+  dark: "bg-ink text-bone border border-[color:var(--color-button-edge)] hover:opacity-90",
+  solid: "bg-ink text-bone border border-[color:var(--color-button-edge)] hover:opacity-90",
   ghost: "border border-ink bg-transparent text-ink hover:bg-ink hover:text-bone",
 };
 export function Button({ children, type = "button", variant = "solid", disabled, className, onClick }: ButtonProps) {
@@ -120,8 +123,8 @@ export function Monogram({ initials, size = 44, dark = false }: { initials: stri
 export function Fact({ value, label }: { value: ReactNode; label: ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="font-display text-[26px] leading-none text-ink">{value}</span>
-      <span className="font-accent text-[15px] text-muted">{label}</span>
+      <span className="font-display text-[26px] leading-none text-text-primary">{value}</span>
+      <span className="font-accent text-[15px] text-text-meta">{label}</span>
     </div>
   );
 }

@@ -1561,7 +1561,12 @@
     "subStartHint": "Démarrez votre abonnement pour lancer la facturation.",
     "managePlanBtn": "Gérer l'abonnement",
     "startSubscription": "Démarrer l'abonnement",
-    "subErr": "Impossible de joindre Stripe, réessayez."
+    "subErr": "Impossible de joindre Stripe, réessayez.",
+    "appearance": "Appearance",
+    "appearanceHint": "Bone is the brand default. Default follows your device; Night is the dark register.",
+    "appearance_default": "Default",
+    "appearance_bone": "Bone",
+    "appearance_night": "Night"
   },
   "design": {
     "guides": "Guides de style",

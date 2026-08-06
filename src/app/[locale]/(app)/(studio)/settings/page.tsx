@@ -19,7 +19,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const { data: prof } = await supabase.from("profiles").select("display_name, locale, timezone, date_format").eq("id", user!.id).maybeSingle();
+  const { data: prof } = await supabase.from("profiles").select("display_name, locale, timezone, date_format, appearance").eq("id", user!.id).maybeSingle();
 
   const workspaceId = await currentWorkspace(supabase);
   let plan: SettingsData["plan"] = null;
@@ -51,6 +51,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
 
   const data: SettingsData = {
     locale: lang,
+    appearance: ((prof?.appearance as SettingsData["appearance"] | null) ?? "bone"),
     hasWorkspace: workspaceId != null,
     isOwner,
     displayName: (prof?.display_name as string | null) ?? "",

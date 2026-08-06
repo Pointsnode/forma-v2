@@ -1561,7 +1561,12 @@
     "subStartHint": "Start your subscription to begin billing.",
     "managePlanBtn": "Manage plan",
     "startSubscription": "Start subscription",
-    "subErr": "Couldn't reach Stripe, try again."
+    "subErr": "Couldn't reach Stripe, try again.",
+    "appearance": "Appearance",
+    "appearanceHint": "Bone is the brand default. Default follows your device; Night is the dark register.",
+    "appearance_default": "Default",
+    "appearance_bone": "Bone",
+    "appearance_night": "Night"
   },
   "design": {
     "guides": "Style guides",

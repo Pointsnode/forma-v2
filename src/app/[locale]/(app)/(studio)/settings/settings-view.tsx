@@ -13,13 +13,16 @@ import { Card, Heading, Badge, DomainHeadCard, cx } from "@/components/ui";
 import { seatBill, PRICE_ADMIN, PRICE_ADDITIONAL, PRICE_CONCIERGE } from "@/lib/pricing";
 import type { DateFormat } from "@/lib/format-date";
 import {
-  saveRegion, setLocalePref, saveDisplayName, changeEmail, sendPasswordReset,
+  saveRegion, setLocalePref, setAppearancePref, saveDisplayName, changeEmail, sendPasswordReset,
   signOutEverywhere, exportData, requestDeletion, undoDeletion,
   startSubscription, openBillingPortal,
 } from "./actions";
 
+export type Appearance = "default" | "bone" | "night";
+
 export type SettingsData = {
   locale: string;
+  appearance: Appearance;
   hasWorkspace: boolean;
   isOwner: boolean;
   displayName: string;
@@ -80,7 +83,7 @@ export function SettingsView({ data }: { data: SettingsData }) {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <h1 className="mb-5 mt-1 font-display text-[30px] text-ink">{t("title")}</h1>
+      <h1 className="mb-5 mt-1 font-display text-[30px] text-text-primary">{t("title")}</h1>
       <div className="grid gap-6 md:grid-cols-[180px_1fr]">
         <nav className="flex gap-2 overflow-x-auto md:sticky md:top-[110px] md:h-max md:flex-col md:gap-1">
           {visible.map((tab) => (
@@ -89,7 +92,7 @@ export function SettingsView({ data }: { data: SettingsData }) {
               onClick={() => go(tab.id)}
               className={cx(
                 "whitespace-nowrap rounded-[var(--radius)] px-3.5 py-2 text-left text-[13px]",
-                active === tab.id ? "bg-ink font-medium text-bone" : "text-muted hover:bg-bone hover:text-ink",
+                active === tab.id ? "bg-surface-chrome font-medium text-bone" : "text-text-meta hover:bg-surface-card hover:text-text-primary",
               )}
             >
               {t(`nav.${tab.id}`)}
@@ -115,6 +118,7 @@ function LanguageSection({ data, router, pathname }: { data: SettingsData; route
   const [pending, start] = useTransition();
   const [tz, setTz] = useState(data.timezone);
   const [fmt, setFmt] = useState<DateFormat>(data.dateFormat);
+  const [appearance, setAppearance] = useState<Appearance>(data.appearance);
   const [saved, setSaved] = useState(false);
 
   function pickLocale(locale: Locale) {
@@ -123,6 +127,17 @@ function LanguageSection({ data, router, pathname }: { data: SettingsData; route
       await setLocalePref(locale);
       // Navigate to the same path in the chosen locale; next-intl maps it under as-needed.
       router.replace(pathname, { locale });
+    });
+  }
+
+  function pickAppearance(next: Appearance) {
+    if (next === appearance) return;
+    setAppearance(next); // optimistic: the segmented control tracks the choice immediately
+    start(async () => {
+      await setAppearancePref(next);
+      // The theme lives on the server render (the (app) layout reads the cookie), so refresh
+      // to re-paint the whole shell in the new register rather than mutating the DOM here.
+      router.refresh();
     });
   }
 
@@ -137,7 +152,7 @@ function LanguageSection({ data, router, pathname }: { data: SettingsData; route
   return (
     <Card>
       <Heading className="text-[19px]">{t("langTitle")}</Heading>
-      <p className="mb-4 mt-0.5 text-[12.5px] text-muted">{t("langHint")}</p>
+      <p className="mb-4 mt-0.5 text-[12.5px] text-text-meta">{t("langHint")}</p>
 
       <div className="mb-6 flex flex-wrap gap-2">
         {routing.locales.map((l) => (
@@ -147,7 +162,7 @@ function LanguageSection({ data, router, pathname }: { data: SettingsData; route
             disabled={pending}
             className={cx(
               "rounded-[var(--radius)] px-4 py-1.5 text-[13px]",
-              data.locale === l ? "bg-ink text-bone" : "bg-bone text-ink hover:bg-champagne",
+              data.locale === l ? "bg-surface-chrome text-bone" : "bg-surface-card text-text-primary hover:bg-champagne",
             )}
           >
             {LANG_LABEL[l]}
@@ -155,18 +170,36 @@ function LanguageSection({ data, router, pathname }: { data: SettingsData; route
         ))}
       </div>
 
-      <label className="mb-1 block text-[12px] font-medium text-ink">{t("timezone")}</label>
-      <select value={tz} onChange={(e) => setTz(e.target.value)} className="mb-4 w-full max-w-sm rounded-[var(--radius)] border border-hairline bg-bone px-3 py-2 text-[13px]">
+      <label className="mb-1 block text-[12px] font-medium text-text-primary">{t("appearance")}</label>
+      <p className="mb-2 text-[12.5px] text-text-meta">{t("appearanceHint")}</p>
+      <div className="mb-6 flex flex-wrap gap-2">
+        {(["default", "bone", "night"] as Appearance[]).map((o) => (
+          <button
+            key={o}
+            onClick={() => pickAppearance(o)}
+            disabled={pending}
+            className={cx(
+              "rounded-[var(--radius)] px-4 py-1.5 text-[13px]",
+              appearance === o ? "bg-surface-chrome text-bone" : "bg-surface-card text-text-primary hover:bg-champagne",
+            )}
+          >
+            {t(`appearance_${o}`)}
+          </button>
+        ))}
+      </div>
+
+      <label className="mb-1 block text-[12px] font-medium text-text-primary">{t("timezone")}</label>
+      <select value={tz} onChange={(e) => setTz(e.target.value)} className="mb-4 w-full max-w-sm rounded-[var(--radius)] border border-hairline-token bg-surface-card px-3 py-2 text-[13px]">
         {ZONES.map((z) => <option key={z} value={z}>{z.replace(/_/g, " ")}</option>)}
       </select>
 
-      <label className="mb-1 block text-[12px] font-medium text-ink">{t("dateFormat")}</label>
-      <select value={fmt} onChange={(e) => setFmt(e.target.value as DateFormat)} className="mb-5 w-full max-w-sm rounded-[var(--radius)] border border-hairline bg-bone px-3 py-2 text-[13px]">
+      <label className="mb-1 block text-[12px] font-medium text-text-primary">{t("dateFormat")}</label>
+      <select value={fmt} onChange={(e) => setFmt(e.target.value as DateFormat)} className="mb-5 w-full max-w-sm rounded-[var(--radius)] border border-hairline-token bg-surface-card px-3 py-2 text-[13px]">
         {FORMATS.map((f) => <option key={f} value={f}>{t(`fmt_${f}`)}</option>)}
       </select>
 
       <div className="flex items-center gap-3">
-        <button onClick={saveRegionPrefs} disabled={pending} className="rounded-[var(--radius)] bg-ink px-5 py-2 text-[13px] text-bone hover:opacity-90 disabled:opacity-50">{t("save")}</button>
+        <button onClick={saveRegionPrefs} disabled={pending} className="rounded-[var(--radius)] bg-surface-chrome px-5 py-2 text-[13px] text-bone hover:opacity-90 disabled:opacity-50">{t("save")}</button>
         {saved ? <span className="text-[12.5px] text-teal">{t("saved")}</span> : null}
       </div>
     </Card>
@@ -196,21 +229,21 @@ function PlanSection({ data }: { data: SettingsData }) {
   return (
     <div className="flex flex-col gap-[18px]">
       <DomainHeadCard domain="money" title={t("planTitle")}>
-        <p className="mb-4 text-[12.5px] text-muted">{t("planHint")}</p>
+        <p className="mb-4 text-[12.5px] text-text-meta">{t("planHint")}</p>
         {bill ? (
           <div className="max-w-sm space-y-2 text-[13px]">
-            <div className="flex items-center justify-between"><span className="text-muted">{t("lineAdmin", { price: money(PRICE_ADMIN) })}</span><span className="text-ink">{money(PRICE_ADMIN)}</span></div>
+            <div className="flex items-center justify-between"><span className="text-text-meta">{t("lineAdmin", { price: money(PRICE_ADMIN) })}</span><span className="text-text-primary">{money(PRICE_ADMIN)}</span></div>
             {bill.additional > 0 ? (
-              <div className="flex items-center justify-between"><span className="text-muted">{t("lineAdditional", { count: bill.additional, price: money(PRICE_ADDITIONAL) })}</span><span className="text-ink">{money(PRICE_ADDITIONAL * bill.additional)}</span></div>
+              <div className="flex items-center justify-between"><span className="text-text-meta">{t("lineAdditional", { count: bill.additional, price: money(PRICE_ADDITIONAL) })}</span><span className="text-text-primary">{money(PRICE_ADDITIONAL * bill.additional)}</span></div>
             ) : null}
             {bill.conciergeSeats > 0 ? (
-              <div className="flex items-center justify-between"><span className="text-muted">{t("lineConcierge", { count: bill.conciergeSeats, price: money(PRICE_CONCIERGE) })}</span><span className="text-ink">{money(PRICE_CONCIERGE * bill.conciergeSeats)}</span></div>
+              <div className="flex items-center justify-between"><span className="text-text-meta">{t("lineConcierge", { count: bill.conciergeSeats, price: money(PRICE_CONCIERGE) })}</span><span className="text-text-primary">{money(PRICE_CONCIERGE * bill.conciergeSeats)}</span></div>
             ) : null}
-            <div className="flex items-center justify-between border-t border-hairline pt-2">
-              <span className="font-medium text-ink">{t("monthlyTotal")}</span>
-              <span className="font-display text-[20px] text-ink">{money(bill.total)}<span className="text-[13px] text-muted">{t("perMonth")}</span></span>
+            <div className="flex items-center justify-between border-t border-hairline-token pt-2">
+              <span className="font-medium text-text-primary">{t("monthlyTotal")}</span>
+              <span className="font-display text-[20px] text-text-primary">{money(bill.total)}<span className="text-[13px] text-text-meta">{t("perMonth")}</span></span>
             </div>
-            <p className="pt-1 text-[11.5px] text-muted">{t("seatsOnTeam")}</p>
+            <p className="pt-1 text-[11.5px] text-text-meta">{t("seatsOnTeam")}</p>
           </div>
         ) : null}
       </DomainHeadCard>
@@ -221,14 +254,14 @@ function PlanSection({ data }: { data: SettingsData }) {
             <Heading className="text-[16px]">{t("subscriptionTitle")}</Heading>
             {!data.stripeConfigured ? (
               // Honest not-connected state — no dead button (mirrors /billing when unconfigured).
-              <p className="mt-0.5 text-[12.5px] text-muted">{t("subNotConnected")}</p>
+              <p className="mt-0.5 text-[12.5px] text-text-meta">{t("subNotConnected")}</p>
             ) : isLive ? (
-              <p className="mt-0.5 text-[12.5px] text-muted">
+              <p className="mt-0.5 text-[12.5px] text-text-meta">
                 {t(`status_${status}`)}
                 {data.subscription?.currentPeriodEnd ? ` · ${t("renewsOn", { date: new Date(data.subscription.currentPeriodEnd).toLocaleDateString(intlTag(data.locale)) })}` : ""}
               </p>
             ) : (
-              <p className="mt-0.5 text-[12.5px] text-muted">{status === "canceled" ? t("status_canceled") : t("subStartHint")}</p>
+              <p className="mt-0.5 text-[12.5px] text-text-meta">{status === "canceled" ? t("status_canceled") : t("subStartHint")}</p>
             )}
           </div>
           {data.stripeConfigured ? (
@@ -245,16 +278,16 @@ function PlanSection({ data }: { data: SettingsData }) {
         {data.stripeConfigured && data.isOwner ? (
           <div className="mt-4 flex items-center gap-3">
             {isLive ? (
-              <button onClick={() => goto(openBillingPortal)} disabled={pending} className="rounded-[var(--radius)] border border-ink px-5 py-2 text-[13px] text-ink hover:bg-ink hover:text-bone disabled:opacity-50">{t("managePlanBtn")}</button>
+              <button onClick={() => goto(openBillingPortal)} disabled={pending} className="rounded-[var(--radius)] border border-ink px-5 py-2 text-[13px] text-text-primary hover:bg-surface-chrome hover:text-bone disabled:opacity-50">{t("managePlanBtn")}</button>
             ) : (
-              <button onClick={() => goto(startSubscription)} disabled={pending} className="rounded-[var(--radius)] bg-ink px-5 py-2 text-[13px] text-bone hover:opacity-90 disabled:opacity-50">{t("startSubscription")}</button>
+              <button onClick={() => goto(startSubscription)} disabled={pending} className="rounded-[var(--radius)] bg-surface-chrome px-5 py-2 text-[13px] text-bone hover:opacity-90 disabled:opacity-50">{t("startSubscription")}</button>
             )}
-            {err ? <span className="text-[12.5px] text-wine">{t("subErr")}</span> : null}
+            {err ? <span className="text-[12.5px] text-[color:var(--color-text-danger)]">{t("subErr")}</span> : null}
           </div>
         ) : null}
       </Card>
 
-      <Link href="/billing" className="text-[13px] text-ink underline underline-offset-2 hover:opacity-70">{t("paymentsLink")}</Link>
+      <Link href="/billing" className="text-[13px] text-text-primary underline underline-offset-2 hover:opacity-70">{t("paymentsLink")}</Link>
     </div>
   );
 }
@@ -272,24 +305,24 @@ function AccountSection({ data }: { data: SettingsData }) {
   return (
     <Card>
       <Heading className="text-[19px]">{t("accountTitle")}</Heading>
-      <p className="mb-5 mt-0.5 text-[12.5px] text-muted">{t("accountHint")}</p>
+      <p className="mb-5 mt-0.5 text-[12.5px] text-text-meta">{t("accountHint")}</p>
 
-      <label className="mb-1 block text-[12px] font-medium text-ink">{t("displayName")}</label>
+      <label className="mb-1 block text-[12px] font-medium text-text-primary">{t("displayName")}</label>
       <div className="mb-5 flex max-w-md gap-2">
-        <input value={name} onChange={(e) => setName(e.target.value)} className="flex-1 rounded-[var(--radius)] border border-hairline bg-bone px-3 py-2 text-[13px]" />
-        <button onClick={() => start(async () => { const r = await saveDisplayName(name); flash(r.ok ? "nameSaved" : "err"); })} disabled={pending} className="rounded-[var(--radius)] bg-ink px-4 py-2 text-[13px] text-bone hover:opacity-90 disabled:opacity-50">{t("save")}</button>
+        <input value={name} onChange={(e) => setName(e.target.value)} className="flex-1 rounded-[var(--radius)] border border-hairline-token bg-surface-card px-3 py-2 text-[13px]" />
+        <button onClick={() => start(async () => { const r = await saveDisplayName(name); flash(r.ok ? "nameSaved" : "err"); })} disabled={pending} className="rounded-[var(--radius)] bg-surface-chrome px-4 py-2 text-[13px] text-bone hover:opacity-90 disabled:opacity-50">{t("save")}</button>
       </div>
 
-      <label className="mb-1 block text-[12px] font-medium text-ink">{t("email")}</label>
-      <p className="mb-2 text-[13px] text-ink">{data.email}</p>
+      <label className="mb-1 block text-[12px] font-medium text-text-primary">{t("email")}</label>
+      <p className="mb-2 text-[13px] text-text-primary">{data.email}</p>
       <div className="mb-5 flex max-w-md gap-2">
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("newEmailPlaceholder")} className="flex-1 rounded-[var(--radius)] border border-hairline bg-bone px-3 py-2 text-[13px]" />
-        <button onClick={() => start(async () => { const r = await changeEmail(email); flash(r.ok ? "emailSent" : "err"); if (r.ok) setEmail(""); })} disabled={pending || !email} className="rounded-[var(--radius)] border border-ink px-4 py-2 text-[13px] text-ink hover:bg-ink hover:text-bone disabled:opacity-40">{t("changeEmail")}</button>
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("newEmailPlaceholder")} className="flex-1 rounded-[var(--radius)] border border-hairline-token bg-surface-card px-3 py-2 text-[13px]" />
+        <button onClick={() => start(async () => { const r = await changeEmail(email); flash(r.ok ? "emailSent" : "err"); if (r.ok) setEmail(""); })} disabled={pending || !email} className="rounded-[var(--radius)] border border-ink px-4 py-2 text-[13px] text-text-primary hover:bg-surface-chrome hover:text-bone disabled:opacity-40">{t("changeEmail")}</button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 border-t border-hairline pt-5">
-        <button onClick={() => start(async () => { const r = await sendPasswordReset(); flash(r.ok ? "resetSent" : "err"); })} disabled={pending} className="rounded-[var(--radius)] border border-ink px-4 py-2 text-[13px] text-ink hover:bg-ink hover:text-bone disabled:opacity-50">{t("changePassword")}</button>
-        <button onClick={() => start(() => signOutEverywhere())} disabled={pending} className="rounded-[var(--radius)] border border-wine px-4 py-2 text-[13px] text-wine hover:bg-wine hover:text-bone disabled:opacity-50">{t("signOutEverywhere")}</button>
+      <div className="flex flex-wrap items-center gap-3 border-t border-hairline-token pt-5">
+        <button onClick={() => start(async () => { const r = await sendPasswordReset(); flash(r.ok ? "resetSent" : "err"); })} disabled={pending} className="rounded-[var(--radius)] border border-ink px-4 py-2 text-[13px] text-text-primary hover:bg-surface-chrome hover:text-bone disabled:opacity-50">{t("changePassword")}</button>
+        <button onClick={() => start(() => signOutEverywhere())} disabled={pending} className="rounded-[var(--radius)] border border-wine px-4 py-2 text-[13px] text-[color:var(--color-text-danger)] hover:bg-wine hover:text-bone disabled:opacity-50">{t("signOutEverywhere")}</button>
       </div>
 
       {msg ? <p className="mt-4 text-[12.5px] text-teal">{t(`msg.${msg}`)}</p> : null}
@@ -321,31 +354,31 @@ function PrivacySection({ data }: { data: SettingsData }) {
     <div className="flex flex-col gap-[18px]">
       <Card>
         <Heading className="text-[19px]">{t("dataExportTitle")}</Heading>
-        <p className="mb-4 mt-0.5 text-[12.5px] text-muted">{t("dataExportHint")}</p>
-        <button onClick={download} disabled={pending} className="rounded-[var(--radius)] bg-ink px-5 py-2 text-[13px] text-bone hover:opacity-90 disabled:opacity-50">{t("downloadData")}</button>
-        {err ? <p className="mt-3 text-[12.5px] text-wine">{t("exportErr")}</p> : null}
+        <p className="mb-4 mt-0.5 text-[12.5px] text-text-meta">{t("dataExportHint")}</p>
+        <button onClick={download} disabled={pending} className="rounded-[var(--radius)] bg-surface-chrome px-5 py-2 text-[13px] text-bone hover:opacity-90 disabled:opacity-50">{t("downloadData")}</button>
+        {err ? <p className="mt-3 text-[12.5px] text-[color:var(--color-text-danger)]">{t("exportErr")}</p> : null}
       </Card>
 
       <Card>
         <Heading className="text-[16px]">{t("deleteTitle")}</Heading>
         {data.deletionRequestedAt ? (
           <>
-            <p className="mb-3 mt-0.5 text-[12.5px] text-wine">{t("deletePending")}</p>
-            <button onClick={() => start(async () => { await undoDeletion(); })} disabled={pending} className="rounded-[var(--radius)] border border-ink px-4 py-2 text-[13px] text-ink hover:bg-ink hover:text-bone disabled:opacity-50">{t("undoDelete")}</button>
+            <p className="mb-3 mt-0.5 text-[12.5px] text-[color:var(--color-text-danger)]">{t("deletePending")}</p>
+            <button onClick={() => start(async () => { await undoDeletion(); })} disabled={pending} className="rounded-[var(--radius)] border border-ink px-4 py-2 text-[13px] text-text-primary hover:bg-surface-chrome hover:text-bone disabled:opacity-50">{t("undoDelete")}</button>
           </>
         ) : !data.isOwner ? (
-          <p className="mt-0.5 text-[12.5px] text-muted">{t("deleteOwnerOnly")}</p>
+          <p className="mt-0.5 text-[12.5px] text-text-meta">{t("deleteOwnerOnly")}</p>
         ) : !confirming ? (
           <>
-            <p className="mb-3 mt-0.5 text-[12.5px] text-muted">{t("deleteHint")}</p>
-            <button onClick={() => setConfirming(true)} className="rounded-[var(--radius)] border border-wine px-4 py-2 text-[13px] text-wine hover:bg-wine hover:text-bone">{t("requestDelete")}</button>
+            <p className="mb-3 mt-0.5 text-[12.5px] text-text-meta">{t("deleteHint")}</p>
+            <button onClick={() => setConfirming(true)} className="rounded-[var(--radius)] border border-wine px-4 py-2 text-[13px] text-[color:var(--color-text-danger)] hover:bg-wine hover:text-bone">{t("requestDelete")}</button>
           </>
         ) : (
           <>
-            <p className="mb-3 mt-0.5 text-[12.5px] text-wine">{t("deleteConfirm")}</p>
+            <p className="mb-3 mt-0.5 text-[12.5px] text-[color:var(--color-text-danger)]">{t("deleteConfirm")}</p>
             <div className="flex gap-2">
               <button onClick={() => start(async () => { await requestDeletion(); setConfirming(false); })} disabled={pending} className="rounded-[var(--radius)] bg-wine px-4 py-2 text-[13px] text-bone hover:opacity-90 disabled:opacity-50">{t("deleteConfirmYes")}</button>
-              <button onClick={() => setConfirming(false)} className="rounded-[var(--radius)] border border-ink px-4 py-2 text-[13px] text-ink hover:bg-bone">{t("cancel")}</button>
+              <button onClick={() => setConfirming(false)} className="rounded-[var(--radius)] border border-ink px-4 py-2 text-[13px] text-text-primary hover:bg-surface-card">{t("cancel")}</button>
             </div>
           </>
         )}
@@ -366,32 +399,32 @@ function UsageSection({ data }: { data: SettingsData }) {
     <div className="flex flex-col gap-[18px]">
       <Card>
         <Heading className="text-[19px]">{t("usageTokensTitle")}</Heading>
-        <p className="mb-4 mt-0.5 text-[12.5px] text-muted">{t("usageTokensHint")}</p>
+        <p className="mb-4 mt-0.5 text-[12.5px] text-text-meta">{t("usageTokensHint")}</p>
         {usage && usage.cap > 0 ? (
           <>
             <div className="mb-1.5 flex items-center justify-between text-[13px]">
-              <span className="text-muted">{t("tokensUsed", { used: fmtTokens(usage.used), cap: fmtTokens(usage.cap) })}</span>
-              <span className="font-medium text-ink">{pct}%</span>
+              <span className="text-text-meta">{t("tokensUsed", { used: fmtTokens(usage.used), cap: fmtTokens(usage.cap) })}</span>
+              <span className="font-medium text-text-primary">{pct}%</span>
             </div>
-            <div className="h-2 overflow-hidden rounded-[var(--radius)] bg-bone">
-              <div className={cx("h-full rounded-[var(--radius)]", pct >= 100 ? "bg-wine" : "bg-ink")} style={{ width: `${pct}%` }} />
+            <div className="h-2 overflow-hidden rounded-[var(--radius)] bg-surface-card">
+              <div className={cx("h-full rounded-[var(--radius)]", pct >= 100 ? "bg-wine" : "bg-surface-chrome")} style={{ width: `${pct}%` }} />
             </div>
           </>
         ) : (
-          <p className="text-[13px] text-muted">{t("usageNoConcierge")}</p>
+          <p className="text-[13px] text-text-meta">{t("usageNoConcierge")}</p>
         )}
-        <Link href="/team" className="mt-4 inline-block text-[12.5px] text-ink underline underline-offset-2 hover:opacity-70">{t("manageConcierge")}</Link>
+        <Link href="/team" className="mt-4 inline-block text-[12.5px] text-text-primary underline underline-offset-2 hover:opacity-70">{t("manageConcierge")}</Link>
       </Card>
 
       <Card>
         <Heading className="text-[16px]">{t("usageSeatsTitle")}</Heading>
         {plan ? (
           <div className="mt-2 flex gap-8 text-[13px]">
-            <div><div className="font-display text-[24px] text-ink">{plan.accounts}</div><div className="text-muted">{t("seatsAccounts")}</div></div>
-            <div><div className="font-display text-[24px] text-ink">{plan.conciergeSeats}</div><div className="text-muted">{t("seatsConcierge")}</div></div>
+            <div><div className="font-display text-[24px] text-text-primary">{plan.accounts}</div><div className="text-text-meta">{t("seatsAccounts")}</div></div>
+            <div><div className="font-display text-[24px] text-text-primary">{plan.conciergeSeats}</div><div className="text-text-meta">{t("seatsConcierge")}</div></div>
           </div>
         ) : null}
-        <Link href="/team" className="mt-4 inline-block text-[12.5px] text-ink underline underline-offset-2 hover:opacity-70">{t("manageSeats")}</Link>
+        <Link href="/team" className="mt-4 inline-block text-[12.5px] text-text-primary underline underline-offset-2 hover:opacity-70">{t("manageSeats")}</Link>
       </Card>
     </div>
   );
