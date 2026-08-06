@@ -41,7 +41,7 @@ export function MenuForm({ code, events }: { code: string; events: Ev[] }) {
               const on = picks[e.event_id] === o.id;
               return (
                 <button key={o.id} type="button" disabled={e.locked} onClick={() => setPicks((p) => ({ ...p, [e.event_id]: on ? null : o.id }))}
-                  className={cx("flex items-center justify-between rounded-[var(--radius)] px-4 py-3 text-left text-[15px]", on ? "bg-ink text-bone" : "bg-bone text-ink", e.locked && "opacity-60")}>
+                  className={cx("flex items-center justify-between rounded-[var(--radius)] px-4 py-3 text-left text-[15px]", on ? "bg-teal text-bone" : "bg-bone text-ink", e.locked && "opacity-60")}>
                   <span>{o.label}</span>
                   {o.diet_tags.length ? <span className={cx("text-[12px]", on ? "text-champagne" : "text-taupe")}>{o.diet_tags.join(" · ")}</span> : null}
                 </button>
@@ -51,7 +51,7 @@ export function MenuForm({ code, events }: { code: string; events: Ev[] }) {
         </div>
       ))}
       {err ? <p className="text-[13px] text-wine">{err}</p> : null}
-      {openEvents.length ? <Button disabled={pending} onClick={submit}>{t("save")}</Button> : null}
+      {openEvents.length ? <Button variant="primary" disabled={pending} onClick={submit}>{t("save")}</Button> : null}
     </div>
   );
 }

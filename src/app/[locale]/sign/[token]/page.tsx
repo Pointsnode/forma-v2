@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { SignForm, type ContractView } from "@/components/contracts/sign-form";
-import { Wordmark } from "@/components/ui";
+import { Wordmark, SignedFooter } from "@/components/ui";
 
 // Public tokenized signing surface (no account) — the RSVP pattern, ported. The
 // token is the only credential; load_contract_as runs as a DEFINER fn.
@@ -20,10 +20,11 @@ export default async function SignPage({ params }: { params: Promise<{ locale: s
   }
   setRequestLocale(locale);
   const t = await getTranslations("sign");
+  const held = (await getTranslations("couple"))("held");
 
   return (
-    <div className="min-h-screen bg-bone px-5 py-12">
-      <div className="mx-auto max-w-xl">
+    <div className="flex min-h-screen flex-col bg-bone">
+      <div className="mx-auto w-full max-w-xl flex-1 px-5 py-12">
         <div className="mb-6">
           <Wordmark size={26} />
           <p className="text-[7.5px] uppercase tracking-[0.42em] text-taupe">{t("wordmark")}</p>
@@ -37,6 +38,7 @@ export default async function SignPage({ params }: { params: Promise<{ locale: s
           <SignForm token={token} view={data as ContractView} />
         )}
       </div>
+      <SignedFooter heldLabel={held} />
     </div>
   );
 }

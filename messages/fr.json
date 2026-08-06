@@ -293,7 +293,20 @@
     "error": "Un problème est survenu. Réessayez.",
     "decline": "Décliner",
     "confirmDecline": "Décliner cette proposition ? Le planner en sera informé.",
-    "reallyDecline": "Vraiment décliner ?"
+    "reallyDecline": "Vraiment décliner ?",
+    "theWeddingOf": "Le mariage de",
+    "yourPlanner": "Votre planner",
+    "held": "Tenu avec soin",
+    "decisionsWaiting": "Décisions en attente",
+    "decisionsEmpty": "Rien en attente. Profitez du calme.",
+    "theBudget": "Le budget",
+    "alwaysCurrent": "Toujours à jour",
+    "ofCommitted": "sur {total} engagés",
+    "nothingDue": "Rien à régler de votre côté. Le studio garde chaque reçu.",
+    "dueLine": "{amount} à régler.",
+    "theWeekend": "Le week-end",
+    "weekendKicker": "Chaque heure, tenue",
+    "daysAfter": "Mariés"
   },
   "invites": {
     "members": "Membres et accès",

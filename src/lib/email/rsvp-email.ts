@@ -1,7 +1,8 @@
 import "server-only";
+import { emailShell, emailButton } from "./shell";
 
-// Bilingual, on-brand RSVP emails (ink on bone, serif headline, one button, no
-// images). Plain-text alternative included. From `Forma <rsvp@forma.events>`.
+// Bilingual, on-brand RSVP emails (Edition One shell, serif headline, one wine button,
+// no images). Plain-text alternative included. From `Forma <rsvp@forma.events>`.
 
 type Kind = "rsvp_invite" | "rsvp_reminder" | "rsvp_close";
 // locale is any of the four; fr/it gracefully fall back to the EN copy (ES ships today).
@@ -30,16 +31,14 @@ export function rsvpEmail({ to, guestName, couple, rsvpUrl, kind, locale }: Args
   const k = t[kind];
   const subject = k.subject(couple);
   const text = `${t.hi(guestName)}\n\n${k.lead(couple)}\n\n${k.cta}: ${rsvpUrl}\n\n${t.footer}`;
-  const html = `<!doctype html><html><body style="margin:0;background:#F7F4EE;padding:32px 16px;font-family:Georgia,'Times New Roman',serif;color:#121212">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-  <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background:#FFFDF9;border-radius:16px;padding:36px 32px">
-    <tr><td style="font-size:22px;letter-spacing:.02em;color:#121212;font-family:Georgia,'Times New Roman',serif"><span style="font-style:italic">f</span>orma</td></tr>
-    <tr><td style="font-size:26px;line-height:1.25;padding:14px 0 6px">${escapeHtml(couple)}</td></tr>
-    <tr><td style="font-size:16px;color:#2a2a2a;line-height:1.5;padding-bottom:8px">${escapeHtml(t.hi(guestName))}</td></tr>
-    <tr><td style="font-size:16px;color:#2a2a2a;line-height:1.5;padding-bottom:24px">${escapeHtml(k.lead(couple))}</td></tr>
-    <tr><td><a href="${rsvpUrl}" style="display:inline-block;background:#121212;color:#F7F4EE;text-decoration:none;padding:12px 28px;border-radius:999px;font-family:Arial,sans-serif;font-size:14px">${escapeHtml(k.cta)}</a></td></tr>
-    <tr><td style="font-size:12px;color:#8a867e;padding-top:28px;font-family:Arial,sans-serif">${escapeHtml(t.footer)}</td></tr>
-  </table></td></tr></table></body></html>`;
+  const html = emailShell(
+    `<p style="font-family:'Playfair Display',Georgia,serif;font-size:26px;line-height:1.25;margin:0 0 12px;color:#121212">${escapeHtml(couple)}</p>
+    <p style="font-size:15px;color:#3B3833;margin:0 0 6px">${escapeHtml(t.hi(guestName))}</p>
+    <p style="font-size:15px;color:#3B3833;margin:0">${escapeHtml(k.lead(couple))}</p>
+    ${emailButton(rsvpUrl, k.cta)}
+    <p style="font-size:12px;color:#8A867E;margin-top:26px;font-family:Arial,sans-serif">${escapeHtml(t.footer)}</p>`,
+    locale,
+  );
   return { from: "Forma <rsvp@forma.events>", to: [to], subject, html, text };
 }
 

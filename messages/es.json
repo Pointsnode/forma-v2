@@ -293,7 +293,20 @@
     "error": "Algo salió mal. Inténtalo de nuevo.",
     "decline": "Rechazar",
     "confirmDecline": "¿Rechazar esta propuesta? Se avisará a la planner.",
-    "reallyDecline": "¿Seguro que rechazas?"
+    "reallyDecline": "¿Seguro que rechazas?",
+    "theWeddingOf": "La boda de",
+    "yourPlanner": "Su planner",
+    "held": "Con cuidado",
+    "decisionsWaiting": "Decisiones en espera",
+    "decisionsEmpty": "Nada pendiente. Disfruten la calma.",
+    "theBudget": "El presupuesto",
+    "alwaysCurrent": "Siempre al día",
+    "ofCommitted": "de {total} comprometido",
+    "nothingDue": "No deben nada ahora. El estudio guarda cada recibo.",
+    "dueLine": "{amount} por pagar.",
+    "theWeekend": "El fin de semana",
+    "weekendKicker": "Cada hora, cuidada",
+    "daysAfter": "Casados"
   },
   "invites": {
     "members": "Miembros y acceso",

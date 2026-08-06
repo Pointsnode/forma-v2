@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { MenuForm } from "@/components/guests/menu-form";
-import { Wordmark } from "@/components/ui";
+import { Wordmark, SignedFooter } from "@/components/ui";
 
 // Public tokenized menu collection — the RSVP pattern. 16-hex rsvp_code; the
 // send token (?s=) is opened for read-receipts, like RSVP.
@@ -23,10 +23,11 @@ export default async function MenuPage({ params, searchParams }: { params: Promi
   }
   setRequestLocale(locale);
   const t = await getTranslations("menu");
+  const held = (await getTranslations("couple"))("held");
 
   return (
-    <div className="min-h-screen bg-bone px-5 py-12">
-      <div className="mx-auto max-w-md">
+    <div className="flex min-h-screen flex-col bg-bone">
+      <div className="mx-auto w-full max-w-md flex-1 px-5 py-12">
         <div className="mb-6">
           <Wordmark size={26} />
           <p className="text-[7.5px] uppercase tracking-[0.42em] text-taupe">{t("wordmark")}</p>
@@ -44,6 +45,7 @@ export default async function MenuPage({ params, searchParams }: { params: Promi
           </>
         )}
       </div>
+      <SignedFooter heldLabel={held} />
     </div>
   );
 }

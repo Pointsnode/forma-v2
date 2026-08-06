@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { cx } from "@/components/ui";
+import { formatDateRange } from "@/lib/wedding";
 import { submitRsvp, markOpened } from "./actions";
 
 type EventItem = { event_id: string; label: string; event_date: string | null; status: string };
@@ -11,8 +12,8 @@ type Guest = { full_name: string; plus_one_allowed: boolean; plus_one_name: stri
 const STATUSES = ["yes", "no", "maybe"] as const;
 
 export function RsvpForm({
-  code, sendToken, couple, guest, events,
-}: { code: string; sendToken: string | null; couple: string; guest: Guest; events: EventItem[] }) {
+  code, sendToken, couple, guest, events, locale,
+}: { code: string; sendToken: string | null; couple: string; guest: Guest; events: EventItem[]; locale: string }) {
   const t = useTranslations("rsvp");
   const [answers, setAnswers] = useState<Record<string, string>>(
     Object.fromEntries(events.map((e) => [e.event_id, e.status !== "pending" ? e.status : ""])),
@@ -58,7 +59,7 @@ export function RsvpForm({
           <div key={e.event_id} className="rounded-[var(--radius)] bg-bone p-4">
             <div className="mb-2 flex items-baseline justify-between">
               <span className="font-display text-[17px] text-ink">{e.label}</span>
-              {e.event_date ? <span className="font-accent text-[14px] text-muted">{e.event_date}</span> : null}
+              {e.event_date ? <span className="font-accent text-[14px] text-muted">{formatDateRange(e.event_date, null, locale)}</span> : null}
             </div>
             <div className="flex gap-2">
               {STATUSES.map((s) => (
@@ -85,7 +86,7 @@ export function RsvpForm({
       </label>
 
       {err ? <p className="text-[14px] text-wine">{err}</p> : null}
-      <button onClick={submit} disabled={pending} className="rounded-[var(--radius)] bg-ink px-6 py-3 text-[15px] font-medium text-bone transition-opacity hover:opacity-90 disabled:opacity-50">
+      <button onClick={submit} disabled={pending} className="rounded-[var(--radius)] bg-wine px-6 py-3 text-[15px] font-medium text-bone transition-opacity hover:opacity-90 disabled:opacity-50">
         {pending ? t("submitting") : t("submit")}
       </button>
     </div>

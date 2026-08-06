@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { PhaseDots, cx } from "@/components/ui";
+import { PhaseDots, DomainStar, SignedFooter, cx } from "@/components/ui";
 import {
   countdownDays, dayNumber, formatDateRange, formatMoney, itemsToGate,
   phaseOrdinal, type EventRow, type WeddingRow,
@@ -27,11 +27,11 @@ export async function WeddingShell({
   showNav?: boolean;
   children: ReactNode;
 }) {
-  const [tw, te, tp, tg, teng, tm, tc, tops, ttask] = [
+  const [tw, te, tp, tg, teng, tm, tc, tops, ttask, tcp] = [
     await getTranslations("wedding"), await getTranslations("event"), await getTranslations("phase"),
     await getTranslations("guests"), await getTranslations("engagement"),
     await getTranslations("money"), await getTranslations("contract"), await getTranslations("ops"),
-    await getTranslations("tasks"),
+    await getTranslations("tasks"), await getTranslations("couple"),
   ];
   const lang = await getLocale();
 
@@ -106,52 +106,68 @@ export async function WeddingShell({
     <div>
       {/* ── full-bleed ink masthead ─────────────────────────────────────────── */}
       <div className="bg-ink text-bone">
-        <div className="mx-auto max-w-[1240px] px-8 pt-[34px] md:px-10">
-          {/* Edition One kicker (the reference's "THE WEDDING"); kind · city folds into the meta. */}
-          <p className="mb-2.5 text-[10px] font-medium uppercase tracking-[0.24em] text-champagne">{tw("theWedding")}</p>
-          <h1 className="font-display text-[40px] leading-[1.08]">{wedding.couple_display}</h1>
-          <p className="mt-2 text-[13.5px] text-[#CFC7B9]">
-            {range ? <span className="font-accent text-[16px] italic text-champagne">{range}</span> : null}
-            {meta && range ? <span> &nbsp;·&nbsp; </span> : null}
-            {[
-              events.length === 1 ? tw("eventCountOne") : tw("eventCountOther", { count: events.length }),
-              wedding.guest_target ? tw("guestsLabel", { count: wedding.guest_target }) : null,
-              money,
-            ].filter(Boolean).join("  ·  ")}
-            {days != null ? <span className="ml-3 text-[#948C7F]">· {wedding.phase === "closed" ? tw("settled") : days >= 0 ? `${days} ${tw("days")}` : tw("daysAgo", { count: -days })}</span> : null}
-            {eyebrow ? <span className="ml-3 text-[#948C7F]">· {eyebrow}</span> : null}
-          </p>
+        {role === "member" ? (
+          // The couple invitation header (Edition One couple register): centered, bone star,
+          // THE WEDDING OF, Playfair names, champagne meta. Real names/date/city; the days
+          // counter drops once the date passes. No planning strip (the phase is the planner's).
+          <div className="mx-auto max-w-[1240px] px-8 py-14 text-center md:px-10">
+            <div className="flex justify-center"><DomainStar fill="#F5F2EB" size={22} /></div>
+            <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.24em] text-champagne">{tcp("theWeddingOf")}</p>
+            <h1 className="mt-2.5 font-display text-[46px] leading-[1.05] text-bone">{wedding.couple_display}</h1>
+            <p className="mt-3.5 text-[11px] uppercase tracking-[0.22em] text-champagne">
+              {[range, location || null, days != null && days >= 0 && wedding.phase !== "closed" ? `${days} ${tw("days")}` : null].filter(Boolean).join(" · ")}
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="mx-auto max-w-[1240px] px-8 pt-[34px] md:px-10">
+              {/* Edition One kicker (the reference's "THE WEDDING"); kind · city folds into the meta. */}
+              <p className="mb-2.5 text-[10px] font-medium uppercase tracking-[0.24em] text-champagne">{tw("theWedding")}</p>
+              <h1 className="font-display text-[40px] leading-[1.08]">{wedding.couple_display}</h1>
+              <p className="mt-2 text-[13.5px] text-[#CFC7B9]">
+                {range ? <span className="font-accent text-[16px] italic text-champagne">{range}</span> : null}
+                {meta && range ? <span> &nbsp;·&nbsp; </span> : null}
+                {[
+                  events.length === 1 ? tw("eventCountOne") : tw("eventCountOther", { count: events.length }),
+                  wedding.guest_target ? tw("guestsLabel", { count: wedding.guest_target }) : null,
+                  money,
+                ].filter(Boolean).join("  ·  ")}
+                {days != null ? <span className="ml-3 text-[#948C7F]">· {wedding.phase === "closed" ? tw("settled") : days >= 0 ? `${days} ${tw("days")}` : tw("daysAgo", { count: -days })}</span> : null}
+                {eyebrow ? <span className="ml-3 text-[#948C7F]">· {eyebrow}</span> : null}
+              </p>
 
-          {/* Single-event law: no chip row exists until a second event does. */}
-          {multi ? (
-            <div className="flex flex-wrap gap-2 pb-[18px] pt-[22px]">
-              <Chip href={`/wedding/${wedding.id}`} active={!activeEventId}>{tw("wholeWedding")}</Chip>
-              {events.map((e) => {
-                const dn = dayNumber(e.event_date, wedding.date_start);
-                const sub = [dn != null ? te("dayN", { n: dn }) : null, e.guest_target ? tw("guestsLabel", { count: e.guest_target }) : null].filter(Boolean).join(" · ");
-                return (
-                  <Chip key={e.id} href={`/wedding/${wedding.id}/event/${e.id}`} active={activeEventId === e.id} sub={sub || undefined}>
-                    {e.label}
-                  </Chip>
-                );
-              })}
+              {/* Single-event law: no chip row exists until a second event does. */}
+              {multi ? (
+                <div className="flex flex-wrap gap-2 pb-[18px] pt-[22px]">
+                  <Chip href={`/wedding/${wedding.id}`} active={!activeEventId}>{tw("wholeWedding")}</Chip>
+                  {events.map((e) => {
+                    const dn = dayNumber(e.event_date, wedding.date_start);
+                    const sub = [dn != null ? te("dayN", { n: dn }) : null, e.guest_target ? tw("guestsLabel", { count: e.guest_target }) : null].filter(Boolean).join(" · ");
+                    return (
+                      <Chip key={e.id} href={`/wedding/${wedding.id}/event/${e.id}`} active={activeEventId === e.id} sub={sub || undefined}>
+                        {e.label}
+                      </Chip>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="pb-[24px]" />
+              )}
             </div>
-          ) : (
-            <div className="pb-[24px]" />
-          )}
-        </div>
 
-        {/* the planning line as the masthead's bottom edge */}
-        <div className="border-t border-hairline-dark">
-          <PhaseStrip
-            wedding={wedding}
-            role={role}
-            planningLabel={tp("planning")}
-            phaseLabel={`${tp("ordinal", { n: phaseOrdinal(wedding.phase) })} · ${tp(wedding.phase)}`}
-            statusText={phaseStatus}
-            openLabel={tp("openPlanning")}
-          />
-        </div>
+            {/* the planning line as the masthead's bottom edge (staff only) */}
+            <div className="border-t border-hairline-dark">
+              <PhaseStrip
+                wedding={wedding}
+                role={role}
+                planningLabel={tp("planning")}
+                phaseLabel={`${tp("ordinal", { n: phaseOrdinal(wedding.phase) })} · ${tp(wedding.phase)}`}
+                statusText={phaseStatus}
+                openLabel={tp("openPlanning")}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* ── sticky wedding nav ──────────────────────────────────────────────── */}
@@ -175,6 +191,8 @@ export async function WeddingShell({
       ) : null}
 
       <div className="mx-auto max-w-[1240px] px-8 pb-20 pt-8 md:px-10">{children}</div>
+      {/* The signed footer is law on every couple surface. */}
+      {role === "member" ? <SignedFooter heldLabel={tcp("held")} /> : null}
     </div>
   );
 }

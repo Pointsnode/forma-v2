@@ -99,7 +99,7 @@ export function SignForm({ token, view }: { token: string; view: ContractView })
         <input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder={view.me.name} className={cx(input, "font-accent text-[20px] italic")} />
         {err ? <p className="mt-2 text-[13px] text-wine">{err}</p> : null}
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <Button disabled={pending || !typed.trim()} onClick={doSign}>{t("signAction")}</Button>
+          <Button variant="primary" disabled={pending || !typed.trim()} onClick={doSign}>{t("signAction")}</Button>
           <Button variant="ghost" disabled={pending} onClick={() => setDeclining((v) => !v)}>{t("declineAction")}</Button>
         </div>
         {declining ? (
