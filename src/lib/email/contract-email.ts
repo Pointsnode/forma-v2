@@ -1,16 +1,9 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { emailShell, emailButton } from "./shell";
 
 type Email = { from: string; to: string[]; subject: string; html: string; text: string };
 const FROM = "Forma <contracts@forma.events>";
-
-function shell(body: string): string {
-  return `<div style="font-family:Georgia,'Playfair Display',serif;color:#121212;background:#F7F4EE;padding:28px">
-    <div style="font-size:22px;letter-spacing:.04em"><span style="font-style:italic">f</span>orma</div>${body}</div>`;
-}
-function button(href: string, label: string): string {
-  return `<a href="${href}" style="display:inline-block;margin-top:14px;background:#121212;color:#F7F4EE;text-decoration:none;padding:11px 22px;border-radius:99px;font-family:Inter,Arial,sans-serif;font-size:14px">${label}</a>`;
-}
 
 // The signer email, a signer receives their tokenized /sign link (no account).
 export function signerEmail(opts: { to: string; signerName: string; title: string; signUrl: string; locale: string }): Email {
@@ -21,7 +14,7 @@ export function signerEmail(opts: { to: string; signerName: string; title: strin
     : `Hi ${opts.signerName}, your document is ready. Review and sign whenever you're ready.`;
   return {
     from: FROM, to: [opts.to], subject,
-    html: shell(`<p style="font-family:Inter,Arial,sans-serif;font-size:15px;margin-top:16px">${line}</p>${button(opts.signUrl, es ? "Revisar y firmar" : "Review & sign")}`),
+    html: emailShell(`<p style="font-family:Inter,Arial,sans-serif;font-size:15px;margin-top:16px">${line}</p>${emailButton(opts.signUrl, es ? "Revisar y firmar" : "Review & sign")}`, opts.locale),
     text: `${line}\n${opts.signUrl}`,
   };
 }
@@ -52,7 +45,7 @@ export async function phase1InviteEmails(admin: SupabaseClient, weddingId: strin
     emails.push({
       from: FROM, to: [inv.email],
       subject: es ? "Tu portal de Forma está listo" : "Your Forma portal is ready",
-      html: shell(`<p style="font-family:Inter,Arial,sans-serif;font-size:15px;margin-top:16px">${line}</p>${button(url, es ? "Abrir mi portal" : "Open my portal")}`),
+      html: emailShell(`<p style="font-family:Inter,Arial,sans-serif;font-size:15px;margin-top:16px">${line}</p>${emailButton(url, es ? "Abrir mi portal" : "Open my portal")}`, es ? "es" : "en"),
       text: `${line}\n${url}`,
     });
     await admin.from("wedding_invites").update({ emailed_at: new Date().toISOString() }).eq("id", inv.id);

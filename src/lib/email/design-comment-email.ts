@@ -1,4 +1,5 @@
 import "server-only";
+import { emailShell, emailButton } from "./shell";
 
 type Email = { from: string; to: string[]; subject: string; html: string; text: string };
 const FROM = "Forma <studio@forma.events>";
@@ -16,11 +17,11 @@ export function commentEmail(opts: { to: string; couple: string; planner: string
   const lead = es ? `${opts.planner} dejó una nota en tu estudio de diseño.` : `${opts.planner} left a note on your design studio.`;
   const cta = es ? "Abrir el estudio" : "Open the studio";
   const img = opts.imageUrl ? `<img src="${opts.imageUrl}" alt="" style="max-width:100%;border-radius:4px;margin:14px 0" />` : "";
-  const html = `<div style="font-family:Georgia,serif;color:#121212;background:#F7F4EE;padding:28px">
-    <div style="font-size:22px;letter-spacing:.04em"><span style="font-style:italic">f</span>orma</div>
-    <p style="font-family:Inter,Arial,sans-serif;font-size:15px;margin-top:16px">${esc(lead)}</p>${img}
+  const html = emailShell(
+    `<p style="font-family:Inter,Arial,sans-serif;font-size:15px;margin-top:0">${esc(lead)}</p>${img}
     <p style="font-size:15px;font-style:italic;color:#3B3833">&ldquo;${esc(opts.body)}&rdquo;</p>
-    <a href="${opts.studioUrl}" style="display:inline-block;margin-top:14px;background:#111111;color:#F7F4EE;text-decoration:none;padding:11px 22px;border-radius:4px;font-family:Inter,Arial,sans-serif;font-size:14px">${cta}</a>
-  </div>`;
+    ${emailButton(opts.studioUrl, cta)}`,
+    opts.locale,
+  );
   return { from: FROM, to: [opts.to], subject, html, text: `${lead}\n\n"${opts.body}"\n\n${cta}: ${opts.studioUrl}` };
 }

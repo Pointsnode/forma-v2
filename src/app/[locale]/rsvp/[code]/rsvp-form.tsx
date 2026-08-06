@@ -85,7 +85,7 @@ export function RsvpForm({
       </label>
 
       {err ? <p className="text-[14px] text-wine">{err}</p> : null}
-      <button onClick={submit} disabled={pending} className="rounded-[var(--radius)] bg-ink px-6 py-3 text-[15px] font-medium text-bone transition-opacity hover:opacity-90 disabled:opacity-50">
+      <button onClick={submit} disabled={pending} className="rounded-[var(--radius)] bg-wine px-6 py-3 text-[15px] font-medium text-bone transition-opacity hover:opacity-90 disabled:opacity-50">
         {pending ? t("submitting") : t("submit")}
       </button>
     </div>
