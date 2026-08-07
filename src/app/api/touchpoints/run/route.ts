@@ -42,10 +42,9 @@ async function run(req: NextRequest) {
     const { data: sends } = await admin.rpc("build_touchpoint_sends", { p_touchpoint: tp.id });
     const rows = (sends ?? []) as { guest_id: string; email: string; full_name: string; rsvp_code: string; token: string }[];
 
-    // §3/§5 — guest email copy follows the WEDDING's language, falling back to the
-    // workspace creator's locale (then 'en') when wedding.locale is null: today's
-    // behaviour unchanged for null. (FR/IT bodies gracefully fall back to EN until the
-    // email catalog namespace lands — see the PR's known gap.)
+    // Recipient-language resolution (unchanged, L3): the WEDDING's language, falling back to
+    // the workspace creator's locale, then 'en'. The email bodies are now fully localized via
+    // the email.* namespace, so a French wedding gets French email end to end.
     const { data: wd } = await admin.from("weddings").select("couple_display, workspace_id, locale").eq("id", tp.wedding_id).maybeSingle();
     let locale: string = wd?.locale ?? "en";
     if (!wd?.locale && wd?.workspace_id) {
@@ -62,7 +61,7 @@ async function run(req: NextRequest) {
     // read-only itinerary (events + times + venue + the guest's seat).
     let emails;
     if (tp.kind === "menu_collect") {
-      emails = rows.map((s) => menuEmail({ to: s.email, guestName: s.full_name, couple, menuUrl: `${prefix}/menu/${s.rsvp_code}?s=${s.token}`, locale }));
+      emails = await Promise.all(rows.map((s) => menuEmail({ to: s.email, guestName: s.full_name, couple, menuUrl: `${prefix}/menu/${s.rsvp_code}?s=${s.token}`, locale })));
     } else if (tp.kind === "day_of_schedule") {
       const [{ data: evs }, { data: booked }, { data: seatRows }] = await Promise.all([
         admin.from("wedding_events").select("id, label, event_date, start_time").eq("wedding_id", tp.wedding_id).order("event_date", { ascending: true, nullsFirst: false }),
@@ -72,9 +71,9 @@ async function run(req: NextRequest) {
       const venueOf = new Map((booked ?? []).map((b) => [(b as { event_id: string }).event_id, (b as unknown as { wedding_vendors: { vendors: { name: string } | null } | null }).wedding_vendors?.vendors?.name ?? null]));
       const events = ((evs ?? []) as { id: string; label: string; event_date: string | null; start_time: string | null }[]).map((e) => ({ label: e.label, date: e.event_date, time: e.start_time?.slice(0, 5) ?? null, venue: venueOf.get(e.id) ?? null }));
       const seatOf = new Map(((seatRows ?? []) as unknown as { guest_id: string; seating_tables: { name: string } | null }[]).map((s) => [s.guest_id, s.seating_tables?.name ?? null]));
-      emails = rows.map((s) => dayOfScheduleEmail({ to: s.email, guestName: s.full_name, couple, events, seat: seatOf.get(s.guest_id) ?? null, locale }));
+      emails = await Promise.all(rows.map((s) => dayOfScheduleEmail({ to: s.email, guestName: s.full_name, couple, events, seat: seatOf.get(s.guest_id) ?? null, locale })));
     } else {
-      emails = rows.map((s) => rsvpEmail({ to: s.email, guestName: s.full_name, couple, rsvpUrl: `${prefix}/rsvp/${s.rsvp_code}?s=${s.token}`, kind: tp.kind as "rsvp_invite" | "rsvp_reminder" | "rsvp_close", locale }));
+      emails = await Promise.all(rows.map((s) => rsvpEmail({ to: s.email, guestName: s.full_name, couple, rsvpUrl: `${prefix}/rsvp/${s.rsvp_code}?s=${s.token}`, kind: tp.kind as "rsvp_invite" | "rsvp_reminder" | "rsvp_close", locale })));
     }
 
     // Honor the send result: only stamp the ledger if Resend actually accepted the

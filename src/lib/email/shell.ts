@@ -4,11 +4,9 @@ const STAR = `<svg width="14" height="14" viewBox="-105 -105 210 210"><path d="M
 
 // Edition One transactional email shell (table-safe, inline styles): a charcoal header with
 // the champagne star above the bone wordmark (SignedMark anatomy), a bone body, and a
-// charcoal footer with the held line. The studio NAME isn't available to these recipients
-// (same as the web footer), so the held line is name-free; EN/ES here, FR/IT fall back to
-// EN until the email catalog namespace lands (the documented gap).
-export function emailShell(body: string, locale: string): string {
-  const held = locale === "es" ? "Con cuidado" : "Held with care";
+// charcoal footer with the held line. The held label comes from the email.* namespace (L3),
+// so every email is fully in the recipient's language — no fallback.
+export function emailShell(body: string, heldLabel: string): string {
   return `<div style="background:#F5F2EB;font-family:Georgia,'Times New Roman',serif;color:#3B3833">
     <div style="background:#111111;text-align:center;padding:30px 0 26px">
       ${STAR}<br>
@@ -16,7 +14,7 @@ export function emailShell(body: string, locale: string): string {
     </div>
     <div style="max-width:520px;margin:0 auto;padding:30px 24px;font-size:15px;line-height:1.6">${body}</div>
     <div style="background:#111111;text-align:center;padding:24px 0">
-      <span style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#D7C3A5">${held}</span>
+      <span style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#D7C3A5">${heldLabel}</span>
     </div>
   </div>`;
 }

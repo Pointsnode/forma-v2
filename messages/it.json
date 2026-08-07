@@ -1767,5 +1767,54 @@
     "accepting": "Accettazione",
     "acceptExpired": "Questo preventivo è scaduto.",
     "acceptErr": "Qualcosa è andato storto. Riprova tra un momento."
+  },
+  "email": {
+    "shell": {
+      "held": "Held with care"
+    },
+    "rsvp": {
+      "inviteSubject": "You are invited, {couple}",
+      "reminderSubject": "A gentle reminder, {couple}",
+      "closeSubject": "RSVPs are closing, {couple}",
+      "inviteLead": "{couple} would love to know if you can join them.",
+      "reminderLead": "We have not heard from you yet for {couple}. It only takes a moment.",
+      "closeLead": "The guest list for {couple} is about to close. Last chance to let them know.",
+      "cta": "Respond now",
+      "hi": "Dear {name},",
+      "footer": "Sent by Forma on behalf of the couple. One link, no account needed."
+    },
+    "contract": {
+      "signerSubject": "For your signature, {title}",
+      "signerLine": "Hi {name}, your document is ready. Review and sign whenever you are ready.",
+      "signerButton": "Review and sign",
+      "portalSubject": "Your Forma portal is ready",
+      "portalLine": "Your agreement is signed and your deposit received, your wedding portal is ready.",
+      "portalButton": "Open my portal"
+    },
+    "ops": {
+      "menuSubject": "Choose your menu, {couple}",
+      "menuLine": "Hi {name}, choose your plate for {couple}. You can change it until we close the menu.",
+      "menuButton": "Choose my plate",
+      "scheduleSubject": "Your schedule, {couple}",
+      "scheduleGreeting": "Hi {name}, here are your days.",
+      "scheduleSeat": "Your seat"
+    },
+    "design": {
+      "commentSubject": "A note on your design · {couple}",
+      "commentLead": "{planner} left a note on your design studio.",
+      "commentCta": "Open the studio"
+    },
+    "quote": {
+      "subject": "Your quote, {couple}",
+      "line": "Hi {couple}, your quote is ready. Open it whenever you like.",
+      "button": "View the quote"
+    },
+    "lead": {
+      "automatedFooter": "Reply to reach {planner} directly.",
+      "consultSubject": "Confirming tomorrow, {couple}",
+      "consultLine": "Hi {couple}, just confirming our consultation. Reply if anything has changed.",
+      "followUpSubject": "Still thinking it over, {couple}?",
+      "followUpLine": "Hi {couple}, just checking in. We would love to help bring your day to life whenever you are ready."
+    }
   }
 }
