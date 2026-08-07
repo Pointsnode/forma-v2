@@ -232,7 +232,9 @@
       "other": "Other"
     },
     "day": "Day",
-    "slice": "Budget slice"
+    "slice": "Budget slice",
+    "guestsN": "{n} guests",
+    "sliceEmpty": "No costs tagged to this event yet."
   },
   "proposals": {
     "waiting": "Waiting on a decision",
@@ -578,7 +580,28 @@
     "edit": "Edit",
     "seatedAt": "{table}, seat {seat}",
     "seatDots": "Seat…",
-    "seatEvents": "{n} events"
+    "seatEvents": "{n} events",
+    "tableHint": "Where they are and what they are eating, one event at a time.",
+    "exportTable": "Export the table",
+    "manageInvites": "Manage invites",
+    "tableTitle": "The table · {event}",
+    "platesLabel": "plates",
+    "platesUnchosen": "{n} unchosen",
+    "yesCount": "{n} yes",
+    "pendingCount": "{n} pending",
+    "colGuest": "Guest",
+    "colRsvp": "RSVP",
+    "colSeat": "Seat",
+    "colPlate": "Plate",
+    "tableEmpty": "No guests invited to this event yet.",
+    "rsvpYes": "Yes",
+    "rsvpNo": "No",
+    "rsvpMaybe": "Maybe",
+    "rsvpPending": "Pending",
+    "notSeated": "not seated",
+    "notChosen": "Not chosen yet",
+    "pickEvent": "Event",
+    "pickEventNone": "Whole wedding"
   },
   "touchpoints": {
     "timeline": "Touchpoint timeline",
@@ -1194,7 +1217,10 @@
     "blueprintHint": "PNG or JPEG, the room drawn to scale.",
     "blueprintConverting": "Uploading…",
     "blueprintPdfDeferred": "PDF isn't supported yet, upload a PNG or JPEG.",
-    "blueprintBadType": "Upload a PNG or JPEG image."
+    "blueprintBadType": "Upload a PNG or JPEG image.",
+    "legendDietary": "dietary note",
+    "legendUnchosen": "seated, not chosen",
+    "exportTable": "Export the table"
   },
   "directory": {
     "indexTitle": "Find your wedding planner",
@@ -1846,5 +1872,17 @@
       "followUpSubject": "Still thinking it over, {couple}?",
       "followUpLine": "Hi {couple}, just checking in. We would love to help bring your day to life whenever you are ready."
     }
+  },
+  "tableSheet": {
+    "back": "Back to seating",
+    "kicker": "THE TABLE, SET",
+    "nSeated": "{n} seated",
+    "countSummary": "{unchosen} unchosen · {dietary} dietary notes",
+    "shape_round": "round",
+    "shape_rect": "rectangle",
+    "shape_banquet": "banquet",
+    "ofN": "of {n}",
+    "appendix": "Yes, but seated nowhere · {n}",
+    "footer": "printed from Forma"
   }
 }

@@ -5,6 +5,7 @@ import { Stage, Layer, Group, Circle, Rect, Line, Text, Image as KImage, Transfo
 import type Konva from "konva";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { PlateGlyph } from "@/components/wedding/plate-glyph";
 import { seatLabel, seatPositions } from "@/lib/seat-geometry.mjs";
 import { formaErrorMessage } from "@/lib/forma-error";
 import {
@@ -14,10 +15,10 @@ import {
 } from "@/app/[locale]/(app)/wedding/[id]/floor-actions";
 
 type SeatSides = "all" | "long" | "one";
-type Seat = { seatNo: number; guestId: string; name: string; diet: string[] };
+type Seat = { seatNo: number; guestId: string; name: string; diet: string[]; letter: string | null; hasDiet: boolean };
 type Table = { id: string; name: string; capacity: number; shape: "round" | "rect" | "banquet"; x: number; y: number; rotation: number; width: number; height: number; seatSides: SeatSides; isLoose: boolean; groupedWith: string | null; seats: Seat[] };
 type Element = { id: string; kind: string; label: string | null; x: number; y: number; rotation: number; width: number; height: number };
-type Attendee = { guestId: string; name: string; diet: string[]; seated: boolean };
+type Attendee = { guestId: string; name: string; diet: string[]; seated: boolean; letter: string | null; hasDiet: boolean };
 type Exception = { guestId: string; name: string; rsvp: string; tableId: string; seatNo: number };
 type BackgroundSettings = { opacity?: number; scale?: number; x?: number; y?: number; locked?: boolean };
 
@@ -29,6 +30,8 @@ export type FloorEditorProps = {
   role: "staff" | "couple" | "view"; coupleCanEdit: boolean;
   background: string | null; backgroundUrl: string | null; backgroundSettings: BackgroundSettings;
   printHref: string;
+  menuOptions?: { id: string; letter: string; label: string }[]; // §3: the plate glyph legend; empty → chart unchanged
+  tablePrintHref?: string; // §4: the caterer sheet
   initialPickGuest?: string | null; // §F deep-link from the guest list lands with this guest picked up
 };
 
@@ -59,6 +62,8 @@ export function FloorEditor(props: FloorEditorProps) {
 
   const canMove = props.role === "staff" || (props.role === "couple" && props.coupleCanEdit);
   const canEditGeom = props.role === "staff"; // create/resize/rotate/delete/blueprint
+  const menuOptions = props.menuOptions ?? [];
+  const hasMenu = menuOptions.length > 0; // §3: glyphs + legend render only when a menu exists
   const canSeat = canMove;
 
   // §L load the blueprint bitmap for the canvas (and the export/print). The remove handler clears
@@ -200,7 +205,7 @@ export function FloorEditor(props: FloorEditorProps) {
     whisper(assignSeatAt(props.eventId, guestId, c.tableId, c.seatNo).then((r) => {
       if (!r.error) {
         const a = props.attendees.find((x) => x.guestId === guestId);
-        setTables((ts) => ts.map((tb) => (tb.id === c.tableId ? { ...tb, seats: [...tb.seats.filter((s) => s.seatNo !== c.seatNo && s.guestId !== guestId), { seatNo: c.seatNo, guestId, name: a?.name ?? "·", diet: a?.diet ?? [] }] } : { ...tb, seats: tb.seats.filter((s) => s.guestId !== guestId) })));
+        setTables((ts) => ts.map((tb) => (tb.id === c.tableId ? { ...tb, seats: [...tb.seats.filter((s) => s.seatNo !== c.seatNo && s.guestId !== guestId), { seatNo: c.seatNo, guestId, name: a?.name ?? "·", diet: a?.diet ?? [], letter: a?.letter ?? null, hasDiet: a?.hasDiet ?? false }] } : { ...tb, seats: tb.seats.filter((s) => s.guestId !== guestId) })));
         setChair(null); setPickGuest(null);
       }
       return r;
@@ -341,6 +346,13 @@ export function FloorEditor(props: FloorEditorProps) {
                         <Group key={i} x={pos.x} y={pos.y} onClick={(e) => { e.cancelBubble = true; chairClick(tb.id, i); }} onTap={(e) => { e.cancelBubble = true; chairClick(tb.id, i); }}>
                           <Circle radius={11} fill={occ ? "#7e3b41" : "#fffdf9"} stroke={isSel ? "#121212" : "#eae6dc"} strokeWidth={isSel ? 2.5 : 1} />
                           <Text x={-11} y={-5} width={22} align="center" text={occ ? initialsOf(occ.name) : seatLabel(i)} fontSize={occ ? 8 : 9} fill={occ ? "#f7f4ee" : "#8a867e"} />
+                          {/* §3 plate glyph — only when this event has a menu; the letter in a corner badge */}
+                          {hasMenu && occ?.letter ? (
+                            <Group x={9} y={-9}>
+                              <Circle radius={6} fill="#f5f2eb" stroke={occ.hasDiet ? "#6e353b" : "#8a7557"} strokeWidth={1} />
+                              <Text x={-6} y={-4} width={12} align="center" text={occ.letter} fontSize={8} fontStyle="400" fontFamily="Playfair Display" fill="#111111" />
+                            </Group>
+                          ) : null}
                         </Group>
                       );
                     })}
@@ -373,6 +385,7 @@ export function FloorEditor(props: FloorEditorProps) {
           <span className="mx-1 h-3 w-px bg-[color:var(--color-hairline-token)]" />
           <button onClick={exportPNG} className="rounded bg-surface-card px-2 py-0.5 hover:text-text-primary">{t("exportPNG")}</button>
           <Link href={props.printHref} className="rounded bg-surface-card px-2 py-0.5 hover:text-text-primary" target="_blank">{t("exportPrint")}</Link>
+          {props.tablePrintHref ? <Link href={props.tablePrintHref} className="rounded bg-surface-card px-2 py-0.5 hover:text-text-primary" target="_blank">{t("exportTable")}</Link> : null}
           {selectedTable && canEditGeom ? (
             <TableInspector
               table={selectedTable} tables={realTables} t={t}
@@ -385,6 +398,14 @@ export function FloorEditor(props: FloorEditorProps) {
             />
           ) : null}
         </div>
+        {/* §3 plate legend — only when this event has a menu */}
+        {hasMenu ? (
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12px] text-text-primary">
+            {menuOptions.map((o) => <span key={o.id} className="inline-flex items-center gap-1.5"><PlateGlyph letter={o.letter} size={18} />{o.label}</span>)}
+            <span className="inline-flex items-center gap-1.5"><PlateGlyph letter={menuOptions[0]?.letter} variant="dietary" size={18} />{t("legendDietary")}</span>
+            <span className="inline-flex items-center gap-1.5"><PlateGlyph variant="empty" size={18} /><span className="text-text-meta">{t("legendUnchosen")}</span></span>
+          </div>
+        ) : null}
       </div>
 
       <aside className="w-full shrink-0 lg:w-[280px]">

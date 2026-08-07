@@ -232,7 +232,9 @@
       "other": "Autre"
     },
     "day": "Jour",
-    "slice": "Part du budget"
+    "slice": "Part du budget",
+    "guestsN": "{n} guests",
+    "sliceEmpty": "No costs tagged to this event yet."
   },
   "proposals": {
     "waiting": "En attente d'une décision",
@@ -578,7 +580,28 @@
     "edit": "Modifier",
     "seatedAt": "{table}, place {seat}",
     "seatDots": "Placer…",
-    "seatEvents": "{n} événements"
+    "seatEvents": "{n} événements",
+    "tableHint": "Where they are and what they are eating, one event at a time.",
+    "exportTable": "Export the table",
+    "manageInvites": "Manage invites",
+    "tableTitle": "The table · {event}",
+    "platesLabel": "plates",
+    "platesUnchosen": "{n} unchosen",
+    "yesCount": "{n} yes",
+    "pendingCount": "{n} pending",
+    "colGuest": "Guest",
+    "colRsvp": "RSVP",
+    "colSeat": "Seat",
+    "colPlate": "Plate",
+    "tableEmpty": "No guests invited to this event yet.",
+    "rsvpYes": "Yes",
+    "rsvpNo": "No",
+    "rsvpMaybe": "Maybe",
+    "rsvpPending": "Pending",
+    "notSeated": "not seated",
+    "notChosen": "Not chosen yet",
+    "pickEvent": "Event",
+    "pickEventNone": "Whole wedding"
   },
   "touchpoints": {
     "timeline": "La ligne des relances",
@@ -1194,7 +1217,10 @@
     "blueprintHint": "PNG ou JPEG, la salle dessinée à l'échelle.",
     "blueprintConverting": "Envoi…",
     "blueprintPdfDeferred": "Le PDF n'est pas encore pris en charge, déposez un PNG ou un JPEG.",
-    "blueprintBadType": "Déposez une image PNG ou JPEG."
+    "blueprintBadType": "Déposez une image PNG ou JPEG.",
+    "legendDietary": "dietary note",
+    "legendUnchosen": "seated, not chosen",
+    "exportTable": "Export the table"
   },
   "directory": {
     "indexTitle": "Trouvez votre wedding planner",
@@ -1846,5 +1872,17 @@
       "followUpSubject": "Vous y pensez encore, {couple} ?",
       "followUpLine": "Bonjour {couple}, nous prenons simplement des nouvelles. Nous serions ravis de donner vie à votre journée quand vous serez prêts."
     }
+  },
+  "tableSheet": {
+    "back": "Back to seating",
+    "kicker": "THE TABLE, SET",
+    "nSeated": "{n} seated",
+    "countSummary": "{unchosen} unchosen · {dietary} dietary notes",
+    "shape_round": "round",
+    "shape_rect": "rectangle",
+    "shape_banquet": "banquet",
+    "ofN": "of {n}",
+    "appendix": "Yes, but seated nowhere · {n}",
+    "footer": "printed from Forma"
   }
 }
