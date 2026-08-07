@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { fetchChargeFee } from "@/lib/stripe";
 import { billingMirrorOps, invoiceToRow, secToIso, refundStatus } from "@/lib/stripe-mirror.mjs";
+import { accrueCommissionsForPayment, clawbackForRefund } from "@/lib/commission";
 
 // The impure billing mirror — best-effort, admin-owned tables, service-role (the caller's
 // admin client). Classification + row mapping live in stripe-mirror.mjs (pure, tested);
@@ -43,6 +44,7 @@ export async function mirrorBillingEvent(admin: SupabaseClient, event: Ev): Prom
           fee = f?.fee_cents ?? null;
           net = f?.net_cents ?? null;
         }
+        const paidAt = secToIso(inv.status_transitions?.paid_at);
         await admin.from("billing_payments").upsert({
           stripe_id: paymentId,
           stripe_invoice_id: inv.id ?? null,
@@ -51,8 +53,14 @@ export async function mirrorBillingEvent(admin: SupabaseClient, event: Ev): Prom
           fee_cents: fee,
           net_cents: net,
           status: "succeeded",
-          paid_at: secToIso(inv.status_transitions?.paid_at),
+          paid_at: paidAt,
         });
+        // ADM-2 commission engine (best-effort; never disturbs the mirror above).
+        try {
+          await accrueCommissionsForPayment(admin, ws, { stripe_id: paymentId, amount_cents: inv.amount_paid ?? null, paid_at: paidAt });
+        } catch (e) {
+          console.error("commission accrual failed:", (e as Error).message);
+        }
       }
     }
     return;
@@ -71,14 +79,21 @@ export async function mirrorBillingEvent(admin: SupabaseClient, event: Ev): Prom
     const ws = (pay?.workspace_id as string | null) ?? (await wsForCustomer(admin, charge.customer));
     for (const r of charge.refunds?.data ?? []) {
       if (!r.id) continue;
+      const refundedAt = secToIso(r.created);
       await admin.from("billing_refunds").upsert({
         stripe_refund_id: r.id,
         payment_id: paymentId,
         workspace_id: ws,
         amount_cents: r.amount ?? null,
         reason: r.reason ?? null,
-        refunded_at: secToIso(r.created),
+        refunded_at: refundedAt,
       });
+      // ADM-2 clawback (best-effort; <=90 days, at the original stored rate).
+      try {
+        await clawbackForRefund(admin, ws, { stripe_refund_id: r.id, amount_cents: r.amount ?? null, refunded_at: refundedAt, payment_id: paymentId });
+      } catch (e) {
+        console.error("commission clawback failed:", (e as Error).message);
+      }
     }
     if (paymentId) {
       await admin.from("billing_payments").update({ status: refundStatus(charge.amount_refunded, charge.amount) }).eq("stripe_id", paymentId);
