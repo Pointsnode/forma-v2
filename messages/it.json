@@ -233,8 +233,8 @@
     },
     "day": "Giorno",
     "slice": "Quota di budget",
-    "guestsN": "{n} guests",
-    "sliceEmpty": "No costs tagged to this event yet."
+    "guestsN": "{n} invitati",
+    "sliceEmpty": "Ancora nessun costo assegnato a questo evento."
   },
   "proposals": {
     "waiting": "In attesa di una decisione",
@@ -581,27 +581,27 @@
     "seatedAt": "{table}, posto {seat}",
     "seatDots": "Posto…",
     "seatEvents": "{n} eventi",
-    "tableHint": "Where they are and what they are eating, one event at a time.",
-    "exportTable": "Export the table",
-    "manageInvites": "Manage invites",
-    "tableTitle": "The table · {event}",
-    "platesLabel": "plates",
-    "platesUnchosen": "{n} unchosen",
-    "yesCount": "{n} yes",
-    "pendingCount": "{n} pending",
-    "colGuest": "Guest",
+    "tableHint": "Dove sono e cosa mangiano, un evento alla volta.",
+    "exportTable": "Esporta la tavola",
+    "manageInvites": "Gestisci gli inviti",
+    "tableTitle": "La tavola · {event}",
+    "platesLabel": "piatti",
+    "platesUnchosen": "{n} senza scelta",
+    "yesCount": "{n} sì",
+    "pendingCount": "{n} in attesa",
+    "colGuest": "Invitato",
     "colRsvp": "RSVP",
-    "colSeat": "Seat",
-    "colPlate": "Plate",
-    "tableEmpty": "No guests invited to this event yet.",
-    "rsvpYes": "Yes",
+    "colSeat": "Posto",
+    "colPlate": "Piatto",
+    "tableEmpty": "Ancora nessun invitato a questo evento.",
+    "rsvpYes": "Sì",
     "rsvpNo": "No",
-    "rsvpMaybe": "Maybe",
-    "rsvpPending": "Pending",
-    "notSeated": "not seated",
-    "notChosen": "Not chosen yet",
-    "pickEvent": "Event",
-    "pickEventNone": "Whole wedding"
+    "rsvpMaybe": "Forse",
+    "rsvpPending": "In attesa",
+    "notSeated": "senza posto",
+    "notChosen": "Non ancora scelto",
+    "pickEvent": "Evento",
+    "pickEventNone": "Tutto il matrimonio"
   },
   "touchpoints": {
     "timeline": "La linea dei richiami",
@@ -1218,9 +1218,9 @@
     "blueprintConverting": "Caricamento…",
     "blueprintPdfDeferred": "Il PDF non è ancora supportato, carica un PNG o un JPEG.",
     "blueprintBadType": "Carica un'immagine PNG o JPEG.",
-    "legendDietary": "dietary note",
-    "legendUnchosen": "seated, not chosen",
-    "exportTable": "Export the table"
+    "legendDietary": "nota alimentare",
+    "legendUnchosen": "seduto, senza scelta",
+    "exportTable": "Esporta la tavola"
   },
   "directory": {
     "indexTitle": "Trova il tuo wedding planner",
@@ -1874,15 +1874,15 @@
     }
   },
   "tableSheet": {
-    "back": "Back to seating",
-    "kicker": "THE TABLE, SET",
-    "nSeated": "{n} seated",
-    "countSummary": "{unchosen} unchosen · {dietary} dietary notes",
-    "shape_round": "round",
-    "shape_rect": "rectangle",
-    "shape_banquet": "banquet",
-    "ofN": "of {n}",
-    "appendix": "Yes, but seated nowhere · {n}",
-    "footer": "printed from Forma"
+    "back": "Torna ai posti",
+    "kicker": "LA TAVOLA, APPARECCHIATA",
+    "nSeated": "{n} seduti",
+    "countSummary": "{unchosen} senza scelta · {dietary} note alimentari",
+    "shape_round": "rotonda",
+    "shape_rect": "rettangolare",
+    "shape_banquet": "imperiale",
+    "ofN": "di {n}",
+    "appendix": "Sì, ma senza posto · {n}",
+    "footer": "stampato da forma"
   }
 }

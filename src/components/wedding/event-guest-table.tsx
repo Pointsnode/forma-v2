@@ -28,7 +28,7 @@ export async function EventGuestTable({ eventName, options, guests }: { eventNam
           <span className="flex flex-wrap items-center gap-2">
             <Chip tone="settled">{t("yesCount", { n: yes })}</Chip>
             <Chip tone="pending">{t("pendingCount", { n: pending })}</Chip>
-            {options.length ? <span className="text-[11px] text-text-meta">{t("platesLabel")}: {platesLine}</span> : null}
+            {options.length ? <span className="text-[11px] text-text-meta">{t("platesLabel")}: <span className="lowercase">{platesLine}</span></span> : null}
           </span>
         }
       />
