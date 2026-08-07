@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button, StudioTitleBand, cx } from "@/components/ui";
+import { QuoteHead } from "@/components/quote/quote-head";
 import { updateQuote, replaceLines, sendQuote, saveAsTemplate, applyTemplate, type LineInput } from "../quote-actions";
 
 export type QuoteRow = {
@@ -17,7 +18,7 @@ type Draft = { section: string; title: string; description: string; amount: stri
 const CURRENCIES = ["USD", "MXN", "EUR", "GBP", "CAD"];
 const input = "w-full rounded-[var(--radius)] border border-hairline-token bg-surface-card px-3 py-2 text-[14px] text-text-primary outline-none";
 
-export function QuoteBuilder({ quote, lines, templates, preparedFor }: { quote: QuoteRow; lines: LineRow[]; templates: { id: string; title: string }[]; preparedFor: string | null }) {
+export function QuoteBuilder({ quote, lines, templates, preparedFor, studioName, logoUrl }: { quote: QuoteRow; lines: LineRow[]; templates: { id: string; title: string }[]; preparedFor: string | null; studioName: string; logoUrl: string | null }) {
   const t = useTranslations("quotes");
   const uiLocale = useLocale();
   const router = useRouter();
@@ -64,6 +65,15 @@ export function QuoteBuilder({ quote, lines, templates, preparedFor }: { quote: 
       } />
 
       <div className="mx-auto flex max-w-[760px] flex-col gap-4">
+        {/* Preview of the quote head — how the studio's logo (or name) sits on the dark band */}
+        <div className="overflow-hidden rounded-[var(--radius)] border border-hairline-token">
+          <QuoteHead
+            kicker={t("aQuoteFrom")}
+            studioName={studioName}
+            logoUrl={logoUrl}
+            metaLine={[t("headNumber", { n: quote.number }), preparedFor ? t("headPreparedFor", { name: preparedFor }) : null].filter(Boolean).join(" · ")}
+          />
+        </div>
         <div className="flex flex-col gap-3 rounded-[var(--radius)] border border-hairline-token bg-surface-card p-5">
           <label className="text-[12px] text-text-meta">{t("fTitle")}<input value={title} onChange={(e) => setTitle(e.target.value)} className={cx(input, "mt-1")} /></label>
           <label className="text-[12px] text-text-meta">{t("fIntro")}<textarea value={intro} onChange={(e) => setIntro(e.target.value)} rows={2} className={cx(input, "mt-1 font-accent italic")} /></label>

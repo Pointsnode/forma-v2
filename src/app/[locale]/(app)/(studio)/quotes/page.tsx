@@ -1,7 +1,6 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { StudioTitleBand, Panel, PanelHead, PanelRow, Chip, DomainStar } from "@/components/ui";
-import { SegmentHead } from "./segment-head";
 import { NewQuoteButton } from "./new-quote-button";
 
 type Q = { id: string; number: number; title: string | null; status: string; lead_id: string | null; wedding_id: string | null };
@@ -9,7 +8,7 @@ type Q = { id: string; number: number; title: string | null; status: string; lea
 export default async function QuotesListPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [t, tc] = [await getTranslations("quotes"), await getTranslations("contract")];
+  const t = await getTranslations("quotes");
   const supabase = await createClient();
 
   const { data: rows } = await supabase.from("client_quotes").select("id, number, title, status, lead_id, wedding_id").order("number", { ascending: false });
@@ -31,8 +30,7 @@ export default async function QuotesListPage({ params }: { params: Promise<{ loc
 
   return (
     <>
-      <StudioTitleBand title={tc("studioTitle")} accent={tc("studioHint")} action={<NewQuoteButton />} />
-      <SegmentHead />
+      <StudioTitleBand kicker={t("kicker")} title={t("tab")} action={<NewQuoteButton />} />
 
       {quotes.length === 0 ? (
         <Panel><p className="px-[18px] py-8 text-center font-accent text-[15px] text-text-meta">{t("listEmpty")}</p></Panel>

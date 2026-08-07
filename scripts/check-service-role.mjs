@@ -25,6 +25,10 @@ const ALLOWLIST = new Set([
   // creator's auth email across workspaces (no session). Isolated to this one lib; invoked
   // only by /api/leads/sweep (CRON_SECRET-guarded). No anon surface, matrix unchanged at 12.
   "src/lib/leads-sweep.ts",
+  // Studio logo: signs the private vendor-media logo for the anon /quote/[token] head
+  // (the viewer can't sign it themselves). Signing only, one low-sensitivity asset,
+  // callers pass their own workspace path. No anon function grant, matrix unchanged.
+  "src/lib/studio-logo.ts",
 ]);
 const PATTERNS = [/SUPABASE_SERVICE_ROLE_KEY/, /createAdminClient/];
 function* walk(dir) {

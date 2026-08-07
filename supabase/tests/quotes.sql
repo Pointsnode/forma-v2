@@ -45,7 +45,7 @@ end $$;
 do $$ declare j jsonb; k text; begin
   j := public.quote_lookup('aaaaaaaaaaaaaaaa');
   for k in select jsonb_object_keys(j) loop
-    if k not in ('quote','lines','studio_name','prepared_for','locale') then
+    if k not in ('quote','lines','studio_name','studio_logo_path','prepared_for','locale') then
       raise exception 'TEST FAIL: lookup leaked top-level key %', k;
     end if;
   end loop;
@@ -55,6 +55,8 @@ do $$ declare j jsonb; k text; begin
     end if;
   end loop;
   if j->>'studio_name' <> 'Verena & Co.' then raise exception 'TEST FAIL: studio_name wrong (%)', j->>'studio_name'; end if;
+  if j ? 'studio_logo_path' is false then raise exception 'TEST FAIL: studio_logo_path key missing'; end if;
+  if j->>'studio_logo_path' is not null then raise exception 'TEST FAIL: studio_logo_path should be null with no logo (%)', j->>'studio_logo_path'; end if;
   if j->>'prepared_for' <> 'Anouk & Berat' then raise exception 'TEST FAIL: prepared_for wrong (%)', j->>'prepared_for'; end if;
   if j->>'locale' <> 'fr' then raise exception 'TEST FAIL: locale not resolved to lead fr (%)', j->>'locale'; end if;
   if jsonb_array_length(j->'lines') <> 2 then raise exception 'TEST FAIL: lines count (%)', jsonb_array_length(j->'lines'); end if;
