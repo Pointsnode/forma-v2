@@ -1490,7 +1490,7 @@
       "account": "Compte",
       "privacy": "Confidentialité",
       "usage": "Utilisation",
-      "automatic": "The automatic"
+      "automatic": "L'automatique"
     },
     "langTitle": "Langue et région",
     "langHint": "Choisissez la langue, le fuseau horaire et le format de date de votre compte.",
@@ -1568,13 +1568,13 @@
     "appearance_default": "Automatique",
     "appearance_bone": "Bone",
     "appearance_night": "Night",
-    "autoTitle": "The automatic",
-    "autoHint": "Two rules you set, sent in the lead's language. forma never emails on your behalf without a rule you turned on.",
-    "ruleConsult": "Confirm the consult",
-    "ruleConsultHint": "The evening before a consultation, send the confirmation.",
-    "ruleQuiet": "The quiet follow-up",
-    "ruleQuietHint": "When a lead goes quiet, send one gentle follow-up.",
-    "ruleDaysLabel": "After this many days:"
+    "autoTitle": "L'automatique",
+    "autoHint": "Deux règles que vous fixez, envoyées dans la langue du lead. forma n'écrit jamais en votre nom sans une règle que vous avez activée.",
+    "ruleConsult": "Confirmer la consultation",
+    "ruleConsultHint": "La veille au soir d'une consultation, envoyer la confirmation.",
+    "ruleQuiet": "La relance douce",
+    "ruleQuietHint": "Quand un lead reste silencieux, envoyer une seule relance douce.",
+    "ruleDaysLabel": "Après ce nombre de jours :"
   },
   "design": {
     "guides": "Guides de style",
@@ -1708,28 +1708,28 @@
     "evtConverted": "Mariage ouvert",
     "evtLost": "Marqué perdu · {reason}",
     "quote": "Devis",
-    "write": "Write",
-    "writeSubject": "Subject",
-    "writeBody": "Your message",
-    "writeSend": "Send",
-    "writeSending": "Sending",
-    "writeDraft": "Draft it",
-    "writeDrafting": "Drafting",
-    "writeMailto": "Open in your mail app",
-    "writeErr": "Could not send. Try again in a moment.",
-    "writeNoEmail": "This lead has no email.",
-    "writeNoKey": "Drafting is not configured.",
-    "muteAutomation": "Mute automation for this lead",
-    "automationMuted": "Automation muted",
-    "evtEmail": "Emailed · {subject}",
-    "evtEmailMailto": "Emailed from your app · {subject}",
-    "evtAutomated": "Automatic · {rule}",
-    "evtQuoteCarried": "Quote lines carried to the budget",
-    "evtQuoteAccepted": "Quote accepted",
-    "rule_consult_confirm": "Confirm the consult",
-    "rule_quiet_follow_up": "The quiet follow-up",
-    "sentBy": "sent by {name}",
-    "mailtoUnconfirmed": "forma cannot confirm this send"
+    "write": "Écrire",
+    "writeSubject": "Objet",
+    "writeBody": "Votre message",
+    "writeSend": "Envoyer",
+    "writeSending": "Envoi",
+    "writeDraft": "Rédiger",
+    "writeDrafting": "Rédaction",
+    "writeMailto": "Ouvrir dans votre app de mail",
+    "writeErr": "Impossible d'envoyer. Réessayez dans un instant.",
+    "writeNoEmail": "Ce lead n'a pas d'email.",
+    "writeNoKey": "La rédaction n'est pas configurée.",
+    "muteAutomation": "Couper l'automatisation pour ce lead",
+    "automationMuted": "Automatisation coupée",
+    "evtEmail": "Email envoyé · {subject}",
+    "evtEmailMailto": "Envoyé depuis votre app · {subject}",
+    "evtAutomated": "Automatique · {rule}",
+    "evtQuoteCarried": "Lignes du devis portées au budget",
+    "evtQuoteAccepted": "Devis accepté",
+    "rule_consult_confirm": "Confirmer la consultation",
+    "rule_quiet_follow_up": "La relance douce",
+    "sentBy": "envoyé par {name}",
+    "mailtoUnconfirmed": "forma ne peut pas confirmer cet envoi"
   },
   "quotes": {
     "tab": "Devis",
@@ -1800,51 +1800,51 @@
   },
   "email": {
     "shell": {
-      "held": "Held with care"
+      "held": "Tenu avec soin"
     },
     "rsvp": {
-      "inviteSubject": "You are invited, {couple}",
-      "reminderSubject": "A gentle reminder, {couple}",
-      "closeSubject": "RSVPs are closing, {couple}",
-      "inviteLead": "{couple} would love to know if you can join them.",
-      "reminderLead": "We have not heard from you yet for {couple}. It only takes a moment.",
-      "closeLead": "The guest list for {couple} is about to close. Last chance to let them know.",
-      "cta": "Respond now",
-      "hi": "Dear {name},",
-      "footer": "Sent by Forma on behalf of the couple. One link, no account needed."
+      "inviteSubject": "Une invitation, {couple}",
+      "reminderSubject": "Un doux rappel, {couple}",
+      "closeSubject": "Les RSVP ferment bientôt, {couple}",
+      "inviteLead": "{couple} seraient ravis de savoir si vous serez des leurs.",
+      "reminderLead": "Nous n'avons pas encore votre réponse pour {couple}. Cela ne prend qu'un instant.",
+      "closeLead": "La liste des invités de {couple} va bientôt fermer. Dernière chance de leur répondre.",
+      "cta": "Répondre maintenant",
+      "hi": "Bonjour {name},",
+      "footer": "Envoyé par forma de la part du couple. Un lien, sans compte."
     },
     "contract": {
-      "signerSubject": "For your signature, {title}",
-      "signerLine": "Hi {name}, your document is ready. Review and sign whenever you are ready.",
-      "signerButton": "Review and sign",
-      "portalSubject": "Your Forma portal is ready",
-      "portalLine": "Your agreement is signed and your deposit received, your wedding portal is ready.",
-      "portalButton": "Open my portal"
+      "signerSubject": "Pour votre signature, {title}",
+      "signerLine": "Bonjour {name}, votre document est prêt. Relisez et signez quand vous voulez.",
+      "signerButton": "Relire et signer",
+      "portalSubject": "Votre portail est prêt",
+      "portalLine": "Votre accord est signé et votre acompte reçu ; votre portail de mariage est prêt.",
+      "portalButton": "Ouvrir mon portail"
     },
     "ops": {
-      "menuSubject": "Choose your menu, {couple}",
-      "menuLine": "Hi {name}, choose your plate for {couple}. You can change it until we close the menu.",
-      "menuButton": "Choose my plate",
-      "scheduleSubject": "Your schedule, {couple}",
-      "scheduleGreeting": "Hi {name}, here are your days.",
-      "scheduleSeat": "Your seat"
+      "menuSubject": "Choisissez votre menu, {couple}",
+      "menuLine": "Bonjour {name}, choisissez votre plat pour {couple}. Vous pouvez changer jusqu'à la fermeture du menu.",
+      "menuButton": "Choisir mon plat",
+      "scheduleSubject": "Votre programme, {couple}",
+      "scheduleGreeting": "Bonjour {name}, voici vos journées.",
+      "scheduleSeat": "Votre place"
     },
     "design": {
-      "commentSubject": "A note on your design · {couple}",
-      "commentLead": "{planner} left a note on your design studio.",
-      "commentCta": "Open the studio"
+      "commentSubject": "Une note sur votre design · {couple}",
+      "commentLead": "{planner} a laissé une note dans votre studio de design.",
+      "commentCta": "Ouvrir le studio"
     },
     "quote": {
-      "subject": "Your quote, {couple}",
-      "line": "Hi {couple}, your quote is ready. Open it whenever you like.",
-      "button": "View the quote"
+      "subject": "Votre devis, {couple}",
+      "line": "Bonjour {couple}, votre devis est prêt. Ouvrez-le quand vous voulez.",
+      "button": "Voir le devis"
     },
     "lead": {
-      "automatedFooter": "Reply to reach {planner} directly.",
-      "consultSubject": "Confirming tomorrow, {couple}",
-      "consultLine": "Hi {couple}, just confirming our consultation. Reply if anything has changed.",
-      "followUpSubject": "Still thinking it over, {couple}?",
-      "followUpLine": "Hi {couple}, just checking in. We would love to help bring your day to life whenever you are ready."
+      "automatedFooter": "Répondez pour joindre directement {planner}.",
+      "consultSubject": "On confirme pour demain, {couple}",
+      "consultLine": "Bonjour {couple}, nous confirmons simplement notre consultation. Répondez si quelque chose a changé.",
+      "followUpSubject": "Vous y pensez encore, {couple} ?",
+      "followUpLine": "Bonjour {couple}, nous prenons simplement des nouvelles. Nous serions ravis de donner vie à votre journée quand vous serez prêts."
     }
   }
 }

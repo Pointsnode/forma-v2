@@ -1490,7 +1490,7 @@
       "account": "Cuenta",
       "privacy": "Privacidad",
       "usage": "Uso",
-      "automatic": "The automatic"
+      "automatic": "El automático"
     },
     "langTitle": "Idioma y región",
     "langHint": "Define el idioma, la zona horaria y el formato de fecha de tu cuenta.",
@@ -1568,13 +1568,13 @@
     "appearance_default": "Automático",
     "appearance_bone": "Bone",
     "appearance_night": "Night",
-    "autoTitle": "The automatic",
-    "autoHint": "Two rules you set, sent in the lead's language. forma never emails on your behalf without a rule you turned on.",
-    "ruleConsult": "Confirm the consult",
-    "ruleConsultHint": "The evening before a consultation, send the confirmation.",
-    "ruleQuiet": "The quiet follow-up",
-    "ruleQuietHint": "When a lead goes quiet, send one gentle follow-up.",
-    "ruleDaysLabel": "After this many days:"
+    "autoTitle": "El automático",
+    "autoHint": "Dos reglas que tú defines, enviadas en el idioma del lead. forma nunca envía correos en tu nombre sin una regla que hayas activado.",
+    "ruleConsult": "Confirmar la consulta",
+    "ruleConsultHint": "La tarde anterior a una consulta, envía la confirmación.",
+    "ruleQuiet": "El seguimiento tranquilo",
+    "ruleQuietHint": "Cuando un lead queda en silencio, envía un solo seguimiento amable.",
+    "ruleDaysLabel": "Después de estos días:"
   },
   "design": {
     "guides": "Guías de estilo",
@@ -1708,28 +1708,28 @@
     "evtConverted": "Boda abierta",
     "evtLost": "Marcado perdido · {reason}",
     "quote": "Cotizar",
-    "write": "Write",
-    "writeSubject": "Subject",
-    "writeBody": "Your message",
-    "writeSend": "Send",
-    "writeSending": "Sending",
-    "writeDraft": "Draft it",
-    "writeDrafting": "Drafting",
-    "writeMailto": "Open in your mail app",
-    "writeErr": "Could not send. Try again in a moment.",
-    "writeNoEmail": "This lead has no email.",
-    "writeNoKey": "Drafting is not configured.",
-    "muteAutomation": "Mute automation for this lead",
-    "automationMuted": "Automation muted",
-    "evtEmail": "Emailed · {subject}",
-    "evtEmailMailto": "Emailed from your app · {subject}",
-    "evtAutomated": "Automatic · {rule}",
-    "evtQuoteCarried": "Quote lines carried to the budget",
-    "evtQuoteAccepted": "Quote accepted",
-    "rule_consult_confirm": "Confirm the consult",
-    "rule_quiet_follow_up": "The quiet follow-up",
-    "sentBy": "sent by {name}",
-    "mailtoUnconfirmed": "forma cannot confirm this send"
+    "write": "Escribir",
+    "writeSubject": "Asunto",
+    "writeBody": "Tu mensaje",
+    "writeSend": "Enviar",
+    "writeSending": "Enviando",
+    "writeDraft": "Redáctalo",
+    "writeDrafting": "Redactando",
+    "writeMailto": "Abrir en tu app de correo",
+    "writeErr": "No se pudo enviar. Intenta de nuevo en un momento.",
+    "writeNoEmail": "Este lead no tiene email.",
+    "writeNoKey": "La redacción no está configurada.",
+    "muteAutomation": "Silenciar la automatización para este lead",
+    "automationMuted": "Automatización silenciada",
+    "evtEmail": "Email enviado · {subject}",
+    "evtEmailMailto": "Enviado desde tu app · {subject}",
+    "evtAutomated": "Automático · {rule}",
+    "evtQuoteCarried": "Líneas de la cotización llevadas al presupuesto",
+    "evtQuoteAccepted": "Cotización aceptada",
+    "rule_consult_confirm": "Confirmar la consulta",
+    "rule_quiet_follow_up": "El seguimiento tranquilo",
+    "sentBy": "enviado por {name}",
+    "mailtoUnconfirmed": "forma no puede confirmar este envío"
   },
   "quotes": {
     "tab": "Cotizaciones",
@@ -1800,51 +1800,51 @@
   },
   "email": {
     "shell": {
-      "held": "Held with care"
+      "held": "Con cuidado"
     },
     "rsvp": {
-      "inviteSubject": "You are invited, {couple}",
-      "reminderSubject": "A gentle reminder, {couple}",
-      "closeSubject": "RSVPs are closing, {couple}",
-      "inviteLead": "{couple} would love to know if you can join them.",
-      "reminderLead": "We have not heard from you yet for {couple}. It only takes a moment.",
-      "closeLead": "The guest list for {couple} is about to close. Last chance to let them know.",
-      "cta": "Respond now",
-      "hi": "Dear {name},",
-      "footer": "Sent by Forma on behalf of the couple. One link, no account needed."
+      "inviteSubject": "Tienes una invitación, {couple}",
+      "reminderSubject": "Un recordatorio amable, {couple}",
+      "closeSubject": "Los RSVP están por cerrar, {couple}",
+      "inviteLead": "A {couple} les encantaría saber si puedes acompañarlos.",
+      "reminderLead": "Aún no sabemos de ti para {couple}. Solo toma un momento.",
+      "closeLead": "La lista de invitados de {couple} está por cerrarse. Última oportunidad de avisarles.",
+      "cta": "Responder ahora",
+      "hi": "Hola {name},",
+      "footer": "Enviado por forma de parte de la pareja. Un enlace, sin cuenta."
     },
     "contract": {
-      "signerSubject": "For your signature, {title}",
-      "signerLine": "Hi {name}, your document is ready. Review and sign whenever you are ready.",
-      "signerButton": "Review and sign",
-      "portalSubject": "Your Forma portal is ready",
-      "portalLine": "Your agreement is signed and your deposit received, your wedding portal is ready.",
-      "portalButton": "Open my portal"
+      "signerSubject": "Para tu firma, {title}",
+      "signerLine": "Hola {name}, tu documento está listo. Revísalo y fírmalo cuando quieras.",
+      "signerButton": "Revisar y firmar",
+      "portalSubject": "Su portal está listo",
+      "portalLine": "Su acuerdo está firmado y su depósito recibido; su portal de boda está listo.",
+      "portalButton": "Abrir mi portal"
     },
     "ops": {
-      "menuSubject": "Choose your menu, {couple}",
-      "menuLine": "Hi {name}, choose your plate for {couple}. You can change it until we close the menu.",
-      "menuButton": "Choose my plate",
-      "scheduleSubject": "Your schedule, {couple}",
-      "scheduleGreeting": "Hi {name}, here are your days.",
-      "scheduleSeat": "Your seat"
+      "menuSubject": "Elige tu menú, {couple}",
+      "menuLine": "Hola {name}, elige tu plato para {couple}. Puedes cambiarlo hasta que cerremos el menú.",
+      "menuButton": "Elegir mi plato",
+      "scheduleSubject": "Tu itinerario, {couple}",
+      "scheduleGreeting": "Hola {name}, aquí están tus días.",
+      "scheduleSeat": "Tu asiento"
     },
     "design": {
-      "commentSubject": "A note on your design · {couple}",
-      "commentLead": "{planner} left a note on your design studio.",
-      "commentCta": "Open the studio"
+      "commentSubject": "Una nota sobre tu diseño · {couple}",
+      "commentLead": "{planner} dejó una nota en tu estudio de diseño.",
+      "commentCta": "Abrir el estudio"
     },
     "quote": {
-      "subject": "Your quote, {couple}",
-      "line": "Hi {couple}, your quote is ready. Open it whenever you like.",
-      "button": "View the quote"
+      "subject": "Su cotización, {couple}",
+      "line": "Hola {couple}, su cotización está lista. Ábranla cuando gusten.",
+      "button": "Ver la cotización"
     },
     "lead": {
-      "automatedFooter": "Reply to reach {planner} directly.",
-      "consultSubject": "Confirming tomorrow, {couple}",
-      "consultLine": "Hi {couple}, just confirming our consultation. Reply if anything has changed.",
-      "followUpSubject": "Still thinking it over, {couple}?",
-      "followUpLine": "Hi {couple}, just checking in. We would love to help bring your day to life whenever you are ready."
+      "automatedFooter": "Responde para hablar directo con {planner}.",
+      "consultSubject": "Confirmando mañana, {couple}",
+      "consultLine": "Hola {couple}, solo confirmamos nuestra consulta. Responde si algo cambió.",
+      "followUpSubject": "¿Aún lo están pensando, {couple}?",
+      "followUpLine": "Hola {couple}, solo pasamos a saludar. Nos encantaría ayudar a dar vida a su día cuando estén listos."
     }
   }
 }
