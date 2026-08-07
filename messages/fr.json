@@ -232,7 +232,9 @@
       "other": "Autre"
     },
     "day": "Jour",
-    "slice": "Part du budget"
+    "slice": "Part du budget",
+    "guestsN": "{n} invités",
+    "sliceEmpty": "Aucun coût rattaché à cet événement pour l'instant."
   },
   "proposals": {
     "waiting": "En attente d'une décision",
@@ -578,7 +580,28 @@
     "edit": "Modifier",
     "seatedAt": "{table}, place {seat}",
     "seatDots": "Placer…",
-    "seatEvents": "{n} événements"
+    "seatEvents": "{n} événements",
+    "tableHint": "Où ils sont et ce qu'ils mangent, un événement à la fois.",
+    "exportTable": "Exporter la table",
+    "manageInvites": "Gérer les invitations",
+    "tableTitle": "La table · {event}",
+    "platesLabel": "plats",
+    "platesUnchosen": "{n} sans choix",
+    "yesCount": "{n} oui",
+    "pendingCount": "{n} en attente",
+    "colGuest": "Invité",
+    "colRsvp": "RSVP",
+    "colSeat": "Place",
+    "colPlate": "Plat",
+    "tableEmpty": "Pas encore d'invités pour cet événement.",
+    "rsvpYes": "Oui",
+    "rsvpNo": "Non",
+    "rsvpMaybe": "Peut-être",
+    "rsvpPending": "En attente",
+    "notSeated": "sans place",
+    "notChosen": "Pas encore choisi",
+    "pickEvent": "Événement",
+    "pickEventNone": "Tout le mariage"
   },
   "touchpoints": {
     "timeline": "La ligne des relances",
@@ -1194,7 +1217,10 @@
     "blueprintHint": "PNG ou JPEG, la salle dessinée à l'échelle.",
     "blueprintConverting": "Envoi…",
     "blueprintPdfDeferred": "Le PDF n'est pas encore pris en charge, déposez un PNG ou un JPEG.",
-    "blueprintBadType": "Déposez une image PNG ou JPEG."
+    "blueprintBadType": "Déposez une image PNG ou JPEG.",
+    "legendDietary": "note diététique",
+    "legendUnchosen": "assis, sans choix",
+    "exportTable": "Exporter la table"
   },
   "directory": {
     "indexTitle": "Trouvez votre wedding planner",
@@ -1846,5 +1872,17 @@
       "followUpSubject": "Vous y pensez encore, {couple} ?",
       "followUpLine": "Bonjour {couple}, nous prenons simplement des nouvelles. Nous serions ravis de donner vie à votre journée quand vous serez prêts."
     }
+  },
+  "tableSheet": {
+    "back": "Retour au plan de table",
+    "kicker": "LA TABLE, DRESSÉE",
+    "nSeated": "{n} placés",
+    "countSummary": "{unchosen} sans choix · {dietary} notes diététiques",
+    "shape_round": "ronde",
+    "shape_rect": "rectangle",
+    "shape_banquet": "banquet",
+    "ofN": "sur {n}",
+    "appendix": "Oui, mais sans place · {n}",
+    "footer": "imprimé depuis forma"
   }
 }

@@ -232,7 +232,9 @@
       "other": "Otro"
     },
     "day": "Día",
-    "slice": "Porción del presupuesto"
+    "slice": "Porción del presupuesto",
+    "guestsN": "{n} invitados",
+    "sliceEmpty": "Aún no hay costos asignados a este evento."
   },
   "proposals": {
     "waiting": "Esperando una decisión",
@@ -578,7 +580,28 @@
     "edit": "Editar",
     "seatedAt": "{table}, lugar {seat}",
     "seatDots": "Sentar…",
-    "seatEvents": "{n} eventos"
+    "seatEvents": "{n} eventos",
+    "tableHint": "Dónde están y qué comen, evento por evento.",
+    "exportTable": "Exportar la mesa",
+    "manageInvites": "Gestionar invitaciones",
+    "tableTitle": "La mesa · {event}",
+    "platesLabel": "platos",
+    "platesUnchosen": "{n} sin elegir",
+    "yesCount": "{n} sí",
+    "pendingCount": "{n} pendientes",
+    "colGuest": "Invitado",
+    "colRsvp": "RSVP",
+    "colSeat": "Asiento",
+    "colPlate": "Plato",
+    "tableEmpty": "Aún no hay invitados en este evento.",
+    "rsvpYes": "Sí",
+    "rsvpNo": "No",
+    "rsvpMaybe": "Quizá",
+    "rsvpPending": "Pendiente",
+    "notSeated": "sin asiento",
+    "notChosen": "Aún sin elegir",
+    "pickEvent": "Evento",
+    "pickEventNone": "Toda la boda"
   },
   "touchpoints": {
     "timeline": "Línea de recordatorios",
@@ -1194,7 +1217,10 @@
     "blueprintHint": "PNG o JPEG, la sala a escala.",
     "blueprintConverting": "Subiendo…",
     "blueprintPdfDeferred": "PDF aún no se admite, sube un PNG o JPEG.",
-    "blueprintBadType": "Sube una imagen PNG o JPEG."
+    "blueprintBadType": "Sube una imagen PNG o JPEG.",
+    "legendDietary": "nota dietética",
+    "legendUnchosen": "sentado, sin elegir",
+    "exportTable": "Exportar la mesa"
   },
   "directory": {
     "indexTitle": "Encuentra a tu wedding planner",
@@ -1846,5 +1872,17 @@
       "followUpSubject": "¿Aún lo están pensando, {couple}?",
       "followUpLine": "Hola {couple}, solo pasamos a saludar. Nos encantaría ayudar a dar vida a su día cuando estén listos."
     }
+  },
+  "tableSheet": {
+    "back": "Volver a los asientos",
+    "kicker": "LA MESA, PUESTA",
+    "nSeated": "{n} sentados",
+    "countSummary": "{unchosen} sin elegir · {dietary} notas dietéticas",
+    "shape_round": "redonda",
+    "shape_rect": "rectangular",
+    "shape_banquet": "banquete",
+    "ofN": "de {n}",
+    "appendix": "Sí, pero sin asiento · {n}",
+    "footer": "impreso desde forma"
   }
 }

@@ -232,7 +232,9 @@
       "other": "Altro"
     },
     "day": "Giorno",
-    "slice": "Quota di budget"
+    "slice": "Quota di budget",
+    "guestsN": "{n} invitati",
+    "sliceEmpty": "Ancora nessun costo assegnato a questo evento."
   },
   "proposals": {
     "waiting": "In attesa di una decisione",
@@ -578,7 +580,28 @@
     "edit": "Modifica",
     "seatedAt": "{table}, posto {seat}",
     "seatDots": "Posto…",
-    "seatEvents": "{n} eventi"
+    "seatEvents": "{n} eventi",
+    "tableHint": "Dove sono e cosa mangiano, un evento alla volta.",
+    "exportTable": "Esporta la tavola",
+    "manageInvites": "Gestisci gli inviti",
+    "tableTitle": "La tavola · {event}",
+    "platesLabel": "piatti",
+    "platesUnchosen": "{n} senza scelta",
+    "yesCount": "{n} sì",
+    "pendingCount": "{n} in attesa",
+    "colGuest": "Invitato",
+    "colRsvp": "RSVP",
+    "colSeat": "Posto",
+    "colPlate": "Piatto",
+    "tableEmpty": "Ancora nessun invitato a questo evento.",
+    "rsvpYes": "Sì",
+    "rsvpNo": "No",
+    "rsvpMaybe": "Forse",
+    "rsvpPending": "In attesa",
+    "notSeated": "senza posto",
+    "notChosen": "Non ancora scelto",
+    "pickEvent": "Evento",
+    "pickEventNone": "Tutto il matrimonio"
   },
   "touchpoints": {
     "timeline": "La linea dei richiami",
@@ -1194,7 +1217,10 @@
     "blueprintHint": "PNG o JPEG, la sala disegnata in scala.",
     "blueprintConverting": "Caricamento…",
     "blueprintPdfDeferred": "Il PDF non è ancora supportato, carica un PNG o un JPEG.",
-    "blueprintBadType": "Carica un'immagine PNG o JPEG."
+    "blueprintBadType": "Carica un'immagine PNG o JPEG.",
+    "legendDietary": "nota alimentare",
+    "legendUnchosen": "seduto, senza scelta",
+    "exportTable": "Esporta la tavola"
   },
   "directory": {
     "indexTitle": "Trova il tuo wedding planner",
@@ -1846,5 +1872,17 @@
       "followUpSubject": "Ci state ancora pensando, {couple}?",
       "followUpLine": "Ciao {couple}, ci facciamo sentire. Ci piacerebbe dare vita al vostro giorno quando sarete pronti."
     }
+  },
+  "tableSheet": {
+    "back": "Torna ai posti",
+    "kicker": "LA TAVOLA, APPARECCHIATA",
+    "nSeated": "{n} seduti",
+    "countSummary": "{unchosen} senza scelta · {dietary} note alimentari",
+    "shape_round": "rotonda",
+    "shape_rect": "rettangolare",
+    "shape_banquet": "imperiale",
+    "ofN": "di {n}",
+    "appendix": "Sì, ma senza posto · {n}",
+    "footer": "stampato da forma"
   }
 }
