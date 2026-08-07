@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { formatCents } from "@/lib/admin/money.mjs";
 import { voidCommission, addAdjustment } from "@/app/(admin)/admin/commissions/actions";
 
@@ -11,8 +12,8 @@ type Account = { workspace_id: string; name: string };
 
 const KIND: Record<string, string> = { commission: "commission", activation_fee: "activation", clawback: "clawback", adjustment: "adjustment" };
 
-export function CommissionsBoard({ groups, partners, accounts, accountName, isOwner }: {
-  groups: Group[]; partners: Partner[]; accounts: Account[]; accountName: Record<string, string>; isOwner: boolean;
+export function CommissionsBoard({ groups, partners, accounts, accountName, payoutByEntry, isOwner }: {
+  groups: Group[]; partners: Partner[]; accounts: Account[]; accountName: Record<string, string>; payoutByEntry: Record<string, string>; isOwner: boolean;
 }) {
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<string | null>(null);
@@ -61,7 +62,11 @@ export function CommissionsBoard({ groups, partners, accounts, accountName, isOw
                   <span className="tabular-nums text-text-meta">{e.rate_bps != null ? `${e.rate_bps / 100}%` : "·"}</span>
                   <span className={`tabular-nums ${e.amount_cents < 0 ? "text-[color:var(--color-text-danger)]" : "text-ink"}`}>{formatCents(e.amount_cents)}</span>
                   <span className="flex items-center justify-end gap-2">
-                    <span className={e.status === "void" ? "text-text-meta line-through" : e.status === "paid" ? "text-teal" : "text-text-meta"}>{e.status}</span>
+                    {e.status === "paid" && payoutByEntry[e.id] ? (
+                      <Link href={`/admin/payouts/${payoutByEntry[e.id]}/statement`} className="text-teal hover:underline">paid ↗</Link>
+                    ) : (
+                      <span className={e.status === "void" ? "text-text-meta line-through" : "text-text-meta"}>{e.status}</span>
+                    )}
                     {isOwner && e.status === "accrued" ? <button onClick={() => doVoid(e.id)} disabled={pending} className="text-[11px] text-[color:var(--color-text-danger)] hover:underline">void</button> : null}
                   </span>
                 </div>

@@ -1,12 +1,13 @@
 import { loadLedger, loadPartners, type LedgerEntry } from "@/lib/admin/commissions";
 import { loadAccounts } from "@/lib/admin/billing";
+import { loadPayoutByEntry } from "@/lib/admin/payouts";
 import { adminGate } from "@/lib/admin/guard";
 import { CommissionsBoard } from "@/components/admin/commissions-board";
 
 export const dynamic = "force-dynamic";
 
 export default async function CommissionsPage() {
-  const [ledger, partners, accounts, gate] = await Promise.all([loadLedger(), loadPartners(), loadAccounts(), adminGate()]);
+  const [ledger, partners, accounts, payoutByEntry, gate] = await Promise.all([loadLedger(), loadPartners(), loadAccounts(), loadPayoutByEntry(), adminGate()]);
   const isOwner = gate.state === "ok" && gate.role === "owner";
   const partnerName = new Map(partners.map((p) => [p.id, p.display_name]));
   const accountName: Record<string, string> = {};
@@ -42,6 +43,7 @@ export default async function CommissionsPage() {
         partners={partners.map((p) => ({ id: p.id, display_name: p.display_name }))}
         accounts={accounts.map((a) => ({ workspace_id: a.workspace_id, name: a.name }))}
         accountName={accountName}
+        payoutByEntry={payoutByEntry}
         isOwner={isOwner}
       />
     </div>

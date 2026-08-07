@@ -23,7 +23,7 @@ export function AdminShell({ role, children }: { role: "owner" | "partner"; chil
   const pathname = usePathname();
   return (
     <div className="flex min-h-screen">
-      <aside className="flex w-[212px] shrink-0 flex-col border-r border-hairline-token px-4 py-6">
+      <aside className="flex w-[212px] shrink-0 flex-col border-r border-hairline-token px-4 py-6 print:hidden">
         <div className="flex items-center gap-2 px-2">
           <DomainStar size={16} />
           <span className="font-display text-[16px] text-ink">Forma</span>
