@@ -33,7 +33,7 @@ export async function draftLeadEmail(leadId: string): Promise<WriteResult> {
   const lang = (lead.locale as string | null) ?? "en";
   const facts = [lead.couple_display, lead.date_feel, lead.city, lead.guest_feel, lead.budget_feel && `budget ${lead.budget_feel}`, `stage ${lead.stage}`, lead.next_step && `next step: ${lead.next_step}`].filter(Boolean).join("; ");
   const history = ((events ?? []) as { kind: string; body: string | null }[]).map((e) => `${e.kind}: ${e.body ?? ""}`).join("\n");
-  const system = `You are a wedding planner's assistant drafting a warm, brief, personal email to a prospective couple. Write in ${LANGNAME[lang] ?? "English"}. Keep it to 3-5 sentences, no placeholders, no signature. Respond EXACTLY as:\nSUBJECT: <a short subject line>\n\n<the email body>`;
+  const system = `You are a wedding planner's assistant drafting a warm, brief, personal email to a prospective couple. Write in ${LANGNAME[lang] ?? "English"}. Keep it to 3-5 sentences, no placeholders, no signature. Never use em dashes or en dashes (the — and – characters); use a comma or a period. Never mention attachments or say anything is attached in any language (no "ci-joint", "adjunto", "allegato"); the email carries a link, never a file, so an attachment can never exist. Respond EXACTLY as:\nSUBJECT: <a short subject line>\n\n<the email body>`;
   const userText = `Lead: ${facts}\n\nHistory (oldest first):\n${history || "(none yet)"}\n\nDraft the next email to move this forward.`;
   let text: string;
   try {
