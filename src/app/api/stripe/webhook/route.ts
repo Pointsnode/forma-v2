@@ -9,6 +9,7 @@ import { reconcileSubscription } from "@/lib/stripe";
 import { seatBill } from "@/lib/pricing";
 import { sendBatch } from "@/lib/email/resend";
 import { phase1InviteEmails } from "@/lib/email/contract-email";
+import { mirrorBillingEvent } from "@/lib/stripe-mirror";
 
 // Unix seconds → ISO, or null. Stripe periods arrive as integer seconds.
 function iso(sec: unknown): string | null {
@@ -56,9 +57,14 @@ export async function POST(req: NextRequest) {
   }
 
   const admin = createAdminClient();
-  // Idempotency: first write wins. A PK conflict (23505) means already handled.
+  // Idempotency: first write wins. A PK conflict (23505) means already handled — a replayed
+  // event id is a no-op. This insert is byte-identical to before; it does NOT depend on the
+  // ADM-1 columns, so the idempotency guard + planner path work even before 0030 is applied.
   const { error: dupeErr } = await admin.from("stripe_events").insert({ id: event.id, type: event.type });
   if (dupeErr?.code === "23505") return NextResponse.json({ received: true, duplicate: true });
+  // Store the raw payload for the Audit surface + backfill/replay — best-effort (the column
+  // arrives in 0030; if it is not applied yet this is a harmless no-op, never a 500).
+  await admin.from("stripe_events").update({ payload: event }).eq("id", event.id);
 
   if (isPaymentEvent(event.type)) {
     const obj = event.data.object as {
@@ -135,6 +141,19 @@ export async function POST(req: NextRequest) {
       console.error("invoice.paid snapshot failed:", (e as Error).message);
     }
   }
+
+  // ADM-1 billing mirror — a SEPARATE best-effort lane (not part of the else-if chain, so
+  // invoice.paid feeds both the subscription snapshot above AND the invoice/payment mirror).
+  // Admin-owned tables only; never blocks the planner path. Non-billing events (planner fee,
+  // subscription.*) classify to no ops and touch nothing here. Errors are recorded, not thrown.
+  let mirrorError: string | null = null;
+  try {
+    await mirrorBillingEvent(admin, event);
+  } catch (e) {
+    mirrorError = (e as Error).message;
+    console.error("billing mirror failed:", mirrorError);
+  }
+  await admin.from("stripe_events").update({ processed_at: new Date().toISOString(), error: mirrorError }).eq("id", event.id);
 
   return NextResponse.json({ received: true });
 }

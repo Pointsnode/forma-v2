@@ -31,6 +31,17 @@ async function stripe(path: string, method: "GET" | "POST", form?: URLSearchPara
   return (await res.json()) as Record<string, unknown>;
 }
 
+// ── ADM-1: the Stripe fee + net for a settled charge, from its balance transaction (the
+// accountant's real net, not a derived figure). Best-effort: null if unconfigured, the
+// charge/BT is missing, or the balance transaction has not posted yet.
+export async function fetchChargeFee(chargeId: string): Promise<{ fee_cents: number; net_cents: number } | null> {
+  if (!chargeId) return null;
+  const charge = await stripe(`/charges/${encodeURIComponent(chargeId)}?expand[]=balance_transaction`, "GET");
+  const bt = charge?.balance_transaction as { fee?: number; net?: number } | null | undefined;
+  if (!bt || typeof bt !== "object") return null;
+  return { fee_cents: Number(bt.fee) || 0, net_cents: Number(bt.net) || 0 };
+}
+
 // Write one recurring price_data line's form fields (shared by Checkout line_items and
 // subscription-item adds). `p` is the field prefix, e.g. "line_items[0]" or "items[2]".
 function writeRecurringLine(form: URLSearchParams, p: string, amountCents: number, quantity: number, name: string) {
