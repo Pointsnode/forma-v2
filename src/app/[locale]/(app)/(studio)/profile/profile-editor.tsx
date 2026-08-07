@@ -4,7 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Card, Heading, Button, Badge, cx } from "@/components/ui";
 import type { ProfileContent, Area, Service } from "@/lib/directory";
-import { saveProfile, saveSlug, publishProfile, unpublishProfile, uploadPhoto } from "./actions";
+import { saveProfile, saveSlug, publishProfile, unpublishProfile, uploadPhoto, uploadStudioLogo, removeStudioLogo } from "./actions";
 
 const SB = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const imgUrl = (p?: string | null) => (!p ? null : /^https?:\/\//.test(p) ? p : `${SB}/storage/v1/object/public/planner-profiles/${encodeURI(p)}`);
@@ -18,12 +18,14 @@ export function ProfileEditor({
   initialProfile,
   initialAreas,
   initialPublished,
+  initialLogoUrl,
   publicBase,
 }: {
   initialSlug: string;
   initialProfile: ProfileContent;
   initialAreas: Area[];
   initialPublished: boolean;
+  initialLogoUrl: string | null;
   publicBase: string;
 }) {
   const t = useTranslations("profile");
@@ -43,8 +45,11 @@ export function ProfileEditor({
   const [pending, start] = useTransition();
   const [uploading, setUploading] = useState<"hero" | "gallery" | null>(null);
   const [msg, setMsg] = useState<{ tone: "ok" | "err"; text: string } | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(initialLogoUrl);
+  const [logoBusy, setLogoBusy] = useState(false);
   const heroInput = useRef<HTMLInputElement>(null);
   const galleryInput = useRef<HTMLInputElement>(null);
+  const logoInput = useRef<HTMLInputElement>(null);
 
   function buildProfile(): ProfileContent {
     return {
@@ -141,6 +146,26 @@ export function ProfileEditor({
     setUploading(null);
   }
 
+  // Studio logo — persisted immediately (its own column, not the profile JSONB).
+  async function onLogo(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setLogoBusy(true);
+    setMsg(null);
+    const fd = new FormData();
+    fd.append("file", file);
+    const r = await uploadStudioLogo(fd);
+    if (r.ok) setLogoUrl(r.url ?? null);
+    else setMsg({ tone: "err", text: t("logoErr") });
+    setLogoBusy(false);
+  }
+  function onRemoveLogo() {
+    setLogoBusy(true);
+    setMsg(null);
+    start(async () => { await removeStudioLogo(); setLogoUrl(null); setLogoBusy(false); });
+  }
+
   return (
     <div className="space-y-5">
       {/* Publish bar */}
@@ -218,6 +243,7 @@ export function ProfileEditor({
         <p className="mb-3 mt-0.5 text-[12.5px] text-text-meta">{t("photosHint")}</p>
         <input ref={heroInput} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => onFile("hero", e)} />
         <input ref={galleryInput} type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={(e) => onFile("gallery", e)} />
+        <input ref={logoInput} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={onLogo} />
 
         <p className="mb-1.5 text-[12px] font-medium uppercase tracking-[0.14em] text-taupe">{t("hero")}</p>
         <div className="mb-4 flex items-end gap-3">
@@ -231,6 +257,24 @@ export function ProfileEditor({
             {uploading === "hero" ? t("uploading") : hero ? t("replace") : t("addPhoto")}
           </Button>
         </div>
+
+        {/* Studio logo — heads the studio's quotes on the dark band; shown here on charcoal so it reads as it will */}
+        <p className="mb-1.5 text-[12px] font-medium uppercase tracking-[0.14em] text-taupe">{t("logoLabel")}</p>
+        <div className="mb-1.5 flex items-center gap-3">
+          <div className="flex h-14 w-44 items-center justify-center overflow-hidden rounded-[var(--radius)] bg-[#111111] px-3">
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt="" className="max-h-12 w-auto object-contain" />
+            ) : null}
+          </div>
+          <Button variant="ghost" onClick={() => logoInput.current?.click()} disabled={logoBusy || pending}>
+            {logoBusy ? t("uploading") : logoUrl ? t("logoReplace") : t("logoUpload")}
+          </Button>
+          {logoUrl ? (
+            <Button variant="ghost" onClick={onRemoveLogo} disabled={logoBusy || pending}>{t("logoRemove")}</Button>
+          ) : null}
+        </div>
+        <p className="mb-4 text-[12px] text-text-meta">{t("logoHint")}</p>
 
         <p className="mb-1.5 text-[12px] font-medium uppercase tracking-[0.14em] text-taupe">{t("gallery")}</p>
         <div className="flex flex-wrap gap-2.5">

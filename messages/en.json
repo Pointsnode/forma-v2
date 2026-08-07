@@ -1318,7 +1318,13 @@
     "calendly": "Calendly link",
     "calendlyHint": "Paste your Calendly link, couples book a call without leaving your profile.",
     "instagram": "Instagram",
-    "website": "Website"
+    "website": "Website",
+    "logoLabel": "Studio logo",
+    "logoHint": "PNG or JPEG, under 1 MB. It heads your quotes on a dark band, so a transparent background in a light color works best.",
+    "logoUpload": "Upload logo",
+    "logoReplace": "Replace",
+    "logoRemove": "Remove",
+    "logoErr": "The logo could not be uploaded."
   },
   "calendar": {
     "prev": "Previous",

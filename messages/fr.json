@@ -1318,7 +1318,13 @@
     "calendly": "Lien Calendly",
     "calendlyHint": "Collez votre lien Calendly, les couples réservent sans quitter votre profil.",
     "instagram": "Instagram",
-    "website": "Site web"
+    "website": "Site web",
+    "logoLabel": "Logo du studio",
+    "logoHint": "PNG ou JPEG, moins de 1 Mo. Il apparaît en tête de vos devis sur un bandeau sombre ; un fond transparent en couleur claire fonctionne le mieux.",
+    "logoUpload": "Téléverser le logo",
+    "logoReplace": "Remplacer",
+    "logoRemove": "Retirer",
+    "logoErr": "Le logo n'a pas pu être téléversé."
   },
   "calendar": {
     "prev": "Précédent",
