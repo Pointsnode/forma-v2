@@ -14,17 +14,19 @@ export function StudioNav() {
   const tops = useTranslations("ops");
   const tc = useTranslations("contract");
   const tl = useTranslations("leads");
+  const tq = useTranslations("quotes");
   const path = usePathname();
-  // §A2 Team & Profile moved OUT of the section nav into the account menu (top bar). The
-  // section nav is now exactly the 7 studio surfaces; /team and /profile are unchanged
-  // routes reached from the monogram menu.
-  const items: { href: "/" | "/weddings" | "/venues" | "/vendors" | "/contracts" | "/leads" | "/tasks" | "/calendar"; label: string }[] = [
+  // §A2 Team & Profile moved OUT of the section nav into the account menu (top bar); /team and
+  // /profile are unchanged routes reached from the monogram menu. The section nav is the nine
+  // studio surfaces, ordered as the funnel: leads become quotes become contracts.
+  const items: { href: "/" | "/weddings" | "/venues" | "/vendors" | "/leads" | "/quotes" | "/contracts" | "/tasks" | "/calendar"; label: string }[] = [
     { href: "/", label: t("overview") },
     { href: "/weddings", label: t("weddings") },
     { href: "/venues", label: tv("venues") },
     { href: "/vendors", label: tv("vendors") },
-    { href: "/contracts", label: tc("tab") },
     { href: "/leads", label: tl("tab") },
+    { href: "/quotes", label: tq("tab") },
+    { href: "/contracts", label: tc("tab") },
     { href: "/tasks", label: tops("tasksTab") },
     { href: "/calendar", label: t("calendar") },
   ];

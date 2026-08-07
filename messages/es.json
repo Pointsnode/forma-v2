@@ -1318,7 +1318,13 @@
     "calendly": "Enlace de Calendly",
     "calendlyHint": "Pega tu enlace de Calendly: las parejas agendan sin salir de tu perfil.",
     "instagram": "Instagram",
-    "website": "Sitio web"
+    "website": "Sitio web",
+    "logoLabel": "Logotipo del estudio",
+    "logoHint": "PNG o JPEG, menos de 1 MB. Encabeza tus cotizaciones sobre una banda oscura, así que funciona mejor un fondo transparente en color claro.",
+    "logoUpload": "Subir logotipo",
+    "logoReplace": "Reemplazar",
+    "logoRemove": "Quitar",
+    "logoErr": "No se pudo subir el logotipo."
   },
   "calendar": {
     "prev": "Anterior",

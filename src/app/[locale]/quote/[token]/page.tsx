@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { Wordmark, DomainStar } from "@/components/ui";
+import { QuoteHead } from "@/components/quote/quote-head";
+import { signStudioLogo } from "@/lib/studio-logo";
 import { formatMoney } from "@/lib/wedding";
 import { intlTag } from "@/lib/intl";
 import { QuoteAccept } from "./accept-form";
@@ -10,7 +12,7 @@ import { QuoteAccept } from "./accept-form";
 type Line = { section: string | null; section_sort: number; title: string; description: string | null; amount: number; sort: number };
 type Payload = {
   quote: { id: string; number: number; title: string | null; intro: string | null; currency: string; status: string; valid_until: string | null; deposit_note: string | null; accepted_at: string | null; accepted_name: string | null };
-  lines: Line[]; studio_name: string | null; prepared_for: string | null; locale: string;
+  lines: Line[]; studio_name: string | null; studio_logo_path: string | null; prepared_for: string | null; locale: string;
 };
 
 export default async function QuotePage({ params }: { params: Promise<{ locale: string; token: string }> }) {
@@ -36,6 +38,7 @@ export default async function QuotePage({ params }: { params: Promise<{ locale: 
   }
   const p = data as Payload;
   const q = p.quote;
+  const logoUrl = await signStudioLogo(p.studio_logo_path);
   const money = (n: number) => formatMoney(n, lang, q.currency);
   const total = p.lines.reduce((s, l) => s + Number(l.amount), 0);
   const dfmt = new Intl.DateTimeFormat(intlTag(lang), { month: "long", day: "numeric", year: "numeric" });
@@ -52,13 +55,13 @@ export default async function QuotePage({ params }: { params: Promise<{ locale: 
   return (
     <div className="min-h-screen bg-[#E4DFD3] px-4 py-11">
       <div className="mx-auto max-w-[720px] overflow-hidden rounded-[var(--radius)] border border-[#E4DFD3] bg-[#F5F2EB]">
-        {/* Charcoal head */}
-        <div className="bg-[#111111] px-6 py-9 text-center">
-          <div className="flex justify-center"><DomainStar fill="#D7C3A5" size={18} /></div>
-          <p className="mt-3 text-[10px] font-medium uppercase tracking-[0.24em] text-[#D7C3A5]">{t("aQuoteFrom")}</p>
-          <p className="mt-1.5 font-display text-[30px] text-[#F5F2EB]">{p.studio_name ?? t("theStudio")}</p>
-          <p className="mt-2.5 text-[10px] uppercase tracking-[0.2em] text-[#D7C3A5]">{[t("headNumber", { n: q.number }), p.prepared_for ? t("headPreparedFor", { name: p.prepared_for }) : null].filter(Boolean).join(" · ")}</p>
-        </div>
+        {/* Charcoal head — the studio's logo takes the name line when set */}
+        <QuoteHead
+          kicker={t("aQuoteFrom")}
+          studioName={p.studio_name ?? t("theStudio")}
+          logoUrl={logoUrl}
+          metaLine={[t("headNumber", { n: q.number }), p.prepared_for ? t("headPreparedFor", { name: p.prepared_for }) : null].filter(Boolean).join(" · ")}
+        />
 
         {q.intro ? <p className="px-9 pb-2 pt-7 font-accent text-[17px] italic text-[#6B655B]">{q.intro}</p> : null}
 

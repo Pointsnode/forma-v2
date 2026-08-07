@@ -4,7 +4,6 @@ import { createClient } from "@/lib/supabase/server";
 import { loadStudioContracts, type ExceptionRow } from "@/lib/studio-contracts";
 import { Card, StudioTitleBand, Heading, Row, RowMain, Badge, WhoBadge } from "@/components/ui";
 import { TemplatesPanel } from "@/components/contracts/templates-panel";
-import { SegmentHead } from "../quotes/segment-head";
 
 function exceptionDetail(tc: Awaited<ReturnType<typeof getTranslations>>, r: ExceptionRow): string {
   switch (r.state) {
@@ -26,7 +25,6 @@ export default async function StudioContractsPage({ params }: { params: Promise<
   return (
     <div>
       <StudioTitleBand title={tc("studioTitle")} accent={tc("studioHint")} />
-      <SegmentHead />
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <TemplatesPanel templates={templates} lang={lang} />
