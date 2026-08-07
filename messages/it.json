@@ -1489,7 +1489,8 @@
       "plan": "Abbonamento e fatturazione",
       "account": "Account",
       "privacy": "Privacy",
-      "usage": "Utilizzo"
+      "usage": "Utilizzo",
+      "automatic": "The automatic"
     },
     "langTitle": "Lingua e area",
     "langHint": "Scegli la lingua, il fuso orario e il formato data del tuo account.",
@@ -1566,7 +1567,14 @@
     "appearanceHint": "Bone è il registro della casa. Automatico segue il tuo dispositivo; Night è il registro scuro.",
     "appearance_default": "Automatico",
     "appearance_bone": "Bone",
-    "appearance_night": "Night"
+    "appearance_night": "Night",
+    "autoTitle": "The automatic",
+    "autoHint": "Two rules you set, sent in the lead's language. forma never emails on your behalf without a rule you turned on.",
+    "ruleConsult": "Confirm the consult",
+    "ruleConsultHint": "The evening before a consultation, send the confirmation.",
+    "ruleQuiet": "The quiet follow-up",
+    "ruleQuietHint": "When a lead goes quiet, send one gentle follow-up.",
+    "ruleDaysLabel": "After this many days:"
   },
   "design": {
     "guides": "Guide di stile",
@@ -1699,7 +1707,29 @@
     "evtConsult": "Consulenza fissata",
     "evtConverted": "Matrimonio aperto",
     "evtLost": "Segnato perso · {reason}",
-    "quote": "Preventivo"
+    "quote": "Preventivo",
+    "write": "Write",
+    "writeSubject": "Subject",
+    "writeBody": "Your message",
+    "writeSend": "Send",
+    "writeSending": "Sending",
+    "writeDraft": "Draft it",
+    "writeDrafting": "Drafting",
+    "writeMailto": "Open in your mail app",
+    "writeErr": "Could not send. Try again in a moment.",
+    "writeNoEmail": "This lead has no email.",
+    "writeNoKey": "Drafting is not configured.",
+    "muteAutomation": "Mute automation for this lead",
+    "automationMuted": "Automation muted",
+    "evtEmail": "Emailed · {subject}",
+    "evtEmailMailto": "Emailed from your app · {subject}",
+    "evtAutomated": "Automatic · {rule}",
+    "evtQuoteCarried": "Quote lines carried to the budget",
+    "evtQuoteAccepted": "Quote accepted",
+    "rule_consult_confirm": "Confirm the consult",
+    "rule_quiet_follow_up": "The quiet follow-up",
+    "sentBy": "sent by {name}",
+    "mailtoUnconfirmed": "forma cannot confirm this send"
   },
   "quotes": {
     "tab": "Preventivi",

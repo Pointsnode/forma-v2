@@ -21,6 +21,10 @@ const ALLOWLIST = new Set([
   // + the image via service-role, then sends. Isolated to this one module; fires only for a
   // planner comment; no anon surface, no matrix change.
   "src/lib/design-notify.ts",
+  // L3: the lead-automation sweep. Service-role to evaluate rules + read the workspace
+  // creator's auth email across workspaces (no session). Isolated to this one lib; invoked
+  // only by /api/leads/sweep (CRON_SECRET-guarded). No anon surface, matrix unchanged at 12.
+  "src/lib/leads-sweep.ts",
 ]);
 const PATTERNS = [/SUPABASE_SERVICE_ROLE_KEY/, /createAdminClient/];
 function* walk(dir) {

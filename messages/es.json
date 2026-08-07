@@ -1489,7 +1489,8 @@
       "plan": "Plan y facturación",
       "account": "Cuenta",
       "privacy": "Privacidad",
-      "usage": "Uso"
+      "usage": "Uso",
+      "automatic": "The automatic"
     },
     "langTitle": "Idioma y región",
     "langHint": "Define el idioma, la zona horaria y el formato de fecha de tu cuenta.",
@@ -1566,7 +1567,14 @@
     "appearanceHint": "Bone es el registro de la casa. Automático sigue tu dispositivo; Night es el registro oscuro.",
     "appearance_default": "Automático",
     "appearance_bone": "Bone",
-    "appearance_night": "Night"
+    "appearance_night": "Night",
+    "autoTitle": "The automatic",
+    "autoHint": "Two rules you set, sent in the lead's language. forma never emails on your behalf without a rule you turned on.",
+    "ruleConsult": "Confirm the consult",
+    "ruleConsultHint": "The evening before a consultation, send the confirmation.",
+    "ruleQuiet": "The quiet follow-up",
+    "ruleQuietHint": "When a lead goes quiet, send one gentle follow-up.",
+    "ruleDaysLabel": "After this many days:"
   },
   "design": {
     "guides": "Guías de estilo",
@@ -1699,7 +1707,29 @@
     "evtConsult": "Consulta agendada",
     "evtConverted": "Boda abierta",
     "evtLost": "Marcado perdido · {reason}",
-    "quote": "Cotizar"
+    "quote": "Cotizar",
+    "write": "Write",
+    "writeSubject": "Subject",
+    "writeBody": "Your message",
+    "writeSend": "Send",
+    "writeSending": "Sending",
+    "writeDraft": "Draft it",
+    "writeDrafting": "Drafting",
+    "writeMailto": "Open in your mail app",
+    "writeErr": "Could not send. Try again in a moment.",
+    "writeNoEmail": "This lead has no email.",
+    "writeNoKey": "Drafting is not configured.",
+    "muteAutomation": "Mute automation for this lead",
+    "automationMuted": "Automation muted",
+    "evtEmail": "Emailed · {subject}",
+    "evtEmailMailto": "Emailed from your app · {subject}",
+    "evtAutomated": "Automatic · {rule}",
+    "evtQuoteCarried": "Quote lines carried to the budget",
+    "evtQuoteAccepted": "Quote accepted",
+    "rule_consult_confirm": "Confirm the consult",
+    "rule_quiet_follow_up": "The quiet follow-up",
+    "sentBy": "sent by {name}",
+    "mailtoUnconfirmed": "forma cannot confirm this send"
   },
   "quotes": {
     "tab": "Cotizaciones",

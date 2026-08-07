@@ -10,6 +10,11 @@ export const CONCIERGE_API_KEY = process.env.CONCIERGE_API_KEY || "";
 export const CONCIERGE_API_URL = "https://api.anthropic.com/v1/messages";
 export const CONCIERGE_MAX_TOKENS = 1024;
 
+// L3 "Draft it" uses the same key/URL but its own model, defaulting to the concierge model.
+// ONE-LINE DECISION AT THE GATE: set DRAFT_MODEL (env or the fallback here) to a Sonnet-class
+// model — e.g. "claude-sonnet-5" — to sharpen drafting quality without touching anything else.
+export const DRAFT_MODEL = process.env.DRAFT_MODEL || CONCIERGE_MODEL;
+
 export function conciergeConfigured(): boolean {
   return CONCIERGE_API_KEY.length > 0;
 }

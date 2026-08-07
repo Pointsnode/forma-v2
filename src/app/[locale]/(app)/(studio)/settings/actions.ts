@@ -98,6 +98,22 @@ export async function setAppearancePref(appearance: string): Promise<Result> {
   return { ok: true };
 }
 
+// ── §L3 automation — the two lead rules the planner authors (workspace-scoped upsert). ──
+const LEAD_RULES = ["consult_confirm", "quiet_follow_up"] as const;
+export async function saveLeadRules(rules: { rule: string; enabled: boolean; days: number }[]): Promise<Result> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const workspaceId = user ? await currentWorkspace(supabase) : null;
+  if (!workspaceId) return { error: "generic" };
+  const rows = rules
+    .filter((r) => (LEAD_RULES as readonly string[]).includes(r.rule))
+    .map((r) => ({ workspace_id: workspaceId, rule: r.rule, enabled: !!r.enabled, days: Math.min(30, Math.max(1, Number(r.days) || 4)) }));
+  if (!rows.length) return { ok: true };
+  const { error } = await supabase.from("lead_rules").upsert(rows, { onConflict: "workspace_id,rule" });
+  if (error) { console.error(`saveLeadRules (${error.code}): ${error.message}`); return { error: "generic" }; }
+  return { ok: true };
+}
+
 // ── §C account ─────────────────────────────────────────────────────────────────
 export async function saveDisplayName(name: string): Promise<Result> {
   const clean = z.string().trim().min(1).max(120).safeParse(name);

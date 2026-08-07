@@ -5,19 +5,22 @@ import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Chip, Button, DomainStar, cx } from "@/components/ui";
 import { LANES, LOST_REASONS, SOURCES } from "@/lib/leads.mjs";
-import { updateLead, addNote, setNextStep, setConsult, moveStage, markLost, convertLead } from "../leads-actions";
+import { updateLead, addNote, setNextStep, setConsult, moveStage, markLost, convertLead, muteLead } from "../leads-actions";
 import { createQuoteForLead } from "../../quotes/quote-actions";
+import { draftLeadEmail, sendLeadEmail, logMailtoEmail } from "../email-actions";
 
 export type LeadFull = {
   id: string; couple_display: string; email: string | null; phone: string | null; locale: string | null;
   date_feel: string | null; date_start: string | null; city: string | null; guest_feel: string | null;
   budget_feel: string | null; source: string; source_note: string | null; stage: string; lost_reason: string | null;
   next_step: string | null; next_step_at: string | null; consult_at: string | null; consult_confirmed: boolean; wedding_id: string | null;
+  automation_muted: boolean;
 };
-export type ThreadEvent = { id: string; kind: string; body: string | null; when: string; author: string | null };
+export type ThreadEvent = { id: string; kind: string; body: string | null; when: string; author: string | null; mode: string | null; by: string | null };
 
 const LANG: Record<string, string> = { en: "English", es: "Español", fr: "Français", it: "Italiano" };
-const STAR: Record<string, string> = { arrived: "#8A7557", note: "#8A7557", consult: "#8A7557", stage: "#D7C3A5", converted: "#2F5552", lost: "#8A7557" };
+// automated → the time/champagne star (per the mock); email → people/taupe like a human touch.
+const STAR: Record<string, string> = { arrived: "#8A7557", note: "#8A7557", consult: "#8A7557", stage: "#D7C3A5", converted: "#2F5552", lost: "#8A7557", email: "#8A7557", automated: "#D7C3A5" };
 const input = "w-full rounded-[var(--radius)] border border-hairline-token bg-surface-card px-3 py-2 text-[13.5px] text-text-primary outline-none";
 
 function Frow({ k, v }: { k: string; v: ReactNode }) {
@@ -33,8 +36,11 @@ function Frow({ k, v }: { k: string; v: ReactNode }) {
 export function LeadSheet({ lead, events }: { lead: LeadFull; events: ThreadEvent[] }) {
   const t = useTranslations("leads");
   const router = useRouter();
-  const [panel, setPanel] = useState<"facts" | "note" | "next" | "consult" | "lost" | null>(null);
+  const [panel, setPanel] = useState<"facts" | "note" | "next" | "consult" | "lost" | "write" | null>(null);
   const [pending, start] = useTransition();
+  const [subject, setSubject] = useState("");
+  const [body, setBody] = useState("");
+  const [writeErr, setWriteErr] = useState<string | null>(null);
   const open = lead.stage !== "won" && lead.stage !== "lost";
 
   function run(fn: () => Promise<unknown>) { start(async () => { await fn(); setPanel(null); }); }
@@ -52,8 +58,22 @@ export function LeadSheet({ lead, events }: { lead: LeadFull; events: ThreadEven
       case "consult": return t("evtConsult");
       case "converted": return t("evtConverted");
       case "lost": return t("evtLost", { reason: labelOr("lost", e.body) });
+      case "email": return t(e.mode === "mailto" ? "evtEmailMailto" : "evtEmail", { subject: e.body ?? "" });
+      case "automated": return t("evtAutomated", { rule: labelOr("rule", e.body) });
+      case "quote": return e.body === "carried" ? t("evtQuoteCarried") : t("evtQuoteAccepted");
       default: return e.body ?? e.kind;
     }
+  }
+
+  function compose() {
+    setWriteErr(null);
+    start(async () => { const r = await sendLeadEmail(lead.id, subject, body); if (r.ok) { setPanel(null); setSubject(""); setBody(""); router.refresh(); } else setWriteErr(r.error === "no_email" ? t("writeNoEmail") : t("writeErr")); });
+  }
+  function draft() { setWriteErr(null); start(async () => { const r = await draftLeadEmail(lead.id); if (r.ok) { setSubject(r.subject ?? ""); setBody(r.body ?? ""); } else setWriteErr(r.error === "no_key" ? t("writeNoKey") : t("writeErr")); }); }
+  function mailto() {
+    const href = `mailto:${lead.email ?? ""}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`.slice(0, 1900);
+    window.location.href = href;
+    start(async () => { await logMailtoEmail(lead.id, subject); router.refresh(); });
   }
 
   return (
@@ -101,10 +121,11 @@ export function LeadSheet({ lead, events }: { lead: LeadFull; events: ThreadEven
             </div>
           )}
 
-          {/* Actions. Quote is now REAL (L2); Write / Book the consult stay omitted (L3). */}
+          {/* Actions. Write is now REAL (L3); Book the consult stays omitted (Calendly, later). */}
           {panel === null ? (
             <div className="mt-5 flex flex-wrap gap-2">
               <Button variant="ghost" onClick={() => setPanel("facts")}>{t("editFacts")}</Button>
+              <Button variant="ghost" onClick={() => setPanel("write")}>{t("write")}</Button>
               <Button variant="ghost" disabled={pending} onClick={() => start(async () => { const r = await createQuoteForLead(lead.id); if (r.ok && r.id) router.push(`/quotes/${r.id}`); })}>{t("quote")}</Button>
               <Button variant="ghost" onClick={() => setPanel("note")}>{t("addNote")}</Button>
               <Button variant="ghost" onClick={() => setPanel("next")}>{t("setNextStep")}</Button>
@@ -116,6 +137,28 @@ export function LeadSheet({ lead, events }: { lead: LeadFull; events: ThreadEven
                 <Button variant="primary" disabled={pending} onClick={() => start(async () => { await convertLead(lead.id); })}>{t("openWedding")}</Button>
               )}
               {open ? <Button variant="ghost" onClick={() => setPanel("lost")}>{t("markLost")}</Button> : null}
+            </div>
+          ) : null}
+
+          {/* Per-lead automation mute — a quiet line, not an action button. */}
+          {panel === null && open ? (
+            <button onClick={() => start(async () => { await muteLead(lead.id, !lead.automation_muted); router.refresh(); })} disabled={pending} className="mt-3 block text-[11.5px] text-text-meta hover:text-text-primary">
+              {lead.automation_muted ? `✓ ${t("automationMuted")}` : t("muteAutomation")}
+            </button>
+          ) : null}
+
+          {panel === "write" ? (
+            <div className="mt-4 flex flex-col gap-2">
+              {lead.email ? null : <p className="text-[12.5px] text-[color:var(--color-text-danger)]">{t("writeNoEmail")}</p>}
+              <input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder={t("writeSubject")} className={input} />
+              <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={7} placeholder={t("writeBody")} className={input} />
+              {writeErr ? <p className="text-[12.5px] text-[color:var(--color-text-danger)]">{writeErr}</p> : null}
+              <div className="flex flex-wrap items-center gap-2">
+                <Button variant="primary" disabled={pending || !lead.email} onClick={compose}>{pending ? t("writeSending") : t("writeSend")}</Button>
+                <Button variant="ghost" disabled={pending} onClick={draft}>{pending ? t("writeDrafting") : t("writeDraft")}</Button>
+                <Button variant="ghost" disabled={!lead.email} onClick={mailto}>{t("writeMailto")}</Button>
+                <Button variant="ghost" onClick={() => { setPanel(null); setWriteErr(null); }}>{t("cancel")}</Button>
+              </div>
             </div>
           ) : null}
 
@@ -160,6 +203,7 @@ export function LeadSheet({ lead, events }: { lead: LeadFull; events: ThreadEven
               <span>
                 <span className="text-text-primary">{eventMain(e)}</span>
                 {e.kind === "arrived" && e.body ? <span className="mt-0.5 block text-[11.5px] text-text-meta">{e.body}</span> : null}
+                {e.kind === "email" ? <span className="mt-0.5 block text-[11.5px] text-text-meta">{e.by ? t("sentBy", { name: e.by }) : ""}{e.mode === "mailto" ? ` · ${t("mailtoUnconfirmed")}` : ""}</span> : null}
               </span>
             </div>
           ))}
