@@ -2,7 +2,7 @@ import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
 import { signInRedirectPath, safeNextPath } from "@/lib/auth-redirect.mjs";
-import { updateSession } from "@/lib/supabase/middleware";
+import { updateSession, adminSession } from "@/lib/supabase/middleware";
 
 const intl = createIntlMiddleware(routing);
 // "/" is the M12 landing (the storefront) for signed-out visitors — crawlable.
@@ -16,6 +16,24 @@ const intl = createIntlMiddleware(routing);
 const PUBLIC = ["/", "/sign-in", "/sign-up", "/reset", "/styleguide", "/rsvp", "/menu", "/sign", "/quote", "/planners", "/p", "/join/team", "/atelier", "/pricing", "/about"];
 
 export async function middleware(request: NextRequest) {
+  // ADM — the internal /admin portal is NON-localized (EN-only), so it is handled
+  // BEFORE next-intl ever touches it (intl would try to locale-prefix it). Defense in
+  // depth: a signed-in NON-admin gets a plain 404 here, before any screen loads; the
+  // admin layout re-checks server-side, and every mutation route re-checks again. A
+  // signed-out visitor passes through so the admin layout can render the sign-in screen
+  // at the same URL (no redirect, no leak of the route's existence).
+  const { pathname } = request.nextUrl;
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    const adminRes = NextResponse.next();
+    const { user, isAdmin } = await adminSession(request, adminRes);
+    if (user && !isAdmin) {
+      const nf = new NextResponse("Not Found", { status: 404 });
+      adminRes.cookies.getAll().forEach((c) => nf.cookies.set(c)); // keep the rotated auth cookies
+      return nf;
+    }
+    return adminRes;
+  }
+
   // 1. next-intl handles locale routing and returns the base response.
   const response = intl(request);
   // 2. Refresh the Supabase session onto that response.
