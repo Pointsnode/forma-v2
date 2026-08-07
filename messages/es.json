@@ -1489,7 +1489,8 @@
       "plan": "Plan y facturación",
       "account": "Cuenta",
       "privacy": "Privacidad",
-      "usage": "Uso"
+      "usage": "Uso",
+      "automatic": "El automático"
     },
     "langTitle": "Idioma y región",
     "langHint": "Define el idioma, la zona horaria y el formato de fecha de tu cuenta.",
@@ -1566,7 +1567,14 @@
     "appearanceHint": "Bone es el registro de la casa. Automático sigue tu dispositivo; Night es el registro oscuro.",
     "appearance_default": "Automático",
     "appearance_bone": "Bone",
-    "appearance_night": "Night"
+    "appearance_night": "Night",
+    "autoTitle": "El automático",
+    "autoHint": "Dos reglas que tú defines, enviadas en el idioma del lead. forma nunca envía correos en tu nombre sin una regla que hayas activado.",
+    "ruleConsult": "Confirmar la consulta",
+    "ruleConsultHint": "La tarde anterior a una consulta, envía la confirmación.",
+    "ruleQuiet": "El seguimiento tranquilo",
+    "ruleQuietHint": "Cuando un lead queda en silencio, envía un solo seguimiento amable.",
+    "ruleDaysLabel": "Después de estos días:"
   },
   "design": {
     "guides": "Guías de estilo",
@@ -1699,7 +1707,29 @@
     "evtConsult": "Consulta agendada",
     "evtConverted": "Boda abierta",
     "evtLost": "Marcado perdido · {reason}",
-    "quote": "Cotizar"
+    "quote": "Cotizar",
+    "write": "Escribir",
+    "writeSubject": "Asunto",
+    "writeBody": "Tu mensaje",
+    "writeSend": "Enviar",
+    "writeSending": "Enviando",
+    "writeDraft": "Redáctalo",
+    "writeDrafting": "Redactando",
+    "writeMailto": "Abrir en tu app de correo",
+    "writeErr": "No se pudo enviar. Intenta de nuevo en un momento.",
+    "writeNoEmail": "Este lead no tiene email.",
+    "writeNoKey": "La redacción no está configurada.",
+    "muteAutomation": "Silenciar la automatización para este lead",
+    "automationMuted": "Automatización silenciada",
+    "evtEmail": "Email enviado · {subject}",
+    "evtEmailMailto": "Enviado desde tu app · {subject}",
+    "evtAutomated": "Automático · {rule}",
+    "evtQuoteCarried": "Líneas de la cotización llevadas al presupuesto",
+    "evtQuoteAccepted": "Cotización aceptada",
+    "rule_consult_confirm": "Confirmar la consulta",
+    "rule_quiet_follow_up": "El seguimiento tranquilo",
+    "sentBy": "enviado por {name}",
+    "mailtoUnconfirmed": "forma no puede confirmar este envío"
   },
   "quotes": {
     "tab": "Cotizaciones",
@@ -1767,5 +1797,54 @@
     "accepting": "Aceptando",
     "acceptExpired": "Esta cotización venció.",
     "acceptErr": "Algo salió mal. Intenta de nuevo en un momento."
+  },
+  "email": {
+    "shell": {
+      "held": "Con cuidado"
+    },
+    "rsvp": {
+      "inviteSubject": "Tienes una invitación, {couple}",
+      "reminderSubject": "Un recordatorio amable, {couple}",
+      "closeSubject": "Los RSVP están por cerrar, {couple}",
+      "inviteLead": "A {couple} les encantaría saber si puedes acompañarlos.",
+      "reminderLead": "Aún no sabemos de ti para {couple}. Solo toma un momento.",
+      "closeLead": "La lista de invitados de {couple} está por cerrarse. Última oportunidad de avisarles.",
+      "cta": "Responder ahora",
+      "hi": "Hola {name},",
+      "footer": "Enviado por forma de parte de la pareja. Un enlace, sin cuenta."
+    },
+    "contract": {
+      "signerSubject": "Para tu firma, {title}",
+      "signerLine": "Hola {name}, tu documento está listo. Revísalo y fírmalo cuando quieras.",
+      "signerButton": "Revisar y firmar",
+      "portalSubject": "Su portal está listo",
+      "portalLine": "Su acuerdo está firmado y su depósito recibido; su portal de boda está listo.",
+      "portalButton": "Abrir mi portal"
+    },
+    "ops": {
+      "menuSubject": "Elige tu menú, {couple}",
+      "menuLine": "Hola {name}, elige tu plato para {couple}. Puedes cambiarlo hasta que cerremos el menú.",
+      "menuButton": "Elegir mi plato",
+      "scheduleSubject": "Tu itinerario, {couple}",
+      "scheduleGreeting": "Hola {name}, aquí están tus días.",
+      "scheduleSeat": "Tu asiento"
+    },
+    "design": {
+      "commentSubject": "Una nota sobre tu diseño · {couple}",
+      "commentLead": "{planner} dejó una nota en tu estudio de diseño.",
+      "commentCta": "Abrir el estudio"
+    },
+    "quote": {
+      "subject": "Su cotización, {couple}",
+      "line": "Hola {couple}, su cotización está lista. Ábranla cuando gusten.",
+      "button": "Ver la cotización"
+    },
+    "lead": {
+      "automatedFooter": "Responde para hablar directo con {planner}.",
+      "consultSubject": "Confirmando mañana, {couple}",
+      "consultLine": "Hola {couple}, solo confirmamos nuestra consulta. Responde si algo cambió.",
+      "followUpSubject": "¿Aún lo están pensando, {couple}?",
+      "followUpLine": "Hola {couple}, solo pasamos a saludar. Nos encantaría ayudar a dar vida a su día cuando estén listos."
+    }
   }
 }

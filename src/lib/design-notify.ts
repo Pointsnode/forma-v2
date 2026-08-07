@@ -44,9 +44,9 @@ export async function notifyCoupleOfComment(weddingId: string, itemId: string, a
   // Planner name falls back to the STUDIO name (not the brand) so the couple sees who wrote.
   const plannerName = (prof?.display_name as string | null) ?? (ws?.name as string | null) ?? "";
   const studioUrl = `${APP_URL}${wl === "en" ? "" : `/${wl}`}/wedding/${weddingId}/design`;
-  const mails = emails.map((to) => commentEmail({
+  const mails = await Promise.all(emails.map((to) => commentEmail({
     to, couple: wd.couple_display as string, planner: plannerName,
     imageUrl, studioUrl, body, locale: wl,
-  }));
+  })));
   await sendBatch(mails);
 }

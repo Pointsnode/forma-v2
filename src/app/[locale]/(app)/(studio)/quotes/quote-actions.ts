@@ -166,7 +166,7 @@ export async function sendQuoteLinkEmail(id: string): Promise<QuoteResult> {
   const { data: lead } = await supabase.from("leads").select("email, couple_display, locale").eq("id", q.lead_id).maybeSingle();
   if (!lead?.email) return { error: "forbidden" };
   const locale = (q.locale as string | null) ?? (lead.locale as string | null) ?? "en";
-  const email = quoteEmail({ to: lead.email as string, coupleName: lead.couple_display as string, quoteUrl: `${APP_URL}/quote/${q.access_token}`, locale });
+  const email = await quoteEmail({ to: lead.email as string, coupleName: lead.couple_display as string, quoteUrl: `${APP_URL}/quote/${q.access_token}`, locale });
   try { await sendBatch([email]); } catch (e) { console.error("quote email send failed", e); return { error: "generic" }; }
   return { ok: true };
 }

@@ -147,6 +147,15 @@ export async function markLost(id: string, reason: string): Promise<LeadResult> 
   return { ok: true };
 }
 
+// The per-lead automation mute: no automated email ever fires for a muted lead.
+export async function muteLead(id: string, muted: boolean): Promise<LeadResult> {
+  const { supabase } = await ctx();
+  const { error } = await supabase.from("leads").update({ automation_muted: muted }).eq("id", id);
+  if (error) return { error: "generic" };
+  rv();
+  return { ok: true };
+}
+
 // The sacred conversion. Goes through the SAME insertWedding path /weddings/new uses (same
 // defaults, same insert-time triggers), carries the lead's facts, moves the lead to Won, logs
 // a 'converted' event, and drops the planner INTO the new wedding. Data only — no contract,

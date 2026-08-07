@@ -27,8 +27,11 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
   let subscription: SettingsData["subscription"] = null;
   let isOwner = false;
   let deletionRequestedAt: string | null = null;
+  let leadRules: SettingsData["leadRules"] = [];
 
   if (workspaceId) {
+    const { data: ruleRows } = await supabase.from("lead_rules").select("rule, enabled, days").eq("workspace_id", workspaceId);
+    leadRules = (ruleRows ?? []) as SettingsData["leadRules"];
     const [{ data: rosterRows }, grants, budget, { data: wsRow }, { data: subRow }] = await Promise.all([
       supabase.rpc("workspace_roster", { p_workspace: workspaceId }),
       loadMyGrants(supabase, workspaceId),
@@ -52,6 +55,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
   const data: SettingsData = {
     locale: lang,
     appearance: ((prof?.appearance as SettingsData["appearance"] | null) ?? "bone"),
+    leadRules,
     hasWorkspace: workspaceId != null,
     isOwner,
     displayName: (prof?.display_name as string | null) ?? "",

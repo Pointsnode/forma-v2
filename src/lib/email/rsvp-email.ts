@@ -1,45 +1,31 @@
 import "server-only";
+import { getTranslations } from "next-intl/server";
 import { emailShell, emailButton } from "./shell";
+import type { Email } from "./resend";
 
-// Bilingual, on-brand RSVP emails (Edition One shell, serif headline, one wine button,
-// no images). Plain-text alternative included. From `Forma <rsvp@forma.events>`.
-
+// On-brand RSVP emails through the Edition One shell, fully in the recipient's language via
+// the email.* namespace (L3 — no FR/IT→EN fallback).
 type Kind = "rsvp_invite" | "rsvp_reminder" | "rsvp_close";
-// locale is any of the four; fr/it gracefully fall back to the EN copy (ES ships today).
-// The email catalog namespace that would carry FR/IT bodies is a documented follow-up.
 type Args = { to: string; guestName: string; couple: string; rsvpUrl: string; kind: Kind; locale: string };
+const SUBJECT: Record<Kind, string> = { rsvp_invite: "inviteSubject", rsvp_reminder: "reminderSubject", rsvp_close: "closeSubject" };
+const LEAD: Record<Kind, string> = { rsvp_invite: "inviteLead", rsvp_reminder: "reminderLead", rsvp_close: "closeLead" };
 
-const COPY = {
-  en: {
-    rsvp_invite: { subject: (c: string) => `You're invited, ${c}`, lead: (c: string) => `${c} would love to know if you can join them.`, cta: "Respond now" },
-    rsvp_reminder: { subject: (c: string) => `A gentle reminder, ${c}`, lead: (c: string) => `We haven't heard from you yet for ${c}. It only takes a moment.`, cta: "Respond now" },
-    rsvp_close: { subject: (c: string) => `RSVPs are closing, ${c}`, lead: (c: string) => `The guest list for ${c} is about to close. Last chance to let them know.`, cta: "Respond now" },
-    hi: (n: string) => `Dear ${n},`,
-    footer: "Sent by Forma on behalf of the couple. One link, no account needed.",
-  },
-  es: {
-    rsvp_invite: { subject: (c: string) => `Estás invitado, ${c}`, lead: (c: string) => `A ${c} le encantaría saber si puedes acompañarles.`, cta: "Responder ahora" },
-    rsvp_reminder: { subject: (c: string) => `Un recordatorio, ${c}`, lead: (c: string) => `Aún no tenemos tu respuesta para ${c}. Solo toma un momento.`, cta: "Responder ahora" },
-    rsvp_close: { subject: (c: string) => `El RSVP está por cerrar, ${c}`, lead: (c: string) => `La lista de ${c} está por cerrarse. Última oportunidad para avisarles.`, cta: "Responder ahora" },
-    hi: (n: string) => `Hola ${n},`,
-    footer: "Enviado por Forma en nombre de la pareja. Un enlace, sin cuenta.",
-  },
-};
-
-export function rsvpEmail({ to, guestName, couple, rsvpUrl, kind, locale }: Args) {
-  const t = COPY[locale as keyof typeof COPY] ?? COPY.en;
-  const k = t[kind];
-  const subject = k.subject(couple);
-  const text = `${t.hi(guestName)}\n\n${k.lead(couple)}\n\n${k.cta}: ${rsvpUrl}\n\n${t.footer}`;
+export async function rsvpEmail({ to, guestName, couple, rsvpUrl, kind, locale }: Args): Promise<Email> {
+  const t = await getTranslations({ locale, namespace: "email" });
+  const subject = t(`rsvp.${SUBJECT[kind]}`, { couple });
+  const hi = t("rsvp.hi", { name: guestName });
+  const lead = t(`rsvp.${LEAD[kind]}`, { couple });
+  const cta = t("rsvp.cta");
+  const footer = t("rsvp.footer");
   const html = emailShell(
     `<p style="font-family:'Playfair Display',Georgia,serif;font-size:26px;line-height:1.25;margin:0 0 12px;color:#121212">${escapeHtml(couple)}</p>
-    <p style="font-size:15px;color:#3B3833;margin:0 0 6px">${escapeHtml(t.hi(guestName))}</p>
-    <p style="font-size:15px;color:#3B3833;margin:0">${escapeHtml(k.lead(couple))}</p>
-    ${emailButton(rsvpUrl, k.cta)}
-    <p style="font-size:12px;color:#8A867E;margin-top:26px;font-family:Arial,sans-serif">${escapeHtml(t.footer)}</p>`,
-    locale,
+    <p style="font-size:15px;color:#3B3833;margin:0 0 6px">${escapeHtml(hi)}</p>
+    <p style="font-size:15px;color:#3B3833;margin:0">${escapeHtml(lead)}</p>
+    ${emailButton(rsvpUrl, cta)}
+    <p style="font-size:12px;color:#8A867E;margin-top:26px;font-family:Arial,sans-serif">${escapeHtml(footer)}</p>`,
+    t("shell.held"),
   );
-  return { from: "Forma <rsvp@forma.events>", to: [to], subject, html, text };
+  return { from: "Forma <rsvp@forma.events>", to: [to], subject, html, text: `${hi}\n\n${lead}\n\n${cta}: ${rsvpUrl}\n\n${footer}` };
 }
 
 function escapeHtml(s: string): string {

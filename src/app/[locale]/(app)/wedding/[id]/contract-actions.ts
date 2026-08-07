@@ -52,9 +52,9 @@ export async function sendContractAction(contractId: string): Promise<ContractAc
 
   const { data: signers } = await supabase.from("contract_signers").select("name, email, token, sign_order").eq("contract_id", contractId).order("sign_order");
   const base = APP_URL;
-  const emails = ((signers ?? []) as { name: string; email: string | null; token: string; sign_order: number }[])
+  const emails = await Promise.all(((signers ?? []) as { name: string; email: string | null; token: string; sign_order: number }[])
     .filter((s) => s.email)
-    .map((s) => signerEmail({ to: s.email!, signerName: s.name, title: c.title, signUrl: `${base}/sign/${s.token.trim()}`, locale: emailLocale }));
+    .map((s) => signerEmail({ to: s.email!, signerName: s.name, title: c.title, signUrl: `${base}/sign/${s.token.trim()}`, locale: emailLocale })));
   if (emails.length) { try { await sendBatch(emails); } catch (e) { console.error("signer email send failed", e); } }
 
   revalidatePath("/[locale]/wedding/[id]", "layout");

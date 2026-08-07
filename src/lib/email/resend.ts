@@ -1,6 +1,8 @@
 import "server-only";
 
-type Email = { from: string; to: string[]; subject: string; html: string; text: string };
+// reply_to (Resend's snake_case field) lets the STUDIO send while replies land in the sending
+// planner's own inbox — the send-via-forma spine. It passes straight through the batch body.
+export type Email = { from: string; to: string[]; subject: string; html: string; text: string; reply_to?: string };
 
 // Send a batch through Resend. If RESEND_API_KEY is unset (dev / preview before
 // Gio wires it), skip gracefully so the run still completes — nothing is sent and

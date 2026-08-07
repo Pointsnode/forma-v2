@@ -1489,7 +1489,8 @@
       "plan": "Abonnement et facturation",
       "account": "Compte",
       "privacy": "Confidentialité",
-      "usage": "Utilisation"
+      "usage": "Utilisation",
+      "automatic": "L'automatique"
     },
     "langTitle": "Langue et région",
     "langHint": "Choisissez la langue, le fuseau horaire et le format de date de votre compte.",
@@ -1566,7 +1567,14 @@
     "appearanceHint": "Bone est le registre de la maison. Automatique suit votre appareil; Night est le registre sombre.",
     "appearance_default": "Automatique",
     "appearance_bone": "Bone",
-    "appearance_night": "Night"
+    "appearance_night": "Night",
+    "autoTitle": "L'automatique",
+    "autoHint": "Deux règles que vous fixez, envoyées dans la langue du lead. forma n'écrit jamais en votre nom sans une règle que vous avez activée.",
+    "ruleConsult": "Confirmer la consultation",
+    "ruleConsultHint": "La veille au soir d'une consultation, envoyer la confirmation.",
+    "ruleQuiet": "La relance douce",
+    "ruleQuietHint": "Quand un lead reste silencieux, envoyer une seule relance douce.",
+    "ruleDaysLabel": "Après ce nombre de jours :"
   },
   "design": {
     "guides": "Guides de style",
@@ -1699,7 +1707,29 @@
     "evtConsult": "Consultation fixée",
     "evtConverted": "Mariage ouvert",
     "evtLost": "Marqué perdu · {reason}",
-    "quote": "Devis"
+    "quote": "Devis",
+    "write": "Écrire",
+    "writeSubject": "Objet",
+    "writeBody": "Votre message",
+    "writeSend": "Envoyer",
+    "writeSending": "Envoi",
+    "writeDraft": "Rédiger",
+    "writeDrafting": "Rédaction",
+    "writeMailto": "Ouvrir dans votre app de mail",
+    "writeErr": "Impossible d'envoyer. Réessayez dans un instant.",
+    "writeNoEmail": "Ce lead n'a pas d'email.",
+    "writeNoKey": "La rédaction n'est pas configurée.",
+    "muteAutomation": "Couper l'automatisation pour ce lead",
+    "automationMuted": "Automatisation coupée",
+    "evtEmail": "Email envoyé · {subject}",
+    "evtEmailMailto": "Envoyé depuis votre app · {subject}",
+    "evtAutomated": "Automatique · {rule}",
+    "evtQuoteCarried": "Lignes du devis portées au budget",
+    "evtQuoteAccepted": "Devis accepté",
+    "rule_consult_confirm": "Confirmer la consultation",
+    "rule_quiet_follow_up": "La relance douce",
+    "sentBy": "envoyé par {name}",
+    "mailtoUnconfirmed": "forma ne peut pas confirmer cet envoi"
   },
   "quotes": {
     "tab": "Devis",
@@ -1767,5 +1797,54 @@
     "accepting": "Acceptation",
     "acceptExpired": "Ce devis a expiré.",
     "acceptErr": "Un problème est survenu. Réessayez dans un instant."
+  },
+  "email": {
+    "shell": {
+      "held": "Tenu avec soin"
+    },
+    "rsvp": {
+      "inviteSubject": "Une invitation, {couple}",
+      "reminderSubject": "Un doux rappel, {couple}",
+      "closeSubject": "Les RSVP ferment bientôt, {couple}",
+      "inviteLead": "{couple} seraient ravis de savoir si vous serez des leurs.",
+      "reminderLead": "Nous n'avons pas encore votre réponse pour {couple}. Cela ne prend qu'un instant.",
+      "closeLead": "La liste des invités de {couple} va bientôt fermer. Dernière chance de leur répondre.",
+      "cta": "Répondre maintenant",
+      "hi": "Bonjour {name},",
+      "footer": "Envoyé par forma de la part du couple. Un lien, sans compte."
+    },
+    "contract": {
+      "signerSubject": "Pour votre signature, {title}",
+      "signerLine": "Bonjour {name}, votre document est prêt. Relisez et signez quand vous voulez.",
+      "signerButton": "Relire et signer",
+      "portalSubject": "Votre portail est prêt",
+      "portalLine": "Votre accord est signé et votre acompte reçu ; votre portail de mariage est prêt.",
+      "portalButton": "Ouvrir mon portail"
+    },
+    "ops": {
+      "menuSubject": "Choisissez votre menu, {couple}",
+      "menuLine": "Bonjour {name}, choisissez votre plat pour {couple}. Vous pouvez changer jusqu'à la fermeture du menu.",
+      "menuButton": "Choisir mon plat",
+      "scheduleSubject": "Votre programme, {couple}",
+      "scheduleGreeting": "Bonjour {name}, voici vos journées.",
+      "scheduleSeat": "Votre place"
+    },
+    "design": {
+      "commentSubject": "Une note sur votre design · {couple}",
+      "commentLead": "{planner} a laissé une note dans votre studio de design.",
+      "commentCta": "Ouvrir le studio"
+    },
+    "quote": {
+      "subject": "Votre devis, {couple}",
+      "line": "Bonjour {couple}, votre devis est prêt. Ouvrez-le quand vous voulez.",
+      "button": "Voir le devis"
+    },
+    "lead": {
+      "automatedFooter": "Répondez pour joindre directement {planner}.",
+      "consultSubject": "On confirme pour demain, {couple}",
+      "consultLine": "Bonjour {couple}, nous confirmons simplement notre consultation. Répondez si quelque chose a changé.",
+      "followUpSubject": "Vous y pensez encore, {couple} ?",
+      "followUpLine": "Bonjour {couple}, nous prenons simplement des nouvelles. Nous serions ravis de donner vie à votre journée quand vous serez prêts."
+    }
   }
 }

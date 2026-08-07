@@ -13,16 +13,18 @@ import { Card, Heading, Badge, DomainHeadCard, cx } from "@/components/ui";
 import { seatBill, PRICE_ADMIN, PRICE_ADDITIONAL, PRICE_CONCIERGE } from "@/lib/pricing";
 import type { DateFormat } from "@/lib/format-date";
 import {
-  saveRegion, setLocalePref, setAppearancePref, saveDisplayName, changeEmail, sendPasswordReset,
+  saveRegion, setLocalePref, setAppearancePref, saveLeadRules, saveDisplayName, changeEmail, sendPasswordReset,
   signOutEverywhere, exportData, requestDeletion, undoDeletion,
   startSubscription, openBillingPortal,
 } from "./actions";
 
 export type Appearance = "default" | "bone" | "night";
+export type LeadRule = { rule: "consult_confirm" | "quiet_follow_up"; enabled: boolean; days: number };
 
 export type SettingsData = {
   locale: string;
   appearance: Appearance;
+  leadRules: LeadRule[];
   hasWorkspace: boolean;
   isOwner: boolean;
   displayName: string;
@@ -36,7 +38,7 @@ export type SettingsData = {
   deletionRequestedAt: string | null;
 };
 
-type Section = "language" | "plan" | "account" | "privacy" | "usage";
+type Section = "language" | "automatic" | "plan" | "account" | "privacy" | "usage";
 
 // A curated IANA list — the zones a LatAm-first studio actually picks from. Not the full
 // tz database (hundreds of entries) — the primary surfaces, honestly labelled.
@@ -60,7 +62,7 @@ export function SettingsView({ data }: { data: SettingsData }) {
   useEffect(() => {
     const apply = () => {
       const h = window.location.hash.replace("#", "") as Section;
-      if (["language", "plan", "account", "privacy", "usage"].includes(h)) setActive(h);
+      if (["language", "automatic", "plan", "account", "privacy", "usage"].includes(h)) setActive(h);
     };
     apply();
     window.addEventListener("hashchange", apply);
@@ -69,6 +71,7 @@ export function SettingsView({ data }: { data: SettingsData }) {
 
   const tabs: { id: Section; gated: boolean }[] = [
     { id: "language", gated: false },
+    { id: "automatic", gated: true },
     { id: "plan", gated: true },
     { id: "account", gated: false },
     { id: "privacy", gated: true },
@@ -102,6 +105,7 @@ export function SettingsView({ data }: { data: SettingsData }) {
 
         <div>
           {active === "language" && <LanguageSection data={data} router={router} pathname={pathname} />}
+          {active === "automatic" && data.hasWorkspace && <AutomaticSection data={data} />}
           {active === "plan" && data.hasWorkspace && <PlanSection data={data} />}
           {active === "account" && <AccountSection data={data} />}
           {active === "privacy" && data.hasWorkspace && <PrivacySection data={data} />}
@@ -200,6 +204,57 @@ function LanguageSection({ data, router, pathname }: { data: SettingsData; route
 
       <div className="flex items-center gap-3">
         <button onClick={saveRegionPrefs} disabled={pending} className="rounded-[var(--radius)] bg-surface-chrome px-5 py-2 text-[13px] text-bone hover:opacity-90 disabled:opacity-50">{t("save")}</button>
+        {saved ? <span className="text-[12.5px] text-teal">{t("saved")}</span> : null}
+      </div>
+    </Card>
+  );
+}
+
+// ── The automatic (L3): the two lead-automation rules the planner authors. ──
+function RuleToggle({ on, onToggle, label, hint }: { on: boolean; onToggle: () => void; label: string; hint: string }) {
+  return (
+    <div className="flex items-start justify-between gap-4 border-b border-hairline-token py-3.5 last:border-b-0">
+      <div><p className="text-[14px] text-text-primary">{label}</p><p className="mt-0.5 text-[12px] text-text-meta">{hint}</p></div>
+      <button onClick={onToggle} aria-pressed={on} className={cx("mt-0.5 h-[22px] w-[38px] shrink-0 rounded-full transition-colors", on ? "bg-teal" : "bg-hairline-token")}>
+        <span className={cx("block h-[18px] w-[18px] rounded-full bg-bone transition-transform", on ? "translate-x-[18px]" : "translate-x-[2px]")} />
+      </button>
+    </div>
+  );
+}
+function AutomaticSection({ data }: { data: SettingsData }) {
+  const t = useTranslations("settings");
+  const [pending, start] = useTransition();
+  const [saved, setSaved] = useState(false);
+  const byRule = (r: string) => data.leadRules.find((x) => x.rule === r);
+  const [consult, setConsult] = useState(!!byRule("consult_confirm")?.enabled);
+  const [quiet, setQuiet] = useState(!!byRule("quiet_follow_up")?.enabled);
+  const [days, setDays] = useState(byRule("quiet_follow_up")?.days ?? 4);
+
+  function save() {
+    start(async () => {
+      const r = await saveLeadRules([
+        { rule: "consult_confirm", enabled: consult, days: 4 },
+        { rule: "quiet_follow_up", enabled: quiet, days },
+      ]);
+      if (r.ok) { setSaved(true); setTimeout(() => setSaved(false), 2000); }
+    });
+  }
+
+  return (
+    <Card>
+      <Heading className="text-[19px]">{t("autoTitle")}</Heading>
+      <p className="mb-4 mt-0.5 text-[12.5px] text-text-meta">{t("autoHint")}</p>
+      <RuleToggle on={consult} onToggle={() => setConsult((v) => !v)} label={t("ruleConsult")} hint={t("ruleConsultHint")} />
+      <RuleToggle on={quiet} onToggle={() => setQuiet((v) => !v)} label={t("ruleQuiet")} hint={t("ruleQuietHint")} />
+      {quiet ? (
+        <label className="mt-3 block text-[12px] text-text-meta">{t("ruleDaysLabel")}
+          <select value={days} onChange={(e) => setDays(Number(e.target.value))} className="ml-2 rounded-[var(--radius)] border border-hairline-token bg-surface-card px-2 py-1 text-[13px] text-text-primary">
+            {[2, 3, 4, 5, 7, 10, 14].map((d) => <option key={d} value={d}>{d}</option>)}
+          </select>
+        </label>
+      ) : null}
+      <div className="mt-5 flex items-center gap-3">
+        <button onClick={save} disabled={pending} className="rounded-[var(--radius)] bg-surface-chrome px-5 py-2 text-[13px] text-bone hover:opacity-90 disabled:opacity-50">{t("save")}</button>
         {saved ? <span className="text-[12.5px] text-teal">{t("saved")}</span> : null}
       </div>
     </Card>
