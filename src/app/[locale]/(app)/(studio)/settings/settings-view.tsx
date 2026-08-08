@@ -17,6 +17,7 @@ import {
   signOutEverywhere, exportData, requestDeletion, undoDeletion,
   startSubscription, openBillingPortal,
 } from "./actions";
+import { ReferralsSection, type ReferralData } from "./referrals-section";
 
 export type Appearance = "default" | "bone" | "night";
 export type LeadRule = { rule: "consult_confirm" | "quiet_follow_up"; enabled: boolean; days: number };
@@ -36,9 +37,10 @@ export type SettingsData = {
   subscription: { status: string; currentPeriodEnd: string | null } | null;
   stripeConfigured: boolean;
   deletionRequestedAt: string | null;
+  referral: ReferralData | null;
 };
 
-type Section = "language" | "automatic" | "plan" | "account" | "privacy" | "usage";
+type Section = "language" | "automatic" | "plan" | "account" | "privacy" | "usage" | "referrals";
 
 // A curated IANA list — the zones a LatAm-first studio actually picks from. Not the full
 // tz database (hundreds of entries) — the primary surfaces, honestly labelled.
@@ -62,7 +64,7 @@ export function SettingsView({ data }: { data: SettingsData }) {
   useEffect(() => {
     const apply = () => {
       const h = window.location.hash.replace("#", "") as Section;
-      if (["language", "automatic", "plan", "account", "privacy", "usage"].includes(h)) setActive(h);
+      if (["language", "automatic", "plan", "account", "privacy", "usage", "referrals"].includes(h)) setActive(h);
     };
     apply();
     window.addEventListener("hashchange", apply);
@@ -74,6 +76,7 @@ export function SettingsView({ data }: { data: SettingsData }) {
     { id: "automatic", gated: true },
     { id: "plan", gated: true },
     { id: "account", gated: false },
+    { id: "referrals", gated: true },
     { id: "privacy", gated: true },
     { id: "usage", gated: true },
   ];
@@ -108,6 +111,7 @@ export function SettingsView({ data }: { data: SettingsData }) {
           {active === "automatic" && data.hasWorkspace && <AutomaticSection data={data} />}
           {active === "plan" && data.hasWorkspace && <PlanSection data={data} />}
           {active === "account" && <AccountSection data={data} />}
+          {active === "referrals" && data.hasWorkspace && data.referral && <ReferralsSection referral={data.referral} />}
           {active === "privacy" && data.hasWorkspace && <PrivacySection data={data} />}
           {active === "usage" && data.hasWorkspace && <UsageSection data={data} />}
         </div>

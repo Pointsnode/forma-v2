@@ -65,6 +65,7 @@ export async function createSubscriptionCheckout(opts: {
   conciergeSeats: number;
   customerId?: string | null;
   customerEmail?: string | null;
+  couponId?: string | null;
   successUrl: string;
   cancelUrl: string;
 }): Promise<{ url: string } | null> {
@@ -84,6 +85,9 @@ export async function createSubscriptionCheckout(opts: {
   form.set("subscription_data[metadata][workspace_id]", opts.workspaceId);
   if (opts.customerId) form.set("customer", opts.customerId);
   else if (opts.customerEmail) form.set("customer_email", opts.customerEmail);
+  // REF-1: the free-first-month coupon (100% off, duration once) when this workspace was
+  // referred. The coupon id is env-referenced (created at Stripe-live setup), never hardcoded.
+  if (opts.couponId) form.set("discounts[0][coupon]", opts.couponId);
   lines.forEach((l, i) => writeRecurringLine(form, `line_items[${i}]`, l.amountCents, l.quantity, l.name));
   const data = await stripe("/checkout/sessions", "POST", form);
   return data ? { url: data.url as string } : null;

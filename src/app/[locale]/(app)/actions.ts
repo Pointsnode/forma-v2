@@ -1,9 +1,11 @@
 "use server";
 
 import { z } from "zod";
+import { cookies } from "next/headers";
 import { redirect } from "@/i18n/navigation";
 import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { REFERRAL_COOKIE } from "@/lib/referral";
 
 export type WorkspaceState = { error?: "invalid" | "generic" } | null;
 
@@ -55,6 +57,19 @@ export async function createWorkspace(_prev: WorkspaceState, formData: FormData)
     console.error(`createWorkspace: membership insert failed (${mErr.code}): ${mErr.message}`);
     return { error: "generic" };
   }
+
+  // REF-1: a studio that signed up through a referral link records the referral now (the caller
+  // is the new owner, so the member-gated DEFINER admits it). record_referral is a silent no-op
+  // on a missing/invalid/self code or either interlock. The cookie is cleared either way.
+  if (parsed.data.kind === "studio") {
+    const jar = await cookies();
+    const code = jar.get(REFERRAL_COOKIE)?.value;
+    if (code) {
+      await supabase.rpc("record_referral", { p_referred: id, p_code: code });
+      jar.delete(REFERRAL_COOKIE);
+    }
+  }
+
   redirect({ href: "/", locale: await getLocale() });
   return null;
 }

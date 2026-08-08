@@ -11,8 +11,28 @@ import { createClient } from "@/lib/supabase/server";
 import { currentWorkspace, loadMyGrants } from "@/lib/workspace";
 import { conciergeSeatCount } from "@/lib/seats.mjs";
 import { createSubscriptionCheckout, createPortalSession } from "@/lib/stripe";
+import { REFERRAL_CASH_THRESHOLD_CENTS } from "@/lib/referral";
 
 export type Result = { ok?: boolean; error?: string };
+
+// REF-1: a member requests a redemption of referral credits. amount <= balance is enforced by
+// the DEFINER (the security invariant); the cash >= $500 policy is enforced here + in the UI;
+// nothing self-serve moves money (the owner settles/rejects in REF-2).
+export async function requestRedemption(kind: "bill" | "cash", amountCents: number): Promise<Result> {
+  if (kind !== "bill" && kind !== "cash") return { error: "invalid" };
+  if (!Number.isInteger(amountCents) || amountCents <= 0) return { error: "invalid" };
+  const supabase = await createClient();
+  const ws = await currentWorkspace(supabase);
+  if (!ws) return { error: "generic" };
+  if (kind === "cash") {
+    const { data: bal } = await supabase.rpc("referral_balance", { p_workspace: ws });
+    if ((Number(bal) || 0) < REFERRAL_CASH_THRESHOLD_CENTS) return { error: "threshold" };
+  }
+  const { error } = await supabase.rpc("request_redemption", { p_workspace: ws, p_kind: kind, p_amount_cents: amountCents });
+  if (error) return { error: error.code || "generic" };
+  revalidatePath("/settings");
+  return { ok: true };
+}
 export type UrlResult = { url?: string; error?: string };
 
 function localePrefix(locale: string): string {
@@ -228,6 +248,11 @@ export async function startSubscription(): Promise<UrlResult> {
   } = await supabase.auth.getUser();
   const { data: sub } = await supabase.from("workspace_subscriptions").select("stripe_customer_id").eq("workspace_id", ws).maybeSingle();
   const { accounts, conciergeSeats } = await rosterSeats(supabase, ws);
+  // REF-1: a referred workspace gets its first month free via the env-referenced coupon (inert
+  // if STRIPE_REFERRAL_COUPON is unset, like the other Stripe env). Referred accounts are never
+  // partner-attributed, so commission math is untouched by construction.
+  const { data: referral } = await supabase.from("referrals").select("referred_workspace_id").eq("referred_workspace_id", ws).maybeSingle();
+  const couponId = referral ? process.env.STRIPE_REFERRAL_COUPON ?? null : null;
   const locale = await getLocale();
   const base = `${APP_URL}${localePrefix(locale)}/settings`;
   try {
@@ -237,6 +262,7 @@ export async function startSubscription(): Promise<UrlResult> {
       conciergeSeats,
       customerId: (sub?.stripe_customer_id as string | null) ?? null,
       customerEmail: user?.email ?? null,
+      couponId,
       successUrl: `${base}?sub=started#plan`,
       cancelUrl: `${base}#plan`,
     });

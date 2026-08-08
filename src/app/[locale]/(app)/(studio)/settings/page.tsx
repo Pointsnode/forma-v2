@@ -4,8 +4,10 @@ import { currentWorkspace, loadMyGrants } from "@/lib/workspace";
 import { loadBudget } from "@/lib/concierge/session";
 import { conciergeSeatCount } from "@/lib/seats.mjs";
 import { stripeConfigured } from "@/lib/stripe";
+import { SITE_URL } from "@/lib/env";
 import type { DateFormat } from "@/lib/format-date";
 import { SettingsView, type SettingsData } from "./settings-view";
+import type { ReferralData } from "./referrals-section";
 
 // §A3 — the single Settings surface: sectioned (Language · Plan · Account · Privacy ·
 // Usage), workspace-gated sections hidden for a non-workspace user (a couple gets
@@ -28,6 +30,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
   let isOwner = false;
   let deletionRequestedAt: string | null = null;
   let leadRules: SettingsData["leadRules"] = [];
+  let referral: SettingsData["referral"] = null;
 
   if (workspaceId) {
     const { data: ruleRows } = await supabase.from("lead_rules").select("rule, enabled, days").eq("workspace_id", workspaceId);
@@ -50,6 +53,21 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
       status: (subRow?.status as string | null) ?? "none",
       currentPeriodEnd: (subRow?.current_period_end as string | null) ?? null,
     };
+
+    // REF-1: the referral surface. ensure_referral_code mints (idempotently) on first visit.
+    const [{ data: code }, { data: funnel }, { data: balance }, { data: redemptions }] = await Promise.all([
+      supabase.rpc("ensure_referral_code", { p_workspace: workspaceId }),
+      supabase.rpc("referral_funnel", { p_workspace: workspaceId }),
+      supabase.rpc("referral_balance", { p_workspace: workspaceId }),
+      supabase.from("referral_redemptions").select("id, kind, amount_cents, status, reference, created_at").eq("workspace_id", workspaceId).order("created_at", { ascending: false }),
+    ]);
+    referral = {
+      link: `${SITE_URL}/r/${(code as string) ?? ""}`,
+      code: (code as string) ?? "",
+      funnel: (Array.isArray(funnel) ? funnel : []) as ReferralData["funnel"],
+      balanceCents: Number(balance) || 0,
+      redemptions: (redemptions ?? []) as ReferralData["redemptions"],
+    };
   }
 
   const data: SettingsData = {
@@ -67,6 +85,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
     subscription,
     stripeConfigured: stripeConfigured(),
     deletionRequestedAt,
+    referral,
   };
 
   return <SettingsView data={data} />;
