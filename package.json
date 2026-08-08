@@ -15,7 +15,8 @@
     "check:test-scoping": "node scripts/check-test-scoping.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
     "stripe:backfill": "node scripts/stripe-backfill.mjs",
-    "stripe:reconcile": "node scripts/stripe-reconcile.mjs"
+    "stripe:reconcile": "node scripts/stripe-reconcile.mjs",
+    "referral:rebuild": "node scripts/referral-rebuild.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { fetchChargeFee } from "@/lib/stripe";
 import { billingMirrorOps, invoiceToRow, secToIso, refundStatus } from "@/lib/stripe-mirror.mjs";
 import { accrueCommissionsForPayment, clawbackForRefund } from "@/lib/commission";
+import { matureReferralForPayment } from "@/lib/referral-engine";
 
 // The impure billing mirror — best-effort, admin-owned tables, service-role (the caller's
 // admin client). Classification + row mapping live in stripe-mirror.mjs (pure, tested);
@@ -60,6 +61,12 @@ export async function mirrorBillingEvent(admin: SupabaseClient, event: Ev): Prom
           await accrueCommissionsForPayment(admin, ws, { stripe_id: paymentId, amount_cents: inv.amount_paid ?? null, paid_at: paidAt });
         } catch (e) {
           console.error("commission accrual failed:", (e as Error).message);
+        }
+        // REF-1 referral maturity (best-effort; the referred workspace's paid invoices).
+        try {
+          await matureReferralForPayment(admin, ws);
+        } catch (e) {
+          console.error("referral maturity failed:", (e as Error).message);
         }
       }
     }

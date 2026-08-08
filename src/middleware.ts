@@ -23,6 +23,10 @@ export async function middleware(request: NextRequest) {
   // signed-out visitor passes through so the admin layout can render the sign-in screen
   // at the same URL (no redirect, no leak of the route's existence).
   const { pathname } = request.nextUrl;
+  // REF — the /r/{code} referral capture is a non-localized route handler (sets a cookie + 307s
+  // to the landing). Pass it straight through so next-intl doesn't try to locale-prefix it; the
+  // route handler is fully public and touches no DB.
+  if (pathname === "/r" || pathname.startsWith("/r/")) return NextResponse.next();
   if (pathname === "/admin" || pathname.startsWith("/admin/")) {
     const adminRes = NextResponse.next();
     const { user, isAdmin } = await adminSession(request, adminRes);
