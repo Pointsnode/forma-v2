@@ -42,6 +42,18 @@ export async function fetchChargeFee(chargeId: string): Promise<{ fee_cents: num
   return { fee_cents: Number(bt.fee) || 0, net_cents: Number(bt.net) || 0 };
 }
 
+// ── REF-2: credit a customer's Stripe balance (a NEGATIVE balance transaction reduces the next
+// invoice). Returns the transaction id (stored as the redemption reference). Inert if unconfigured.
+export async function creditCustomerBalance(customerId: string, amountCents: number, description: string): Promise<{ id: string } | null> {
+  if (!customerId || amountCents <= 0) return null;
+  const form = new URLSearchParams();
+  form.set("amount", String(-Math.abs(amountCents))); // negative = a credit toward the next invoice
+  form.set("currency", "usd");
+  form.set("description", description);
+  const data = await stripe(`/customers/${encodeURIComponent(customerId)}/balance_transactions`, "POST", form);
+  return data ? { id: data.id as string } : null;
+}
+
 // Write one recurring price_data line's form fields (shared by Checkout line_items and
 // subscription-item adds). `p` is the field prefix, e.g. "line_items[0]" or "items[2]".
 function writeRecurringLine(form: URLSearchParams, p: string, amountCents: number, quantity: number, name: string) {

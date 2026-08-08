@@ -29,6 +29,10 @@ const ALLOWLIST = new Set([
   // (the viewer can't sign it themselves). Signing only, one low-sensitivity asset,
   // callers pass their own workspace path. No anon function grant, matrix unchanged.
   "src/lib/studio-logo.ts",
+  // REF-2: the referral bill-credit lane reads the referrer's stripe_customer_id (owner-only on
+  // workspace_subscriptions, not admin-readable) and pushes a Stripe customer-balance credit.
+  // Isolated to this one lib; called only from the owner-gated settle action. No anon surface.
+  "src/lib/referral-credit.ts",
 ]);
 const PATTERNS = [/SUPABASE_SERVICE_ROLE_KEY/, /createAdminClient/];
 function* walk(dir) {

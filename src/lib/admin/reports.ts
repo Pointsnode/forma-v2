@@ -7,12 +7,14 @@ export type ExpenseRow = { id: string; paid_on: string; vendor: string | null; c
 // + expenses cross-workspace via is_platform_admin()). Nothing is pre-summed here.
 export async function loadReportData() {
   const supabase = await createClient();
-  const [{ data: payments }, { data: refunds }, { data: commissions }, { data: payouts }, { data: expenses }] = await Promise.all([
+  const [{ data: payments }, { data: refunds }, { data: commissions }, { data: payouts }, { data: expenses }, { data: referralCredits }, { data: referralRedemptions }] = await Promise.all([
     supabase.from("billing_payments").select("amount_cents, fee_cents, status, paid_at"),
     supabase.from("billing_refunds").select("amount_cents, refunded_at"),
     supabase.from("commission_entries").select("partner_id, amount_cents, status, created_at"),
     supabase.from("payouts").select("partner_id, total_cents, paid_on"),
     supabase.from("expense_entries").select("id, paid_on, vendor, category, amount_cents, currency, memo, voided, void_memo, created_at").order("paid_on", { ascending: false }),
+    supabase.from("referral_credits").select("kind, amount_cents, status, created_at"),
+    supabase.from("referral_redemptions").select("kind, amount_cents, status, settled_at"),
   ]);
   return {
     payments: (payments ?? []) as Record<string, unknown>[],
@@ -20,5 +22,7 @@ export async function loadReportData() {
     commissions: (commissions ?? []) as Record<string, unknown>[],
     payouts: (payouts ?? []) as Record<string, unknown>[],
     expenses: (expenses ?? []) as ExpenseRow[],
+    referralCredits: (referralCredits ?? []) as Record<string, unknown>[],
+    referralRedemptions: (referralRedemptions ?? []) as Record<string, unknown>[],
   };
 }

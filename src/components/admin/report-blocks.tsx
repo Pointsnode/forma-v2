@@ -4,6 +4,7 @@ type Report = {
   gross: number; refunds: number; fees: number; netRevenue: number; commissionsAccrued: number;
   payoutsRecorded: number; expensesByCategory: Record<string, number>; expensesTotal: number; net: number;
   perPartnerAnnual: Record<string, number>;
+  referralCreditsAccrued: number; referralRedemptionsBill: number; referralRedemptionsCash: number;
 };
 
 function Line({ label, cents, strong, muted }: { label: string; cents: number; strong?: boolean; muted?: boolean }) {
@@ -43,6 +44,11 @@ export function ReportBlocks({ report, partnerName }: { report: Report; partnerN
       <Block title="Expenses">
         {cats.length ? cats.map(([c, v]) => <Line key={c} label={c} cents={-v} />) : <p className="py-2 text-[13px] text-text-meta">No expenses this period.</p>}
         <Line label="Expenses total" cents={-report.expensesTotal} strong />
+      </Block>
+      <Block title="Referral program">
+        <Line label="Credits accrued" cents={report.referralCreditsAccrued} />
+        <Line label="Redeemed to bill" cents={-report.referralRedemptionsBill} muted />
+        <Line label="Redeemed as cash" cents={-report.referralRedemptionsCash} muted />
       </Block>
       <Block title="Net">
         <Line label="Net (net revenue minus commissions minus expenses)" cents={report.net} strong />

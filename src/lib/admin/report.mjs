@@ -28,6 +28,13 @@ export function computeReport({ startIso, endIso, yearStartIso, yearEndIso }, da
 
   const net = netRevenue - commissionsAccrued - expensesTotal;
 
+  // REF-2: referral credits accrued (the +$100 rows) and redemptions SETTLED in the period,
+  // split bill vs cash — derived from the ledger like everything else.
+  const referralCreditsAccrued = sum((data.referralCredits ?? []).filter((c) => c.kind === "credit" && c.status !== "void" && inRange(c.created_at, startIso, endIso)), "amount_cents");
+  const settledReds = (data.referralRedemptions ?? []).filter((r) => r.status === "settled" && inRange(r.settled_at, startIso, endIso));
+  const referralRedemptionsBill = sum(settledReds.filter((r) => r.kind === "bill"), "amount_cents");
+  const referralRedemptionsCash = sum(settledReds.filter((r) => r.kind === "cash"), "amount_cents");
+
   // The contractor-payments record: per-partner payouts recorded across the YEAR of the period.
   const perPartnerAnnual = {};
   const ys = yearStartIso ?? startIso;
@@ -36,7 +43,10 @@ export function computeReport({ startIso, endIso, yearStartIso, yearEndIso }, da
     perPartnerAnnual[po.partner_id] = (perPartnerAnnual[po.partner_id] ?? 0) + (Number(po.total_cents) || 0);
   }
 
-  return { gross, refunds, fees, netRevenue, commissionsAccrued, payoutsRecorded, expensesByCategory, expensesTotal, net, perPartnerAnnual };
+  return {
+    gross, refunds, fees, netRevenue, commissionsAccrued, payoutsRecorded, expensesByCategory, expensesTotal, net, perPartnerAnnual,
+    referralCreditsAccrued, referralRedemptionsBill, referralRedemptionsCash,
+  };
 }
 
 // Period bounds for the picker. month = "YYYY-MM", quarter = "YYYY-Qn", year = "YYYY".

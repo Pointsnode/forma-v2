@@ -28,6 +28,9 @@ export async function GET(req: Request) {
     ["Payouts", "Recorded (cash out)", formatCents(r.payoutsRecorded)],
     ...Object.entries(r.expensesByCategory).sort((a, b) => a[0].localeCompare(b[0])).map(([c, v]) => ["Expenses", c, formatCents(-v)] as string[]),
     ["Expenses", "Total", formatCents(-r.expensesTotal)],
+    ["Referral program", "Credits accrued", formatCents(r.referralCreditsAccrued)],
+    ["Referral program", "Redeemed to bill", formatCents(-r.referralRedemptionsBill)],
+    ["Referral program", "Redeemed as cash", formatCents(-r.referralRedemptionsCash)],
     ["Net", "Net (revenue minus commissions minus expenses)", formatCents(r.net)],
     ...Object.entries(r.perPartnerAnnual).sort((a, b) => b[1] - a[1]).map(([id, v]) => ["Per-partner YTD payouts", partnerName.get(id) ?? id, formatCents(v)] as string[]),
   ];
