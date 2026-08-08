@@ -6,6 +6,7 @@ import { currentWorkspace } from "@/lib/workspace";
 import { TopBar, type SwitcherWedding, heroTone } from "@/components/ui";
 import { countdownDays, initials, phaseOrdinal, type Phase } from "@/lib/wedding";
 import { ConciergeBubble } from "@/components/concierge/concierge-bubble";
+import { BoardRailMount } from "@/components/board/board-rail-mount";
 import { loadBudget, loadPendingCount } from "@/lib/concierge/session";
 
 // Shared app chrome: the dark top bar (wordmark · workspace · wedding switcher ·
@@ -31,6 +32,7 @@ export default async function AppLayout({
   let plannerName = "";
   let switcher: SwitcherWedding[] = [];
   let workspaceId: string | null = null;
+  let boardWeddings: { id: string; name: string }[] = [];
   let concierge: { weddings: { id: string; name: string }[]; usage: { used: number; cap: number }; pending: number } | null = null;
   // §3 Appearance resolution (signed-in surfaces only — public/marketing routes are NOT in
   // this group, so they never receive the attribute and stay bone). The cookie is the
@@ -55,6 +57,7 @@ export default async function AppLayout({
       workspaceName = (wsRow?.name as string | null) ?? null;
     }
     const weddingRows = (weds ?? []) as { id: string; couple_display: string; phase: Phase; date_start: string | null }[];
+    boardWeddings = weddingRows.map((w) => ({ id: w.id, name: w.couple_display }));
     switcher = weddingRows.map((w) => {
       const days = countdownDays(w.date_start);
       const meta = `${tp("ordinal", { n: phaseOrdinal(w.phase) })} · ${tp(w.phase)}${days != null ? ` · ${days} ${tw("days")}` : ""}`;
@@ -77,6 +80,9 @@ export default async function AppLayout({
       <main>{children}</main>
       {user && concierge && workspaceId ? (
         <ConciergeBubble weddings={concierge.weddings} usage={concierge.usage} initialPending={concierge.pending} />
+      ) : null}
+      {user && workspaceId ? (
+        <BoardRailMount workspaceId={workspaceId} selfId={user.id} weddings={boardWeddings} locale={locale} />
       ) : null}
     </div>
   );
