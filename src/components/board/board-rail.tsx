@@ -156,7 +156,7 @@ export function BoardRail({ workspaceId, selfId, weddings, roster, initialSummar
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/20" onClick={() => setOpen(false)}>
+        <div className="fixed inset-0 z-[70] flex justify-end bg-black/20" onClick={() => setOpen(false)}>
           <div className="flex h-full w-full max-w-[420px] flex-col bg-surface-page shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-hairline-token px-4 py-3">
               <span className="font-display text-[18px] text-text-primary">{active ? active.name : t("title")}</span>
