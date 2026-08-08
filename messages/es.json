@@ -308,7 +308,14 @@
     "dueLine": "{amount} por pagar.",
     "theWeekend": "El fin de semana",
     "weekendKicker": "Cada hora, cuidada",
-    "daysAfter": "Casados"
+    "daysAfter": "Casados",
+    "messagesTitle": "Mensajes",
+    "messagesEmpty": "Aún no hay mensajes. Saluda a tu planner.",
+    "messagesPlaceholder": "Escribe a tu planner...",
+    "messagesSend": "Enviar",
+    "messagesYou": "Tú",
+    "messagesEdited": "editado",
+    "messagesDeleted": "Mensaje eliminado"
   },
   "invites": {
     "members": "Miembros y acceso",
@@ -1901,6 +1908,11 @@
       "consultLine": "Hola {couple}, solo confirmamos nuestra consulta. Responde si algo cambió.",
       "followUpSubject": "¿Aún lo están pensando, {couple}?",
       "followUpLine": "Hola {couple}, solo pasamos a saludar. Nos encantaría ayudar a dar vida a su día cuando estén listos."
+    },
+    "board": {
+      "nudgeSubject": "Un mensaje nuevo de tu planner",
+      "nudgeLine": "Tu planner acaba de enviarte un mensaje.",
+      "nudgeButton": "Abrir mensajes"
     }
   },
   "tableSheet": {
@@ -1950,6 +1962,11 @@
     "edit": "Editar",
     "edited": "editado",
     "editSave": "Guardar",
-    "editCancel": "Cancelar"
+    "editCancel": "Cancelar",
+    "laneTeam": "Equipo",
+    "laneClient": "Pareja",
+    "clientHint": "La pareja ve esto",
+    "clientComposer": "Escribe a la pareja...",
+    "clientEmpty": "Aún no hay mensajes con la pareja."
   }
 }

@@ -8,7 +8,8 @@ insert into auth.users (id, email) values
   ('a1000000-0000-0000-0000-000000000001', 'staffa@test.forma'),
   ('a1000000-0000-0000-0000-000000000002', 'staffb@test.forma'),
   ('a1000000-0000-0000-0000-000000000003', 'dayof@test.forma'),
-  ('a1000000-0000-0000-0000-000000000004', 'outsider@test.forma');
+  ('a1000000-0000-0000-0000-000000000004', 'outsider@test.forma'),
+  ('a1000000-0000-0000-0000-000000000005', 'couple@test.forma');   -- MSG-2: the couple side (partner)
 insert into public.workspaces (id, kind, name, slug, created_by) values
   ('b1000000-0000-0000-0000-000000000001', 'studio', 'WS A', 'ws-a', 'a1000000-0000-0000-0000-000000000001'),
   ('b1000000-0000-0000-0000-000000000002', 'studio', 'WS B', 'ws-b', 'a1000000-0000-0000-0000-000000000004');
@@ -18,9 +19,10 @@ insert into public.workspace_members (workspace_id, user_id, role) values
   ('b1000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000004', 'owner');
 insert into public.weddings (id, workspace_id, slug, couple_display, kind, phase) values
   ('c1000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000001', 'w1', 'W One', 'city', 'wedding_days');
--- A day_of coordinator (wedding member, NOT workspace staff, money-blocked).
+-- A day_of coordinator (wedding member, NOT workspace staff, money-blocked) + the couple (partner).
 insert into public.wedding_members (wedding_id, user_id, role) values
-  ('c1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000003', 'day_of');
+  ('c1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000003', 'day_of'),
+  ('c1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000005', 'partner');
 -- Money for W.
 insert into public.ledger_lines (wedding_id, title, amount) values ('c1000000-0000-0000-0000-000000000001', 'Venue', 1000);
 -- A client-lane row (seeded on the service path) must be structurally invisible this phase.
@@ -35,11 +37,12 @@ do $$ begin
   perform public.board_post('b1000000-0000-0000-0000-000000000001', null, 'studio-msg-1', null);
 end $$;
 
--- (visibility) staffA sees the team message + studio message; the client-lane row stays invisible.
+-- (visibility) staffA sees the team message + studio message; and (MSG-2) the shared client-lane
+-- row too — the wedding's staff are one side of the client thread.
 do $$ begin
   if (select count(*) from public.board_messages where body = 'team-msg-1') <> 1 then raise exception 'TEST FAIL: staff cannot read own team message'; end if;
   if (select count(*) from public.board_messages where body = 'studio-msg-1') <> 1 then raise exception 'TEST FAIL: staff cannot read studio message'; end if;
-  if (select count(*) from public.board_messages where body = 'client-msg-1') <> 0 then raise exception 'TEST FAIL: client-lane row is visible'; end if;
+  if (select count(*) from public.board_messages where body = 'client-msg-1') <> 1 then raise exception 'TEST FAIL: staff cannot read the shared client-lane row'; end if;
 end $$;
 -- No client writes.
 do $$ declare ok boolean; begin
@@ -123,6 +126,72 @@ do $$ declare ok boolean; begin
   begin perform public.board_make_task((select id from public.board_messages where body = 'team-msg-1'), 'x', null); ok := true;
   exception when others then ok := false; end;
   if ok then raise exception 'TEST FAIL: outsider made a task on a hidden message'; end if;
+end $$;
+
+-- ══ MSG-2 — the client lane (the permanent lane wall + posting + nudge) ═══════════════════════════
+-- (couple side) the partner is a wedding MEMBER, not staff. The lane wall, asserted BOTH directions:
+-- they read ZERO team-lane rows and cannot write the team lane; they DO read + write the client lane.
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"a1000000-0000-0000-0000-000000000005","role":"authenticated"}';
+do $$ begin
+  -- wall (read): no team-lane row of any kind reaches the couple.
+  if (select count(*) from public.board_messages where lane = 'team') <> 0 then raise exception 'TEST FAIL: the couple reads team-lane rows'; end if;
+  if (select count(*) from public.board_messages where body = 'team-msg-1') <> 0 then raise exception 'TEST FAIL: the couple reads the team thread'; end if;
+  -- lane works: the seeded client-lane row IS visible to the couple.
+  if (select count(*) from public.board_messages where body = 'client-msg-1') <> 1 then raise exception 'TEST FAIL: the couple cannot read the client lane'; end if;
+end $$;
+-- wall (write): the couple cannot post to the team lane (board_post is staff-gated).
+do $$ declare ok boolean; begin
+  begin perform public.board_post('b1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000001', 'couple-into-team', null); ok := true;
+  exception when others then ok := false; end;
+  if ok then raise exception 'TEST FAIL: the couple posted into the team lane'; end if;
+end $$;
+-- the couple posts to the client lane; it mints client_message notifications for the planners.
+do $$ begin
+  perform public.board_post_client('c1000000-0000-0000-0000-000000000001', 'couple-hello');
+  if (select count(*) from public.board_messages where body = 'couple-hello' and lane = 'client') <> 1 then raise exception 'TEST FAIL: the couple could not post to the client lane'; end if;
+end $$;
+-- the nudge is staff-only: a couple cannot trigger it.
+do $$ declare ok boolean; begin
+  begin perform public.board_client_nudge('c1000000-0000-0000-0000-000000000001'); ok := true;
+  exception when others then ok := false; end;
+  if ok then raise exception 'TEST FAIL: the couple triggered a staff-only nudge'; end if;
+end $$;
+
+-- (planner side) staffA shares the client lane: reads the couple's message, owns a client_message
+-- notification, replies (no notification minted back), and the nudge fires once per hour.
+set local request.jwt.claims = '{"sub":"a1000000-0000-0000-0000-000000000001","role":"authenticated"}';
+do $$ begin
+  if (select count(*) from public.board_messages where body = 'couple-hello') <> 1 then raise exception 'TEST FAIL: staff cannot read the couple message'; end if;
+  if (select count(*) from public.notifications where user_id = 'a1000000-0000-0000-0000-000000000001' and kind = 'client_message') < 1 then raise exception 'TEST FAIL: the planner got no client_message notification'; end if;
+  perform public.board_post_client('c1000000-0000-0000-0000-000000000001', 'staff-reply');
+  if (select count(*) from public.board_messages where body = 'staff-reply' and lane = 'client') <> 1 then raise exception 'TEST FAIL: staff could not reply in the client lane'; end if;
+end $$;
+-- a staff client reply mints no client_message notification (the couple is reached by email, not here).
+do $$ begin
+  if (select count(*) from public.notifications where kind = 'client_message' and message_id = (select id from public.board_messages where body = 'staff-reply')) <> 0 then
+    raise exception 'TEST FAIL: a staff client reply minted an in-app notification'; end if;
+end $$;
+-- the nudge debounces to one per wedding per hour.
+do $$ declare a jsonb; b jsonb; begin
+  a := public.board_client_nudge('c1000000-0000-0000-0000-000000000001');
+  b := public.board_client_nudge('c1000000-0000-0000-0000-000000000001');
+  if (a->>'due') <> 'true' then raise exception 'TEST FAIL: first nudge was not due'; end if;
+  if (b->>'due') <> 'false' then raise exception 'TEST FAIL: second nudge inside the hour was not debounced'; end if;
+  if not (a->'emails' ? 'couple@test.forma') then raise exception 'TEST FAIL: the nudge did not resolve the couple email'; end if;
+end $$;
+
+-- (day_of coordinator) still not the couple, but a wedding member: the client lane is shared with
+-- the wedding, so they see it — while the team lane and the money stay blocked (asserted above).
+set local request.jwt.claims = '{"sub":"a1000000-0000-0000-0000-000000000003","role":"authenticated"}';
+do $$ begin
+  if (select count(*) from public.board_messages where lane = 'team') <> 0 then raise exception 'TEST FAIL: the coordinator reads the team lane'; end if;
+end $$;
+
+-- (outsider) another workspace: the client lane is invisible too.
+set local request.jwt.claims = '{"sub":"a1000000-0000-0000-0000-000000000004","role":"authenticated"}';
+do $$ begin
+  if (select count(*) from public.board_messages where lane = 'client') <> 0 then raise exception 'TEST FAIL: outsider reads the client lane'; end if;
 end $$;
 
 rollback;

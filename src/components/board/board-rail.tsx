@@ -5,7 +5,9 @@ import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { cx } from "@/components/ui";
 import { BOARD_EMOJI, parseMentions } from "@/lib/board.mjs";
-import { askConcierge } from "@/app/[locale]/(app)/board-actions";
+import { askConcierge, postClientMessage } from "@/app/[locale]/(app)/board-actions";
+
+type Lane = "team" | "client";
 
 type Wedding = { id: string; name: string };
 type Member = { user_id: string; name: string | null };
@@ -29,6 +31,7 @@ export function BoardRail({ workspaceId, selfId, weddings, roster, initialSummar
   const [mentions, setMentions] = useState<Member[]>([]);
   const [picker, setPicker] = useState(false);
   const [thinking, setThinking] = useState(false);
+  const [lane, setLane] = useState<Lane>("team");
   const bottom = useRef<HTMLDivElement>(null);
 
   const unread = (wid: string | null) => summary.threads.find((x) => x.wedding_id === wid)?.unread ?? 0;
@@ -39,10 +42,15 @@ export function BoardRail({ workspaceId, selfId, weddings, roster, initialSummar
     if (data) setSummary(data as Summary);
   }, [supabase, workspaceId]);
 
-  const loadThread = useCallback(async (weddingId: string | null) => {
-    const { data } = await supabase.rpc("board_thread", { p_workspace: workspaceId, p_wedding: weddingId });
-    setMessages((data as Msg[]) ?? []);
-    await supabase.rpc("board_mark_read", { p_workspace: workspaceId, p_wedding: weddingId });
+  const loadThread = useCallback(async (weddingId: string | null, ln: Lane) => {
+    if (ln === "client" && weddingId) {
+      const { data } = await supabase.rpc("board_client_thread", { p_wedding: weddingId });
+      setMessages((data as Msg[]) ?? []);
+    } else {
+      const { data } = await supabase.rpc("board_thread", { p_workspace: workspaceId, p_wedding: weddingId });
+      setMessages((data as Msg[]) ?? []);
+      await supabase.rpc("board_mark_read", { p_workspace: workspaceId, p_wedding: weddingId });
+    }
     refreshSummary();
     setTimeout(() => bottom.current?.scrollIntoView({ behavior: "smooth" }), 50);
   }, [supabase, workspaceId, refreshSummary]);
@@ -52,19 +60,28 @@ export function BoardRail({ workspaceId, selfId, weddings, roster, initialSummar
     const ch = supabase.channel(`board:${workspaceId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "board_messages", filter: `workspace_id=eq.${workspaceId}` }, () => {
         refreshSummary();
-        if (active) loadThread(active.weddingId);
+        if (active) loadThread(active.weddingId, lane);
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${selfId}` }, () => refreshSummary())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [supabase, workspaceId, selfId, active, refreshSummary, loadThread]);
+  }, [supabase, workspaceId, selfId, active, lane, refreshSummary, loadThread]);
 
   function openThread(weddingId: string | null, name: string) {
     setActive({ weddingId, name });
     setMessages([]);
     setText("");
     setMentions([]);
-    loadThread(weddingId);
+    setLane("team");
+    loadThread(weddingId, "team");
+  }
+  function switchLane(ln: Lane) {
+    if (ln === lane || !active) return;
+    setLane(ln);
+    setText("");
+    setMentions([]);
+    setPicker(false);
+    loadThread(active.weddingId, ln);
   }
   function addMention(m: Member) {
     if (!mentions.find((x) => x.user_id === m.user_id)) setMentions([...mentions, m]);
@@ -74,38 +91,46 @@ export function BoardRail({ workspaceId, selfId, weddings, roster, initialSummar
   async function send() {
     if (!active || !text.trim()) return;
     const body = text.trim();
+    // The client lane is the shared couple thread: no @mentions, no @concierge; the post goes
+    // through the server action so the couple gets the debounced email nudge.
+    if (lane === "client" && active.weddingId) {
+      setText("");
+      await postClientMessage(active.weddingId, body);
+      await loadThread(active.weddingId, "client");
+      return;
+    }
     const wantsConcierge = parseMentions(body).concierge;
     setText("");
     const ids = mentions.map((m) => m.user_id);
     setMentions([]);
     await supabase.rpc("board_post", { p_workspace: workspaceId, p_wedding: active.weddingId, p_body: body, p_mentions: ids });
-    await loadThread(active.weddingId);
+    await loadThread(active.weddingId, "team");
     if (wantsConcierge) {
       setThinking(true);
       await askConcierge(workspaceId, active.weddingId, body.replace(/@concierge/gi, "").trim());
       setThinking(false);
-      await loadThread(active.weddingId);
+      await loadThread(active.weddingId, "team");
     }
   }
   async function react(id: string, emoji: string) {
     await supabase.rpc("board_toggle_reaction", { p_message: id, p_emoji: emoji });
-    if (active) loadThread(active.weddingId);
+    if (active) loadThread(active.weddingId, lane);
   }
   async function makeTask(m: Msg) {
     const title = window.prompt(t("makeTaskPrompt"), m.body ?? "");
     if (!title || !title.trim()) return;
     await supabase.rpc("board_make_task", { p_message: m.id, p_title: title.trim(), p_due: null });
-    if (active) loadThread(active.weddingId);
+    if (active) loadThread(active.weddingId, lane);
   }
   async function del(m: Msg) {
     if (!window.confirm(t("deleteConfirm"))) return;
     await supabase.rpc("board_delete", { p_id: m.id });
-    if (active) loadThread(active.weddingId);
+    if (active) loadThread(active.weddingId, lane);
   }
   async function edit(id: string, body: string) {
     if (!body.trim()) return;
     await supabase.rpc("board_edit", { p_id: id, p_body: body.trim() });
-    if (active) loadThread(active.weddingId);
+    if (active) loadThread(active.weddingId, lane);
   }
   async function markAllRead() {
     await supabase.rpc("board_mark_notifications_read");
@@ -154,25 +179,32 @@ export function BoardRail({ workspaceId, selfId, weddings, roster, initialSummar
               <>
                 <div className="flex-1 overflow-y-auto px-3 py-2">
                   {active.weddingId ? (
-                    <a href={`${linkBase}/wedding/${active.weddingId}`} className="mb-2 inline-block text-[12px] text-teal hover:underline">{t("openWedding")} ↗</a>
+                    <div className="mb-2 flex items-center justify-between">
+                      <a href={`${linkBase}/wedding/${active.weddingId}`} className="inline-block text-[12px] text-teal hover:underline">{t("openWedding")} ↗</a>
+                      <div className="flex rounded-full bg-surface-card p-0.5 text-[11.5px]">
+                        <button onClick={() => switchLane("team")} className={cx("rounded-full px-2.5 py-1", lane === "team" ? "bg-surface-page text-text-primary shadow-sm" : "text-text-meta")}>{t("laneTeam")}</button>
+                        <button onClick={() => switchLane("client")} className={cx("rounded-full px-2.5 py-1", lane === "client" ? "bg-wine text-bone" : "text-text-meta")}>{t("laneClient")}</button>
+                      </div>
+                    </div>
                   ) : null}
-                  {messages.length === 0 ? <p className="py-8 text-center text-[13px] text-text-meta">{t("threadEmpty")}</p> : messages.map((m) => (
-                    <MessageRow key={m.id} m={m} t={t} statusLabel={statusLabel} onReact={react} onTask={makeTask} onDelete={del} onEdit={edit} />
+                  {lane === "client" ? <p className="mb-2 rounded-[var(--radius)] bg-wine/10 px-2.5 py-1.5 text-[11.5px] text-wine">{t("clientHint")}</p> : null}
+                  {messages.length === 0 ? <p className="py-8 text-center text-[13px] text-text-meta">{lane === "client" ? t("clientEmpty") : t("threadEmpty")}</p> : messages.map((m) => (
+                    <MessageRow key={m.id} m={m} t={t} statusLabel={statusLabel} clientLane={lane === "client"} onReact={react} onTask={makeTask} onDelete={del} onEdit={edit} />
                   ))}
                   {thinking ? <p className="py-2 text-[12.5px] italic text-text-meta">{t("conciergeThinking")}</p> : null}
                   <div ref={bottom} />
                 </div>
-                <div className="border-t border-hairline-token p-2">
-                  {mentions.length ? <div className="mb-1 flex flex-wrap gap-1">{mentions.map((m) => <span key={m.user_id} className="rounded-full bg-surface-card px-2 py-0.5 text-[11px] text-text-meta">@{(m.name ?? "").split(/\s+/)[0]}</span>)}</div> : null}
-                  {picker ? (
+                <div className={cx("border-t p-2", lane === "client" ? "border-wine/30" : "border-hairline-token")}>
+                  {lane === "team" && mentions.length ? <div className="mb-1 flex flex-wrap gap-1">{mentions.map((m) => <span key={m.user_id} className="rounded-full bg-surface-card px-2 py-0.5 text-[11px] text-text-meta">@{(m.name ?? "").split(/\s+/)[0]}</span>)}</div> : null}
+                  {lane === "team" && picker ? (
                     <div className="mb-1 max-h-32 overflow-y-auto rounded-[var(--radius)] border border-hairline-token bg-surface-card">
                       {roster.filter((r) => r.user_id !== selfId).map((r) => <button key={r.user_id} onClick={() => addMention(r)} className="block w-full px-3 py-1.5 text-left text-[12.5px] text-text-primary hover:bg-surface-page">{r.name}</button>)}
                     </div>
                   ) : null}
                   <div className="flex items-end gap-2">
-                    <button onClick={() => setPicker((p) => !p)} className="rounded-[var(--radius)] px-2 py-1.5 text-[14px] text-text-meta hover:bg-surface-card" title={t("mention")}>@</button>
-                    <textarea value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) send(); }} rows={2} placeholder={t("composerPlaceholder")} className="flex-1 resize-none rounded-[var(--radius)] border border-hairline-token bg-surface-card px-3 py-2 text-[13px] text-text-primary outline-none" />
-                    <button onClick={send} disabled={!text.trim()} className="rounded-[var(--radius)] bg-ink px-3 py-2 text-[12px] font-medium text-bone disabled:opacity-40">{t("send")}</button>
+                    {lane === "team" ? <button onClick={() => setPicker((p) => !p)} className="rounded-[var(--radius)] px-2 py-1.5 text-[14px] text-text-meta hover:bg-surface-card" title={t("mention")}>@</button> : null}
+                    <textarea value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) send(); }} rows={2} placeholder={lane === "client" ? t("clientComposer") : t("composerPlaceholder")} className={cx("flex-1 resize-none rounded-[var(--radius)] border bg-surface-card px-3 py-2 text-[13px] text-text-primary outline-none", lane === "client" ? "border-wine/40" : "border-hairline-token")} />
+                    <button onClick={send} disabled={!text.trim()} className={cx("rounded-[var(--radius)] px-3 py-2 text-[12px] font-medium text-bone disabled:opacity-40", lane === "client" ? "bg-wine" : "bg-ink")}>{t("send")}</button>
                   </div>
                 </div>
               </>
@@ -200,8 +232,8 @@ function ThreadRow({ name, unread, onClick }: { name: string; unread: number; on
     </button>
   );
 }
-function MessageRow({ m, t, statusLabel, onReact, onTask, onDelete, onEdit }: {
-  m: Msg; t: ReturnType<typeof useTranslations>; statusLabel: (s: string | null) => string;
+function MessageRow({ m, t, statusLabel, clientLane, onReact, onTask, onDelete, onEdit }: {
+  m: Msg; t: ReturnType<typeof useTranslations>; statusLabel: (s: string | null) => string; clientLane?: boolean;
   onReact: (id: string, e: string) => void; onTask: (m: Msg) => void; onDelete: (m: Msg) => void; onEdit: (id: string, body: string) => void;
 }) {
   const [bar, setBar] = useState(false);
@@ -243,7 +275,7 @@ function MessageRow({ m, t, statusLabel, onReact, onTask, onDelete, onEdit }: {
         {bar && !m.deleted_at ? (
           <span className="flex items-center gap-0.5 opacity-70">
             {BOARD_EMOJI.map((e) => <button key={e} onClick={() => onReact(m.id, e)} className="px-0.5 text-[13px] hover:scale-110">{e}</button>)}
-            {!m.task_id ? <button onClick={() => onTask(m)} className="ml-1 text-[11px] text-teal hover:underline">{t("makeTask")}</button> : null}
+            {!clientLane && !m.task_id ? <button onClick={() => onTask(m)} className="ml-1 text-[11px] text-teal hover:underline">{t("makeTask")}</button> : null}
             {canEdit ? <button onClick={() => { setDraft(m.body ?? ""); setEditing(true); }} className="ml-1 text-[11px] text-text-meta hover:underline">{t("edit")}</button> : null}
             {m.mine ? <button onClick={() => onDelete(m)} className="ml-1 text-[11px] text-[color:var(--color-text-danger)] hover:underline">{t("delete")}</button> : null}
           </span>
