@@ -30,6 +30,18 @@ const data = {
     { category: "infrastructure", amount_cents: 999, voided: true, paid_on: "2026-08-07" },   // voided → OUT of sums
     { category: "services", amount_cents: 700, voided: false, paid_on: "2026-09-03" },        // next month → OUT
   ],
+  referralCredits: [
+    { kind: "credit", amount_cents: 10000, status: "accrued", created_at: "2026-08-10T00:00:00Z" }, // in
+    { kind: "credit", amount_cents: 10000, status: "void", created_at: "2026-08-11T00:00:00Z" },    // void → OUT
+    { kind: "redeem_bill", amount_cents: -5000, status: "settled", created_at: "2026-08-12T00:00:00Z" }, // not a 'credit' → OUT of accrued
+    { kind: "credit", amount_cents: 10000, status: "accrued", created_at: "2026-07-31T00:00:00Z" }, // prior month → OUT
+  ],
+  referralRedemptions: [
+    { kind: "bill", status: "settled", amount_cents: -5000, settled_at: "2026-08-15T00:00:00Z" },  // in
+    { kind: "cash", status: "settled", amount_cents: -60000, settled_at: "2026-08-20T00:00:00Z" }, // in
+    { kind: "bill", status: "requested", amount_cents: -3000, settled_at: null },                  // not settled → OUT
+    { kind: "cash", status: "settled", amount_cents: -10000, settled_at: "2026-09-05T00:00:00Z" }, // next month → OUT
+  ],
 };
 
 const b = periodBounds("month", "2026-08");
@@ -49,6 +61,12 @@ assert.equal(r.expensesTotal, 3500);
 assert.equal(r.net, 11966 - 3370 - 3500, "net = netRevenue - commissions - expenses");         // 5096
 assert.deepEqual(r.perPartnerAnnual, { P1: 3370 + 500, P2: 1200 }, "per-partner payouts across the YEAR");
 
+// REF-2 referral block — accrued credits (in-period, non-void, kind 'credit') and settled
+// redemptions split bill/cash, re-derived independently.
+assert.equal(r.referralCreditsAccrued, 10000, "only the in-period non-void credit");
+assert.equal(r.referralRedemptionsBill, -5000, "settled bill redemptions in period");
+assert.equal(r.referralRedemptionsCash, -60000, "settled cash redemptions in period (Sept excluded)");
+
 // Boundary primitives.
 assert.equal(inRange("2026-08-31T23:59:00Z", b.startIso, b.endIso), true);
 assert.equal(inRange("2026-09-01T00:00:00Z", b.startIso, b.endIso), false);
@@ -67,5 +85,8 @@ assert.equal(z.gross, 0);
 assert.equal(z.net, 0);
 assert.deepEqual(z.expensesByCategory, {});
 assert.deepEqual(z.perPartnerAnnual, {});
+assert.equal(z.referralCreditsAccrued, 0);
+assert.equal(z.referralRedemptionsBill, 0);
+assert.equal(z.referralRedemptionsCash, 0);
 
 console.log("report: computed figures re-derived cent-exact + boundary edges ok");
