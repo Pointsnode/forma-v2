@@ -14,6 +14,7 @@ import { NewProposal } from "@/components/loop/new-proposal";
 import { MembersInvites } from "@/components/loop/members-invites";
 import { DecisionInbox } from "@/components/loop/decision-inbox";
 import { CoupleTasks } from "@/components/tasks/couple-tasks";
+import { CoupleMessages, type CMsg } from "@/components/board/couple-messages";
 import {
   Card, Pill, StatRow, Stat, SectionTitle, GateCard, GateRow, Panel, PanelHead, DomainStar,
 } from "@/components/ui";
@@ -156,12 +157,13 @@ async function CoupleLens({
   const inCourt = views.filter((v) => v.status === "sent" || v.status === "seen");
   const settled = views.filter((v) => v.status !== "sent" && v.status !== "seen");
 
-  const [{ data: coupleTaskRows }, { data: partnerRows }, { data: rollupRow }, { data: dueRows }, { data: schedRows }] = await Promise.all([
+  const [{ data: coupleTaskRows }, { data: partnerRows }, { data: rollupRow }, { data: dueRows }, { data: schedRows }, { data: msgRows }] = await Promise.all([
     supabase.from("tasks").select("id, title, note, due_date, status, flagged").eq("wedding_id", weddingId).order("due_date", { ascending: true, nullsFirst: false }),
     supabase.rpc("wedding_partners", { w: weddingId }),
     supabase.from("wedding_money_rollup").select("budget_total, committed, paid").eq("wedding_id", weddingId).maybeSingle(),
     supabase.from("ledger_lines").select("amount").eq("wedding_id", weddingId).eq("kind", "planner_fee").eq("status", "due"),
     supabase.from("schedule_items").select("id, time, title, event_id").eq("wedding_id", weddingId).order("time", { ascending: true, nullsFirst: false }).order("sort"),
+    supabase.rpc("board_client_thread", { p_wedding: weddingId }),
   ]);
   const coupleTasks = (coupleTaskRows ?? []) as { id: string; title: string; note: string | null; due_date: string | null; status: string; flagged: boolean }[];
   const partners = (partnerRows ?? []) as { engagement_id: string; status: string; vendor_name: string; vendor_kind: string; description: string | null; photos: { path: string }[] }[];
@@ -212,6 +214,14 @@ async function CoupleLens({
         </Panel>
 
         <CoupleTasks tasks={coupleTasks} />
+
+        {/* Messages (people domain → taupe star) — the shared client-lane thread with the planner. */}
+        <Panel className="mb-4">
+          <PanelHead star={<DomainStar domain="people" size={11} />} title={tcp("messagesTitle")} meta={tcp("yourPlanner")} />
+          <div className="p-[18px]">
+            <CoupleMessages weddingId={weddingId} initial={(msgRows ?? []) as CMsg[]} />
+          </div>
+        </Panel>
 
         {partners.length ? (
           <>
