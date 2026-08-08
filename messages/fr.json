@@ -1626,9 +1626,9 @@
     "referralRedemptions": "Utilisations",
     "referralKind_bill": "Sur la facture",
     "referralKind_cash": "Virement",
-    "redemptionStatus_requested": "Requested",
-    "redemptionStatus_settled": "Settled",
-    "redemptionStatus_rejected": "Rejected",
+    "redemptionStatus_requested": "Demandé",
+    "redemptionStatus_settled": "Traité",
+    "redemptionStatus_rejected": "Refusé",
     "referralRequested": "Demande reçue. Nous la traiterons rapidement.",
     "referralError": "Cela n'a pas fonctionné. Réessayez."
   },

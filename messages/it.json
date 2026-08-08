@@ -1626,9 +1626,9 @@
     "referralRedemptions": "Utilizzi",
     "referralKind_bill": "In fattura",
     "referralKind_cash": "Bonifico",
-    "redemptionStatus_requested": "Requested",
-    "redemptionStatus_settled": "Settled",
-    "redemptionStatus_rejected": "Rejected",
+    "redemptionStatus_requested": "Richiesto",
+    "redemptionStatus_settled": "Completato",
+    "redemptionStatus_rejected": "Rifiutato",
     "referralRequested": "Richiesta ricevuta. La gestiremo a breve.",
     "referralError": "Qualcosa non ha funzionato. Riprova."
   },

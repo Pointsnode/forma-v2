@@ -1626,9 +1626,9 @@
     "referralRedemptions": "Canjes",
     "referralKind_bill": "A la factura",
     "referralKind_cash": "Efectivo",
-    "redemptionStatus_requested": "Requested",
-    "redemptionStatus_settled": "Settled",
-    "redemptionStatus_rejected": "Rejected",
+    "redemptionStatus_requested": "Solicitado",
+    "redemptionStatus_settled": "Procesado",
+    "redemptionStatus_rejected": "Rechazado",
     "referralRequested": "Solicitud recibida. La procesaremos pronto.",
     "referralError": "Eso no funcionó. Inténtalo de nuevo."
   },
