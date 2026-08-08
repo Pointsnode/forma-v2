@@ -141,10 +141,18 @@ export function BoardRail({ workspaceId, selfId, weddings, roster, initialSummar
 
   return (
     <>
-      <button onClick={() => { setOpen(true); refreshSummary(); }} aria-label={t("open")}
-        className="fixed bottom-5 right-[86px] z-40 flex h-11 items-center gap-2 rounded-full bg-surface-chrome px-4 text-[13px] font-medium text-bone shadow-lg">
-        {t("open")}
-        {totalUnread > 0 ? <span className="grid h-5 min-w-5 place-items-center rounded-full bg-wine px-1 text-[11px] text-bone">{totalUnread}</span> : null}
+      {/* Sibling of the ConciergeBubble floater: same 54px oxblood tile, radius, border, and hover.
+          Stacked directly above it (the concierge keeps the bottom-corner anchor) with a small gap.
+          The glyph is a bone speech-bubble outline, stroke-weight matched to the star medallion so
+          the two read as a pair. No label — the localized board.title carries title/aria-label. */}
+      <button onClick={() => { setOpen(true); refreshSummary(); }} aria-label={t("title")} title={t("title")}
+        className="fixed bottom-[92px] right-[26px] z-40 flex h-[54px] w-[54px] items-center justify-center rounded-[var(--radius)] border border-[rgba(245,242,235,0.22)] bg-oxblood text-bone transition-transform hover:scale-[1.03] print:hidden">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M5 4.5h14a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-8.5L6 19v-3.5H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z" />
+        </svg>
+        {totalUnread > 0 ? (
+          <span className="absolute -right-1.5 -top-1.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-[var(--radius)] border border-[rgba(245,242,235,0.35)] bg-oxblood px-1 text-[10px] font-medium text-bone">{totalUnread}</span>
+        ) : null}
       </button>
 
       {open ? (
