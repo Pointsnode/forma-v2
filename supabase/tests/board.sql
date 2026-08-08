@@ -72,6 +72,14 @@ do $$ begin
   perform public.board_mark_read('b1000000-0000-0000-0000-000000000001', 'c1000000-0000-0000-0000-000000000001');
   if (select count(*) from public.board_reads where user_id = 'a1000000-0000-0000-0000-000000000001' and wedding_id = 'c1000000-0000-0000-0000-000000000001') <> 1 then raise exception 'TEST FAIL: read marker not written'; end if;
 end $$;
+-- board_edit refuses a soft-deleted message (FV272).
+do $$ declare v_id uuid; ok boolean; begin
+  select id into v_id from public.board_messages where body = 'studio-msg-1-edited';
+  perform public.board_delete(v_id);
+  begin perform public.board_edit(v_id, 'resurrect'); ok := true;
+  exception when others then ok := false; end;
+  if ok then raise exception 'TEST FAIL: a deleted message was edited'; end if;
+end $$;
 -- (money-scoping, context-assembly layer) staffA sees the wedding money; the day_of coordinator does not.
 do $$ begin
   if (select count(*) from public.ledger_lines where wedding_id = 'c1000000-0000-0000-0000-000000000001') <> 1 then raise exception 'TEST FAIL: staff cannot see wedding money'; end if;

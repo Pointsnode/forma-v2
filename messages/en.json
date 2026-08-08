@@ -1946,6 +1946,10 @@
     "conciergeThinking": "Concierge is thinking...",
     "conciergeNotConfigured": "The concierge is not set up yet, so I cannot answer here.",
     "conciergeError": "Something went wrong reaching the concierge. Try again in a moment.",
-    "conciergeNoAnswer": "I could not find an answer for that."
+    "conciergeNoAnswer": "I could not find an answer for that.",
+    "edit": "Edit",
+    "edited": "edited",
+    "editSave": "Save",
+    "editCancel": "Cancel"
   }
 }

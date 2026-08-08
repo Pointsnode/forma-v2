@@ -17,6 +17,7 @@ create table if not exists public.board_messages (
   body text,
   task_id uuid references public.tasks (id) on delete set null,               -- a task chip references its task (live status)
   system_event text,                                                          -- e.g. 'task_completed' (a system line)
+  edited_at timestamptz,                                                      -- stamped by board_edit → the quiet "edited" marker
   deleted_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -144,7 +145,7 @@ begin
   if v_msg.author_kind <> 'user' or v_msg.author_id <> (select auth.uid()) then raise exception 'not permitted' using errcode = 'FV230'; end if;
   if v_msg.deleted_at is not null or v_msg.system_event is not null then raise exception 'this message cannot be edited' using errcode = 'FV272'; end if;
   if coalesce(btrim(p_body), '') = '' then raise exception 'the message is empty' using errcode = 'FV270'; end if;
-  update public.board_messages set body = p_body where id = p_id;
+  update public.board_messages set body = p_body, edited_at = now() where id = p_id;
 end $$;
 
 -- Soft-delete your OWN message: blank the body, stamp deleted_at.
@@ -257,7 +258,7 @@ begin
       'id', m.id, 'author_kind', m.author_kind, 'author_id', m.author_id,
       'author_name', case when m.author_kind = 'concierge' then null else p.display_name end,
       'body', m.body, 'task_id', m.task_id, 'task_status', tk.status, 'task_title', tk.title,
-      'system_event', m.system_event, 'deleted_at', m.deleted_at, 'created_at', m.created_at,
+      'system_event', m.system_event, 'deleted_at', m.deleted_at, 'edited_at', m.edited_at, 'created_at', m.created_at,
       'mine', m.author_id = (select auth.uid()),
       'reactions', coalesce((select jsonb_object_agg(x.emoji, x.n) from (select emoji, count(*) n from public.board_reactions where message_id = m.id group by emoji) x), '{}'::jsonb),
       'my_reactions', coalesce((select jsonb_agg(emoji) from public.board_reactions where message_id = m.id and user_id = (select auth.uid())), '[]'::jsonb)

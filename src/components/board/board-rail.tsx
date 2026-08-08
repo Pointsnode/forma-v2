@@ -13,7 +13,7 @@ type Summary = { notifications: number; threads: { wedding_id: string | null; un
 type Msg = {
   id: string; author_kind: string; author_id: string | null; author_name: string | null; body: string | null;
   task_id: string | null; task_status: string | null; task_title: string | null; system_event: string | null;
-  deleted_at: string | null; created_at: string; mine: boolean; reactions: Record<string, number>; my_reactions: string[];
+  deleted_at: string | null; edited_at: string | null; created_at: string; mine: boolean; reactions: Record<string, number>; my_reactions: string[];
 };
 
 export function BoardRail({ workspaceId, selfId, weddings, roster, initialSummary, linkBase }: {
@@ -102,6 +102,11 @@ export function BoardRail({ workspaceId, selfId, weddings, roster, initialSummar
     await supabase.rpc("board_delete", { p_id: m.id });
     if (active) loadThread(active.weddingId);
   }
+  async function edit(id: string, body: string) {
+    if (!body.trim()) return;
+    await supabase.rpc("board_edit", { p_id: id, p_body: body.trim() });
+    if (active) loadThread(active.weddingId);
+  }
   async function markAllRead() {
     await supabase.rpc("board_mark_notifications_read");
     refreshSummary();
@@ -152,7 +157,7 @@ export function BoardRail({ workspaceId, selfId, weddings, roster, initialSummar
                     <a href={`${linkBase}/wedding/${active.weddingId}`} className="mb-2 inline-block text-[12px] text-teal hover:underline">{t("openWedding")} ↗</a>
                   ) : null}
                   {messages.length === 0 ? <p className="py-8 text-center text-[13px] text-text-meta">{t("threadEmpty")}</p> : messages.map((m) => (
-                    <MessageRow key={m.id} m={m} t={t} statusLabel={statusLabel} onReact={react} onTask={makeTask} onDelete={del} />
+                    <MessageRow key={m.id} m={m} t={t} statusLabel={statusLabel} onReact={react} onTask={makeTask} onDelete={del} onEdit={edit} />
                   ))}
                   {thinking ? <p className="py-2 text-[12.5px] italic text-text-meta">{t("conciergeThinking")}</p> : null}
                   <div ref={bottom} />
@@ -195,15 +200,18 @@ function ThreadRow({ name, unread, onClick }: { name: string; unread: number; on
     </button>
   );
 }
-function MessageRow({ m, t, statusLabel, onReact, onTask, onDelete }: {
+function MessageRow({ m, t, statusLabel, onReact, onTask, onDelete, onEdit }: {
   m: Msg; t: ReturnType<typeof useTranslations>; statusLabel: (s: string | null) => string;
-  onReact: (id: string, e: string) => void; onTask: (m: Msg) => void; onDelete: (m: Msg) => void;
+  onReact: (id: string, e: string) => void; onTask: (m: Msg) => void; onDelete: (m: Msg) => void; onEdit: (id: string, body: string) => void;
 }) {
   const [bar, setBar] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(m.body ?? "");
   if (m.system_event === "task_completed") {
     return <p className="py-1.5 text-center text-[11.5px] italic text-text-meta">{t("taskCompletedLine", { title: m.task_title ?? "" })}</p>;
   }
   const who = m.author_kind === "concierge" ? t("conciergeName") : m.author_name ?? "·";
+  const canEdit = m.mine && !m.deleted_at && m.author_kind === "user";
   return (
     <div className="group border-b border-hairline-token py-2 last:border-b-0" onMouseEnter={() => setBar(true)} onMouseLeave={() => setBar(false)}>
       <div className="flex items-baseline justify-between">
@@ -212,8 +220,16 @@ function MessageRow({ m, t, statusLabel, onReact, onTask, onDelete }: {
       </div>
       {m.deleted_at ? (
         <p className="text-[13px] italic text-text-meta">{t("deleted")}</p>
+      ) : editing ? (
+        <div className="mt-1">
+          <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={2} className="w-full resize-none rounded-[var(--radius)] border border-hairline-token bg-surface-card px-2.5 py-1.5 text-[13.5px] text-text-primary outline-none" />
+          <div className="mt-1 flex gap-2">
+            <button onClick={() => { onEdit(m.id, draft); setEditing(false); }} className="rounded-[var(--radius)] bg-ink px-3 py-1 text-[11px] font-medium text-bone">{t("editSave")}</button>
+            <button onClick={() => { setDraft(m.body ?? ""); setEditing(false); }} className="text-[11px] text-text-meta hover:text-text-primary">{t("editCancel")}</button>
+          </div>
+        </div>
       ) : (
-        <p className="whitespace-pre-wrap text-[13.5px] text-text-primary">{m.body}</p>
+        <p className="whitespace-pre-wrap text-[13.5px] text-text-primary">{m.body}{m.edited_at ? <span className="ml-1.5 text-[10px] text-text-meta">({t("edited")})</span> : null}</p>
       )}
       {m.task_id ? (
         <span className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-surface-card px-2 py-0.5 text-[11px] text-text-meta">
@@ -228,6 +244,7 @@ function MessageRow({ m, t, statusLabel, onReact, onTask, onDelete }: {
           <span className="flex items-center gap-0.5 opacity-70">
             {BOARD_EMOJI.map((e) => <button key={e} onClick={() => onReact(m.id, e)} className="px-0.5 text-[13px] hover:scale-110">{e}</button>)}
             {!m.task_id ? <button onClick={() => onTask(m)} className="ml-1 text-[11px] text-teal hover:underline">{t("makeTask")}</button> : null}
+            {canEdit ? <button onClick={() => { setDraft(m.body ?? ""); setEditing(true); }} className="ml-1 text-[11px] text-text-meta hover:underline">{t("edit")}</button> : null}
             {m.mine ? <button onClick={() => onDelete(m)} className="ml-1 text-[11px] text-[color:var(--color-text-danger)] hover:underline">{t("delete")}</button> : null}
           </span>
         ) : null}
