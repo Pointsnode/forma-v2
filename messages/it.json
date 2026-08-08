@@ -310,10 +310,10 @@
     "weekendKicker": "Ogni ora, custodita",
     "daysAfter": "Sposati",
     "messagesTitle": "Messaggi",
-    "messagesEmpty": "Ancora nessun messaggio. Scrivete al vostro planner.",
-    "messagesPlaceholder": "Scrivete al vostro planner...",
+    "messagesEmpty": "Ancora nessun messaggio. Scrivi al tuo planner.",
+    "messagesPlaceholder": "Scrivi al tuo planner...",
     "messagesSend": "Invia",
-    "messagesYou": "Voi",
+    "messagesYou": "Tu",
     "messagesEdited": "modificato",
     "messagesDeleted": "Messaggio eliminato"
   },
@@ -1910,8 +1910,8 @@
       "followUpLine": "Ciao {couple}, ci facciamo sentire. Ci piacerebbe dare vita al vostro giorno quando sarete pronti."
     },
     "board": {
-      "nudgeSubject": "Un nuovo messaggio dal vostro planner",
-      "nudgeLine": "Il vostro planner vi ha appena inviato un messaggio su Forma.",
+      "nudgeSubject": "Un nuovo messaggio dal tuo planner",
+      "nudgeLine": "Il tuo planner ti ha appena inviato un messaggio.",
       "nudgeButton": "Apri i messaggi"
     }
   },

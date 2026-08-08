@@ -1911,7 +1911,7 @@
     },
     "board": {
       "nudgeSubject": "A new message from your planner",
-      "nudgeLine": "Your planner just sent you a message in Forma.",
+      "nudgeLine": "Your planner just sent you a message.",
       "nudgeButton": "Open messages"
     }
   },
